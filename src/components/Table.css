@@ -1,0 +1,109 @@
+.table-component {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow 0.15s;
+}
+
+.table-component:active {
+  cursor: grabbing;
+}
+
+.table-component.dragging {
+  opacity: 0.8;
+  z-index: 100;
+}
+
+.table-component.selected {
+  z-index: 10;
+}
+
+.table-component.selected .table-surface {
+  box-shadow: 0 0 0 3px var(--color-primary);
+}
+
+.table-component.drop-target .table-surface {
+  box-shadow: 0 0 0 3px var(--color-success);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.table-surface {
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.15s;
+}
+
+.table-component.round .table-surface {
+  border-radius: 50%;
+}
+
+.table-component.rectangle .table-surface {
+  border-radius: 8px;
+}
+
+.table-component.square .table-surface {
+  border-radius: 8px;
+}
+
+.table-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.table-name-input {
+  width: 80px;
+  text-align: center;
+  padding: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  pointer-events: auto;
+}
+
+.table-count {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.seat {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-delete {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-error);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s;
+}
+
+.table-delete:hover {
+  transform: scale(1.1);
+}
