@@ -14,6 +14,10 @@ import { CanvasGuest } from './CanvasGuest';
 import { TablePropertiesPanel } from './TablePropertiesPanel';
 import { CanvasSearch } from './CanvasSearch';
 import { CanvasMinimap } from './CanvasMinimap';
+import { SelectionToolbar } from './SelectionToolbar';
+import { ContextMenu } from './ContextMenu';
+import type { ContextMenuItem } from './ContextMenu';
+import { LayoutToolbar } from './LayoutToolbar';
 import type { TableShape, Table, AlignmentGuide, Guest } from '../types';
 import './Canvas.css';
 
@@ -222,6 +226,7 @@ export function Canvas() {
     canvas,
     canvasPrefs,
     alignmentGuides,
+    contextMenu,
     setZoom,
     setPan,
     moveTable,
@@ -236,6 +241,12 @@ export function Canvas() {
     pushHistory,
     addQuickGuest,
     swapGuestSeats,
+    removeTable,
+    removeGuest,
+    openContextMenu,
+    closeContextMenu,
+    toggleTableSelection,
+    toggleGuestSelection,
   } = useStore();
 
   const [isPanning, setIsPanning] = useState(false);
@@ -502,6 +513,160 @@ export function Canvas() {
     setShowTableDropdown(false);
   };
 
+  // Generate context menu items based on target
+  const getContextMenuItems = (): ContextMenuItem[] => {
+    if (!contextMenu.targetType) return [];
+
+    if (contextMenu.targetType === 'table' && contextMenu.targetId) {
+      const table = event.tables.find((t) => t.id === contextMenu.targetId);
+      if (!table) return [];
+
+      const guestCount = event.guests.filter((g) => g.tableId === table.id).length;
+      const isSelected = canvas.selectedTableIds.includes(table.id);
+      const hasMultipleSelected = canvas.selectedTableIds.length > 1;
+
+      const items: ContextMenuItem[] = [
+        {
+          label: isSelected ? 'Deselect' : 'Select',
+          icon: isSelected ? '○' : '●',
+          onClick: () => selectTable(isSelected ? null : table.id),
+        },
+        {
+          label: 'Add to Selection',
+          icon: '+',
+          onClick: () => toggleTableSelection(table.id),
+          disabled: isSelected,
+        },
+        { label: '', onClick: () => {}, divider: true },
+        {
+          label: 'Duplicate Table',
+          icon: '⧉',
+          onClick: () => {
+            pushHistory('Duplicate table');
+            addTable(table.shape, table.x + 50, table.y + 50);
+          },
+        },
+        { label: '', onClick: () => {}, divider: true },
+        {
+          label: hasMultipleSelected ? `Delete ${canvas.selectedTableIds.length} Tables` : 'Delete Table',
+          icon: '🗑',
+          onClick: () => {
+            if (confirm(`Delete ${table.name}?${guestCount > 0 ? ` ${guestCount} guest(s) will be unassigned.` : ''}`)) {
+              pushHistory('Delete table');
+              removeTable(table.id);
+            }
+          },
+          danger: true,
+        },
+      ];
+
+      return items;
+    }
+
+    if (contextMenu.targetType === 'guest' && contextMenu.targetId) {
+      const guest = event.guests.find((g) => g.id === contextMenu.targetId);
+      if (!guest) return [];
+
+      const isSelected = canvas.selectedGuestIds.includes(guest.id);
+
+      const items: ContextMenuItem[] = [
+        {
+          label: isSelected ? 'Deselect' : 'Select',
+          icon: isSelected ? '○' : '●',
+          onClick: () => selectGuest(isSelected ? null : guest.id),
+        },
+        {
+          label: 'Add to Selection',
+          icon: '+',
+          onClick: () => toggleGuestSelection(guest.id),
+          disabled: isSelected,
+        },
+        { label: '', onClick: () => {}, divider: true },
+      ];
+
+      // Add "Assign to Table" submenu items
+      if (event.tables.length > 0) {
+        items.push({
+          label: 'Unassign from Table',
+          icon: '↩',
+          onClick: () => {
+            pushHistory('Unassign guest');
+            assignGuestToTable(guest.id, undefined);
+          },
+          disabled: !guest.tableId,
+        });
+      }
+
+      items.push({ label: '', onClick: () => {}, divider: true });
+      items.push({
+        label: 'Delete Guest',
+        icon: '🗑',
+        onClick: () => {
+          if (confirm(`Delete ${guest.name}?`)) {
+            pushHistory('Delete guest');
+            removeGuest(guest.id);
+          }
+        },
+        danger: true,
+      });
+
+      return items;
+    }
+
+    if (contextMenu.targetType === 'canvas') {
+      return [
+        {
+          label: 'Add Round Table',
+          icon: '⭕',
+          onClick: () => {
+            const canvasX = (contextMenu.x - canvas.panX) / canvas.zoom;
+            const canvasY = (contextMenu.y - canvas.panY) / canvas.zoom;
+            addTable('round', canvasX, canvasY);
+          },
+        },
+        {
+          label: 'Add Rectangle Table',
+          icon: '▭',
+          onClick: () => {
+            const canvasX = (contextMenu.x - canvas.panX) / canvas.zoom;
+            const canvasY = (contextMenu.y - canvas.panY) / canvas.zoom;
+            addTable('rectangle', canvasX, canvasY);
+          },
+        },
+        {
+          label: 'Add Guest',
+          icon: '👤',
+          onClick: () => {
+            const canvasX = (contextMenu.x - canvas.panX) / canvas.zoom;
+            const canvasY = (contextMenu.y - canvas.panY) / canvas.zoom;
+            addQuickGuest(canvasX, canvasY);
+          },
+        },
+        { label: '', onClick: () => {}, divider: true },
+        {
+          label: 'Select All Tables',
+          icon: '⊞',
+          onClick: () => {
+            const allTableIds = event.tables.map((t) => t.id);
+            allTableIds.forEach((id) => toggleTableSelection(id));
+          },
+          disabled: event.tables.length === 0,
+        },
+      ];
+    }
+
+    return [];
+  };
+
+  // Handle right-click context menu on canvas
+  const handleCanvasContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Only open canvas context menu if clicking on empty space
+    if (e.target === e.currentTarget || (e.target as HTMLElement).classList.contains('canvas-content')) {
+      openContextMenu(e.clientX, e.clientY, 'canvas', null);
+    }
+  };
+
   const draggedGuest = draggedGuestId
     ? event.guests.find((g) => g.id === draggedGuestId)
     : null;
@@ -606,6 +771,7 @@ export function Canvas() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onClick={handleCanvasClick}
+          onContextMenu={handleCanvasContextMenu}
           style={{ cursor: isPanning ? 'grabbing' : 'default' }}
         >
           <div
@@ -620,7 +786,7 @@ export function Canvas() {
                 key={table.id}
                 table={table}
                 guests={event.guests.filter((g) => g.tableId === table.id)}
-                isSelected={canvas.selectedTableId === table.id}
+                isSelected={canvas.selectedTableIds.includes(table.id)}
                 isSnapTarget={nearbyTableId === table.id}
                 swapTargetGuestId={swapTargetGuestId}
               />
@@ -633,9 +799,8 @@ export function Canvas() {
                 <CanvasGuest
                   key={guest.id}
                   guest={guest}
-                  isSelected={canvas.selectedGuestId === guest.id}
+                  isSelected={canvas.selectedGuestIds.includes(guest.id)}
                   isNearTable={nearbyTableId !== null && draggedGuestId === guest.id}
-                  onSelect={() => selectGuest(guest.id)}
                 />
               ))}
 
@@ -705,6 +870,18 @@ export function Canvas() {
       <CanvasMinimap />
       <CanvasSearch />
       <TablePropertiesPanel />
+      <SelectionToolbar />
+      <LayoutToolbar />
+
+      {/* Context Menu */}
+      {contextMenu.isOpen && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={getContextMenuItems()}
+          onClose={closeContextMenu}
+        />
+      )}
     </div>
   );
 }

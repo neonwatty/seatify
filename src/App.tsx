@@ -99,7 +99,7 @@ function App() {
 
   return (
     <div className="app">
-      <Header onPrint={() => setShowPrintPreview(true)} />
+      <Header />
       <button
         className="view-mockups-btn"
         onClick={() => setShowMockups(true)}

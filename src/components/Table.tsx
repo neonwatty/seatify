@@ -105,7 +105,7 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGue
 }
 
 export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTargetGuestId }: TableComponentProps) {
-  const { selectTable, removeTable, getViolationsForTable } = useStore();
+  const { selectTable, removeTable, getViolationsForTable, toggleTableSelection, addTableToSelection, openContextMenu } = useStore();
   const violations = getViolationsForTable(table.id);
   const hasViolations = violations.length > 0;
   const hasRequiredViolations = violations.some(v => v.priority === 'required');
@@ -179,7 +179,16 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    selectTable(table.id);
+    if (e.metaKey || e.ctrlKey) {
+      // Cmd/Ctrl+click: toggle selection
+      toggleTableSelection(table.id);
+    } else if (e.shiftKey) {
+      // Shift+click: add to selection
+      addTableToSelection(table.id);
+    } else {
+      // Normal click: select only this table
+      selectTable(table.id);
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -187,6 +196,12 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
     if (confirm(`Delete ${table.name}? All guests will be unassigned.`)) {
       removeTable(table.id);
     }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openContextMenu(e.clientX, e.clientY, 'table', table.id);
   };
 
   // Build violation tooltip
@@ -209,6 +224,7 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
         transform: activeTransform ? `translate(${activeTransform.x}px, ${activeTransform.y}px)` : undefined,
       }}
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
       {...attributes}
       {...listeners}
     >

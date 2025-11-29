@@ -5,8 +5,9 @@ import './TablePropertiesPanel.css';
 export function TablePropertiesPanel() {
   const { event, canvas, updateTable, removeTable, selectTable } = useStore();
 
-  const selectedTable = canvas.selectedTableId
-    ? event.tables.find((t) => t.id === canvas.selectedTableId)
+  // Only show panel when exactly one table is selected
+  const selectedTable = canvas.selectedTableIds.length === 1
+    ? event.tables.find((t) => t.id === canvas.selectedTableIds[0])
     : null;
 
   if (!selectedTable) return null;

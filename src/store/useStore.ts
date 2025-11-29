@@ -98,6 +98,15 @@ interface AppState {
   activeView: 'dashboard' | 'canvas' | 'guests' | 'survey' | 'optimize';
   sidebarOpen: boolean;
 
+  // Context menu state
+  contextMenu: {
+    isOpen: boolean;
+    x: number;
+    y: number;
+    targetType: 'table' | 'guest' | 'canvas' | null;
+    targetId: string | null;
+  };
+
   // Actions - Event
   setEventName: (name: string) => void;
   setEventType: (type: Event['type']) => void;
@@ -145,9 +154,35 @@ interface AppState {
   selectTable: (id: string | null) => void;
   selectGuest: (id: string | null) => void;
 
+  // Actions - Multi-Select
+  toggleTableSelection: (id: string) => void;
+  addTableToSelection: (id: string) => void;
+  selectMultipleTables: (ids: string[]) => void;
+  selectAllTables: () => void;
+  clearTableSelection: () => void;
+  toggleGuestSelection: (id: string) => void;
+  addGuestToSelection: (id: string) => void;
+  selectMultipleGuests: (ids: string[]) => void;
+  clearGuestSelection: () => void;
+  clearAllSelection: () => void;
+
+  // Actions - Batch Operations
+  batchAssignGuests: (guestIds: string[], tableId: string) => void;
+  batchRemoveGuests: (guestIds: string[]) => void;
+  batchRemoveTables: (tableIds: string[]) => void;
+
+  // Actions - Layout Tools
+  alignTables: (tableIds: string[], alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+  distributeTables: (tableIds: string[], direction: 'horizontal' | 'vertical') => void;
+  autoArrangeTables: (tableIds: string[]) => void;
+
   // Actions - View
   setActiveView: (view: AppState['activeView']) => void;
   toggleSidebar: () => void;
+
+  // Actions - Context Menu
+  openContextMenu: (x: number, y: number, targetType: 'table' | 'guest' | 'canvas', targetId: string | null) => void;
+  closeContextMenu: () => void;
 
   // Actions - Canvas Preferences
   toggleGrid: () => void;
@@ -254,8 +289,8 @@ export const useStore = create<AppState>()(
         zoom: 1,
         panX: 0,
         panY: 0,
-        selectedTableId: null,
-        selectedGuestId: null,
+        selectedTableIds: [],
+        selectedGuestIds: [],
         selectedVenueElementId: null,
       },
       canvasPrefs: {
@@ -269,6 +304,13 @@ export const useStore = create<AppState>()(
       alignmentGuides: [],
       activeView: 'canvas',
       sidebarOpen: true,
+      contextMenu: {
+        isOpen: false,
+        x: 0,
+        y: 0,
+        targetType: null,
+        targetId: null,
+      },
 
       // Event actions
       setEventName: (name) =>
@@ -322,7 +364,7 @@ export const useStore = create<AppState>()(
           },
           canvas: {
             ...state.canvas,
-            selectedTableId: state.canvas.selectedTableId === id ? null : state.canvas.selectedTableId,
+            selectedTableIds: state.canvas.selectedTableIds.filter((tid) => tid !== id),
           },
         })),
 
@@ -390,7 +432,7 @@ export const useStore = create<AppState>()(
 
       selectVenueElement: (id) =>
         set((state) => ({
-          canvas: { ...state.canvas, selectedVenueElementId: id, selectedTableId: null, selectedGuestId: null },
+          canvas: { ...state.canvas, selectedVenueElementId: id, selectedTableIds: [], selectedGuestIds: [] },
         })),
 
       // Guest actions
@@ -434,8 +476,8 @@ export const useStore = create<AppState>()(
           },
           canvas: {
             ...state.canvas,
-            selectedGuestId: newId,
-            selectedTableId: null,
+            selectedGuestIds: [newId],
+            selectedTableIds: [],
             selectedVenueElementId: null,
           },
         }));
@@ -463,7 +505,7 @@ export const useStore = create<AppState>()(
           },
           canvas: {
             ...state.canvas,
-            selectedGuestId: state.canvas.selectedGuestId === id ? null : state.canvas.selectedGuestId,
+            selectedGuestIds: state.canvas.selectedGuestIds.filter((gid) => gid !== id),
           },
         })),
 
@@ -654,17 +696,363 @@ export const useStore = create<AppState>()(
 
       selectTable: (id) =>
         set((state) => ({
-          canvas: { ...state.canvas, selectedTableId: id, selectedGuestId: null, selectedVenueElementId: null },
+          canvas: {
+            ...state.canvas,
+            selectedTableIds: id ? [id] : [],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
         })),
 
       selectGuest: (id) =>
         set((state) => ({
-          canvas: { ...state.canvas, selectedGuestId: id, selectedTableId: null, selectedVenueElementId: null },
+          canvas: {
+            ...state.canvas,
+            selectedGuestIds: id ? [id] : [],
+            selectedTableIds: [],
+            selectedVenueElementId: null,
+          },
         })),
+
+      // Multi-Select Actions - Tables
+      toggleTableSelection: (id) =>
+        set((state) => {
+          const current = state.canvas.selectedTableIds;
+          const isSelected = current.includes(id);
+          return {
+            canvas: {
+              ...state.canvas,
+              selectedTableIds: isSelected
+                ? current.filter((tid) => tid !== id)
+                : [...current, id],
+              selectedGuestIds: [],
+              selectedVenueElementId: null,
+            },
+          };
+        }),
+
+      addTableToSelection: (id) =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedTableIds: state.canvas.selectedTableIds.includes(id)
+              ? state.canvas.selectedTableIds
+              : [...state.canvas.selectedTableIds, id],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      selectMultipleTables: (ids) =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedTableIds: ids,
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      selectAllTables: () =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedTableIds: state.event.tables.map((t) => t.id),
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      clearTableSelection: () =>
+        set((state) => ({
+          canvas: { ...state.canvas, selectedTableIds: [] },
+        })),
+
+      // Multi-Select Actions - Guests
+      toggleGuestSelection: (id) =>
+        set((state) => {
+          const current = state.canvas.selectedGuestIds;
+          const isSelected = current.includes(id);
+          return {
+            canvas: {
+              ...state.canvas,
+              selectedGuestIds: isSelected
+                ? current.filter((gid) => gid !== id)
+                : [...current, id],
+              selectedTableIds: [],
+              selectedVenueElementId: null,
+            },
+          };
+        }),
+
+      addGuestToSelection: (id) =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedGuestIds: state.canvas.selectedGuestIds.includes(id)
+              ? state.canvas.selectedGuestIds
+              : [...state.canvas.selectedGuestIds, id],
+            selectedTableIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      selectMultipleGuests: (ids) =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedGuestIds: ids,
+            selectedTableIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      clearGuestSelection: () =>
+        set((state) => ({
+          canvas: { ...state.canvas, selectedGuestIds: [] },
+        })),
+
+      clearAllSelection: () =>
+        set((state) => ({
+          canvas: {
+            ...state.canvas,
+            selectedTableIds: [],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+        })),
+
+      // Batch Operations
+      batchAssignGuests: (guestIds, tableId) =>
+        set((state) => ({
+          event: {
+            ...state.event,
+            guests: state.event.guests.map((g) =>
+              guestIds.includes(g.id)
+                ? { ...g, tableId, seatIndex: undefined, canvasX: undefined, canvasY: undefined }
+                : g
+            ),
+          },
+          canvas: { ...state.canvas, selectedGuestIds: [] },
+        })),
+
+      batchRemoveGuests: (guestIds) =>
+        set((state) => ({
+          event: {
+            ...state.event,
+            guests: state.event.guests
+              .filter((g) => !guestIds.includes(g.id))
+              .map((g) => ({
+                ...g,
+                relationships: g.relationships.filter((r) => !guestIds.includes(r.guestId)),
+              })),
+          },
+          canvas: { ...state.canvas, selectedGuestIds: [] },
+        })),
+
+      batchRemoveTables: (tableIds) =>
+        set((state) => ({
+          event: {
+            ...state.event,
+            tables: state.event.tables.filter((t) => !tableIds.includes(t.id)),
+            guests: state.event.guests.map((g) =>
+              tableIds.includes(g.tableId || '')
+                ? { ...g, tableId: undefined, seatIndex: undefined }
+                : g
+            ),
+          },
+          canvas: { ...state.canvas, selectedTableIds: [] },
+        })),
+
+      // Layout Tools actions
+      alignTables: (tableIds, alignment) =>
+        set((state) => {
+          const tables = state.event.tables.filter((t) => tableIds.includes(t.id));
+          if (tables.length < 2) return state;
+
+          let targetValue: number;
+
+          switch (alignment) {
+            case 'left':
+              targetValue = Math.min(...tables.map((t) => t.x));
+              break;
+            case 'center':
+              const minX = Math.min(...tables.map((t) => t.x));
+              const maxX = Math.max(...tables.map((t) => t.x + t.width));
+              targetValue = (minX + maxX) / 2;
+              break;
+            case 'right':
+              targetValue = Math.max(...tables.map((t) => t.x + t.width));
+              break;
+            case 'top':
+              targetValue = Math.min(...tables.map((t) => t.y));
+              break;
+            case 'middle':
+              const minY = Math.min(...tables.map((t) => t.y));
+              const maxY = Math.max(...tables.map((t) => t.y + t.height));
+              targetValue = (minY + maxY) / 2;
+              break;
+            case 'bottom':
+              targetValue = Math.max(...tables.map((t) => t.y + t.height));
+              break;
+          }
+
+          return {
+            event: {
+              ...state.event,
+              tables: state.event.tables.map((t) => {
+                if (!tableIds.includes(t.id)) return t;
+
+                switch (alignment) {
+                  case 'left':
+                    return { ...t, x: targetValue };
+                  case 'center':
+                    return { ...t, x: targetValue - t.width / 2 };
+                  case 'right':
+                    return { ...t, x: targetValue - t.width };
+                  case 'top':
+                    return { ...t, y: targetValue };
+                  case 'middle':
+                    return { ...t, y: targetValue - t.height / 2 };
+                  case 'bottom':
+                    return { ...t, y: targetValue - t.height };
+                  default:
+                    return t;
+                }
+              }),
+            },
+          };
+        }),
+
+      distributeTables: (tableIds, direction) =>
+        set((state) => {
+          const tables = state.event.tables
+            .filter((t) => tableIds.includes(t.id))
+            .sort((a, b) => (direction === 'horizontal' ? a.x - b.x : a.y - b.y));
+
+          if (tables.length < 3) return state;
+
+          const first = tables[0];
+          const last = tables[tables.length - 1];
+
+          let totalSpace: number;
+          let totalTableSize: number;
+
+          if (direction === 'horizontal') {
+            totalSpace = last.x + last.width - first.x;
+            totalTableSize = tables.reduce((sum, t) => sum + t.width, 0);
+          } else {
+            totalSpace = last.y + last.height - first.y;
+            totalTableSize = tables.reduce((sum, t) => sum + t.height, 0);
+          }
+
+          const gap = (totalSpace - totalTableSize) / (tables.length - 1);
+          let currentPos = direction === 'horizontal' ? first.x : first.y;
+
+          const positionMap = new Map<string, number>();
+          for (const table of tables) {
+            positionMap.set(table.id, currentPos);
+            currentPos += (direction === 'horizontal' ? table.width : table.height) + gap;
+          }
+
+          return {
+            event: {
+              ...state.event,
+              tables: state.event.tables.map((t) => {
+                if (!tableIds.includes(t.id)) return t;
+                const newPos = positionMap.get(t.id);
+                if (newPos === undefined) return t;
+
+                return direction === 'horizontal'
+                  ? { ...t, x: newPos }
+                  : { ...t, y: newPos };
+              }),
+            },
+          };
+        }),
+
+      autoArrangeTables: (tableIds) =>
+        set((state) => {
+          const tables = state.event.tables.filter((t) => tableIds.includes(t.id));
+          if (tables.length === 0) return state;
+
+          // Calculate grid dimensions
+          const cols = Math.ceil(Math.sqrt(tables.length));
+          const rows = Math.ceil(tables.length / cols);
+
+          // Find average table size for spacing
+          const avgWidth = tables.reduce((sum, t) => sum + t.width, 0) / tables.length;
+          const avgHeight = tables.reduce((sum, t) => sum + t.height, 0) / tables.length;
+          const spacingX = avgWidth * 0.5;
+          const spacingY = avgHeight * 0.5;
+
+          // Find starting position (center of current selection)
+          const minX = Math.min(...tables.map((t) => t.x));
+          const maxX = Math.max(...tables.map((t) => t.x + t.width));
+          const minY = Math.min(...tables.map((t) => t.y));
+          const maxY = Math.max(...tables.map((t) => t.y + t.height));
+          const centerX = (minX + maxX) / 2;
+          const centerY = (minY + maxY) / 2;
+
+          // Calculate total grid size
+          const gridWidth = cols * avgWidth + (cols - 1) * spacingX;
+          const gridHeight = rows * avgHeight + (rows - 1) * spacingY;
+
+          // Starting position (top-left of grid, centered on selection center)
+          const startX = centerX - gridWidth / 2;
+          const startY = centerY - gridHeight / 2;
+
+          // Sort tables by their original position for consistent ordering
+          const sortedTables = [...tables].sort((a, b) => {
+            const rowA = Math.floor((a.y - minY) / (avgHeight + spacingY));
+            const rowB = Math.floor((b.y - minY) / (avgHeight + spacingY));
+            if (rowA !== rowB) return rowA - rowB;
+            return a.x - b.x;
+          });
+
+          // Create position map
+          const positionMap = new Map<string, { x: number; y: number }>();
+          sortedTables.forEach((table, index) => {
+            const col = index % cols;
+            const row = Math.floor(index / cols);
+            positionMap.set(table.id, {
+              x: startX + col * (avgWidth + spacingX) + (avgWidth - table.width) / 2,
+              y: startY + row * (avgHeight + spacingY) + (avgHeight - table.height) / 2,
+            });
+          });
+
+          return {
+            event: {
+              ...state.event,
+              tables: state.event.tables.map((t) => {
+                const newPos = positionMap.get(t.id);
+                if (!newPos) return t;
+                return { ...t, x: newPos.x, y: newPos.y };
+              }),
+            },
+          };
+        }),
 
       // View actions
       setActiveView: (activeView) => set({ activeView }),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+
+      // Context Menu actions
+      openContextMenu: (x, y, targetType, targetId) =>
+        set({
+          contextMenu: { isOpen: true, x, y, targetType, targetId },
+        }),
+
+      closeContextMenu: () =>
+        set({
+          contextMenu: {
+            isOpen: false,
+            x: 0,
+            y: 0,
+            targetType: null,
+            targetId: null,
+          },
+        }),
 
       // Canvas Preferences
       toggleGrid: () =>

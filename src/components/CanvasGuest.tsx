@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import { useStore } from '../store/useStore';
 import type { Guest } from '../types';
 import './CanvasGuest.css';
 
@@ -6,10 +7,10 @@ interface CanvasGuestProps {
   guest: Guest;
   isSelected: boolean;
   isNearTable?: boolean;
-  onSelect: () => void;
 }
 
-export function CanvasGuest({ guest, isSelected, isNearTable, onSelect }: CanvasGuestProps) {
+export function CanvasGuest({ guest, isSelected, isNearTable }: CanvasGuestProps) {
+  const { toggleGuestSelection, addGuestToSelection, selectGuest, openContextMenu } = useStore();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: guest.id,
     data: { type: 'canvas-guest', guest },
@@ -43,7 +44,21 @@ export function CanvasGuest({ guest, isSelected, isNearTable, onSelect }: Canvas
       }}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect();
+        if (e.metaKey || e.ctrlKey) {
+          // Cmd/Ctrl+click: toggle selection
+          toggleGuestSelection(guest.id);
+        } else if (e.shiftKey) {
+          // Shift+click: add to selection
+          addGuestToSelection(guest.id);
+        } else {
+          // Normal click: select only this guest
+          selectGuest(guest.id);
+        }
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openContextMenu(e.clientX, e.clientY, 'guest', guest.id);
       }}
       {...attributes}
       {...listeners}

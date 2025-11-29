@@ -120,8 +120,8 @@ export interface CanvasState {
   zoom: number;
   panX: number;
   panY: number;
-  selectedTableId: string | null;
-  selectedGuestId: string | null;
+  selectedTableIds: string[];
+  selectedGuestIds: string[];
   selectedVenueElementId: string | null;
 }
 

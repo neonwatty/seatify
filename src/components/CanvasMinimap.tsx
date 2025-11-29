@@ -160,7 +160,7 @@ export function CanvasMinimap() {
         {event.tables.map(table => {
           const guestCount = event.guests.filter(g => g.tableId === table.id).length;
           const isFull = guestCount >= table.capacity;
-          const isSelected = canvas.selectedTableId === table.id;
+          const isSelected = canvas.selectedTableIds.includes(table.id);
 
           return (
             <rect

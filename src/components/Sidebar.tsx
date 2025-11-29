@@ -153,9 +153,9 @@ export function Sidebar() {
 
       {showAddGuest && <GuestForm onClose={() => setShowAddGuest(false)} />}
 
-      {canvas.selectedGuestId && (
+      {canvas.selectedGuestIds.length === 1 && (
         <GuestForm
-          guestId={canvas.selectedGuestId}
+          guestId={canvas.selectedGuestIds[0]}
           onClose={() => selectGuest(null)}
         />
       )}
