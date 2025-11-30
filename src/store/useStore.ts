@@ -95,7 +95,7 @@ interface AppState {
   alignmentGuides: AlignmentGuide[];
 
   // View state
-  activeView: 'dashboard' | 'canvas' | 'guests' | 'survey' | 'optimize';
+  activeView: 'dashboard' | 'canvas' | 'guests';
   sidebarOpen: boolean;
 
   // Context menu state

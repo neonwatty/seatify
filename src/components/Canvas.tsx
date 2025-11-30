@@ -691,18 +691,6 @@ export function Canvas() {
               <button onClick={() => handleAddTable('rectangle')}>
                 <span className="table-shape-icon">▭</span> Rectangle Table
               </button>
-              <button onClick={() => handleAddTable('square')}>
-                <span className="table-shape-icon">⬜</span> Square Table
-              </button>
-              <button onClick={() => handleAddTable('oval')}>
-                <span className="table-shape-icon">⬭</span> Oval Table
-              </button>
-              <button onClick={() => handleAddTable('half-round')}>
-                <span className="table-shape-icon">◗</span> Half-Round Table
-              </button>
-              <button onClick={() => handleAddTable('serpentine')}>
-                <span className="table-shape-icon">〰️</span> Buffet Table
-              </button>
             </div>
           )}
         </div>
@@ -839,8 +827,8 @@ export function Canvas() {
 
           {event.tables.length === 0 && event.guests.filter((g) => !g.tableId).length === 0 && (
             <div className="canvas-empty">
-              <p>No tables yet!</p>
-              <p>Click the buttons above to add tables to your floor plan.</p>
+              <h2>Welcome to SeatOptima!</h2>
+              <p>Click "Add Table" above to create tables, then drag guests from the sidebar to assign seats.</p>
             </div>
           )}
         </div>

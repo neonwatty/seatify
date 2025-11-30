@@ -1,12 +1,15 @@
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(61, 44, 36, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: 2rem;
   animation: overlayFade var(--duration-normal) var(--ease-out);
 }
@@ -14,8 +17,9 @@
 .guest-form-modal {
   background: var(--color-bg);
   border-radius: var(--radius-xl);
-  max-width: 600px;
-  width: 100%;
+  width: 700px;
+  min-width: 500px;
+  max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-xl);

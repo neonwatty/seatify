@@ -117,6 +117,9 @@ export function Sidebar() {
       <div className="guest-lists">
         <div className="guest-list-section">
           <h3>Unassigned ({unassignedGuests.length})</h3>
+          {unassignedGuests.length > 0 && (
+            <p className="drag-hint">Drag guests to tables to assign seats</p>
+          )}
           <div className="guest-list">
             {unassignedGuests.map((guest) => (
               <GuestChip

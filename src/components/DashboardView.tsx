@@ -153,13 +153,6 @@ export function DashboardView() {
               <span>Manage Guests</span>
             </button>
             <button
-              className="action-btn secondary"
-              onClick={() => setActiveView('optimize')}
-            >
-              <span className="action-icon">✨</span>
-              <span>Run Optimization</span>
-            </button>
-            <button
               className="action-btn outline"
               onClick={handleExport}
             >
@@ -167,38 +160,6 @@ export function DashboardView() {
               <span>Export Event</span>
             </button>
           </div>
-        </div>
-
-        {/* Constraints Summary */}
-        <div className="dashboard-card constraints-summary">
-          <h3>Constraints</h3>
-          {event.constraints.length === 0 ? (
-            <p className="empty-state">No constraints defined yet. Add constraints in the Optimize view.</p>
-          ) : (
-            <div className="constraints-list">
-              {event.constraints.slice(0, 5).map((constraint) => (
-                <div key={constraint.id} className="constraint-item">
-                  <span className={`constraint-priority ${constraint.priority}`}>
-                    {constraint.priority}
-                  </span>
-                  <span className="constraint-type">
-                    {constraint.type.replace(/_/g, ' ')}
-                  </span>
-                  <span className="constraint-guests">
-                    {constraint.guestIds.length} guests
-                  </span>
-                </div>
-              ))}
-              {event.constraints.length > 5 && (
-                <button
-                  className="view-all-btn"
-                  onClick={() => setActiveView('optimize')}
-                >
-                  View all {event.constraints.length} constraints
-                </button>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Table Summary */}

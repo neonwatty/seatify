@@ -1,61 +1,32 @@
 import type { Table, Guest, Constraint, SurveyQuestion } from '../types';
 
 export const demoTables: Table[] = [
-  { id: 't1', name: 'Head Table', shape: 'rectangle', capacity: 10, x: 400, y: 100, width: 200, height: 80 },
-  { id: 't2', name: 'Table 1', shape: 'round', capacity: 8, x: 150, y: 280, width: 120, height: 120 },
-  { id: 't3', name: 'Table 2', shape: 'round', capacity: 8, x: 350, y: 280, width: 120, height: 120 },
-  { id: 't4', name: 'Table 3', shape: 'round', capacity: 8, x: 550, y: 280, width: 120, height: 120 },
-  { id: 't5', name: 'Table 4', shape: 'round', capacity: 8, x: 150, y: 450, width: 120, height: 120 },
-  { id: 't6', name: 'Table 5', shape: 'round', capacity: 8, x: 350, y: 450, width: 120, height: 120 },
-  { id: 't7', name: 'Table 6', shape: 'round', capacity: 8, x: 550, y: 450, width: 120, height: 120 },
+  { id: 't1', name: 'Table 1', shape: 'round', capacity: 6, x: 200, y: 200, width: 120, height: 120 },
+  { id: 't2', name: 'Table 2', shape: 'round', capacity: 6, x: 400, y: 200, width: 120, height: 120 },
+  { id: 't3', name: 'Table 3', shape: 'round', capacity: 6, x: 300, y: 380, width: 120, height: 120 },
 ];
 
 export const demoGuests: Guest[] = [
-  { id: 'g1', name: 'Sarah Mitchell', email: 'sarah@email.com', group: 'Wedding Party', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g2', type: 'partner', strength: 5 }] },
-  { id: 'g2', name: 'John Davis', email: 'john@email.com', group: 'Wedding Party', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g1', type: 'partner', strength: 5 }] },
-  { id: 'g3', name: 'Emily Mitchell', email: 'emily@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g1', type: 'family', strength: 5 }, { guestId: 'g4', type: 'partner', strength: 5 }] },
-  { id: 'g4', name: 'Robert Mitchell', email: 'robert@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g3', type: 'partner', strength: 5 }] },
-  { id: 'g5', name: 'Lisa Mitchell', email: 'lisa@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g3', type: 'family', strength: 4 }] },
-  { id: 'g6', name: 'Michael Davis', email: 'michael@email.com', group: "Groom's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g2', type: 'family', strength: 5 }, { guestId: 'g7', type: 'partner', strength: 5 }] },
-  { id: 'g7', name: 'Karen Davis', email: 'karen@email.com', group: "Groom's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g6', type: 'partner', strength: 5 }] },
-  { id: 'g8', name: 'Tom Davis', email: 'tom@email.com', group: "Groom's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g6', type: 'family', strength: 4 }] },
-  { id: 'g9', name: 'Amanda Chen', email: 'amanda@email.com', group: "Bride's Friends", rsvpStatus: 'confirmed', interests: ['travel', 'photography'], relationships: [{ guestId: 'g10', type: 'friend', strength: 4 }] },
-  { id: 'g10', name: 'Jessica Park', email: 'jessica@email.com', group: "Bride's Friends", rsvpStatus: 'confirmed', interests: ['yoga', 'travel'], relationships: [{ guestId: 'g9', type: 'friend', strength: 4 }] },
-  { id: 'g11', name: 'Rachel Green', email: 'rachel@email.com', group: "Bride's Friends", rsvpStatus: 'confirmed', interests: ['fashion', 'art'], relationships: [] },
-  { id: 'g12', name: 'Monica Geller', email: 'monica@email.com', group: "Bride's Friends", rsvpStatus: 'confirmed', interests: ['cooking', 'organizing'], dietaryRestrictions: ['vegetarian'], relationships: [] },
-  { id: 'g13', name: 'David Kim', email: 'david@email.com', group: "Groom's Friends", rsvpStatus: 'confirmed', interests: ['golf', 'sports'], relationships: [{ guestId: 'g14', type: 'friend', strength: 3 }] },
-  { id: 'g14', name: 'James Wilson', email: 'james@email.com', group: "Groom's Friends", rsvpStatus: 'confirmed', interests: ['sports', 'music'], relationships: [{ guestId: 'g13', type: 'friend', strength: 3 }] },
-  { id: 'g15', name: 'Chris Martin', email: 'chris@email.com', group: "Groom's Friends", rsvpStatus: 'confirmed', interests: ['music', 'travel'], relationships: [] },
-  { id: 'g16', name: 'Steve Rogers', email: 'steve@email.com', group: "Groom's Friends", rsvpStatus: 'pending', interests: ['fitness', 'history'], relationships: [] },
-  { id: 'g17', name: 'Uncle Bob Mitchell', email: 'bob@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g18', type: 'avoid', strength: 5 }], notes: 'Keep away from Uncle Frank - old family feud' },
-  { id: 'g18', name: 'Uncle Frank Mitchell', email: 'frank@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', relationships: [{ guestId: 'g17', type: 'avoid', strength: 5 }] },
-  { id: 'g19', name: 'Grandma Rose', email: 'rose@email.com', group: "Bride's Family", rsvpStatus: 'confirmed', accessibilityNeeds: ['wheelchair accessible'], dietaryRestrictions: ['gluten-free'], relationships: [] },
-  { id: 'g20', name: 'Aunt Martha Davis', email: 'martha@email.com', group: "Groom's Family", rsvpStatus: 'confirmed', dietaryRestrictions: ['vegetarian'], relationships: [] },
-  { id: 'g21', name: 'Cousin Jake', email: 'jake@email.com', group: "Groom's Family", rsvpStatus: 'declined', relationships: [] },
-  { id: 'g22', name: 'Best Man Mike', email: 'mike@email.com', group: 'Wedding Party', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g2', type: 'friend', strength: 5 }] },
-  { id: 'g23', name: 'Maid of Honor Jen', email: 'jen@email.com', group: 'Wedding Party', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g1', type: 'friend', strength: 5 }] },
-  { id: 'g24', name: 'Colleague Anna', email: 'anna@email.com', company: 'Tech Corp', group: 'Work Friends', rsvpStatus: 'confirmed', interests: ['tech', 'startups'], relationships: [] },
-  { id: 'g25', name: 'Colleague Ben', email: 'ben@email.com', company: 'Tech Corp', group: 'Work Friends', rsvpStatus: 'confirmed', interests: ['gaming', 'tech'], relationships: [{ guestId: 'g24', type: 'colleague', strength: 3 }] },
-  { id: 'g26', name: 'Neighbor Carol', email: 'carol@email.com', group: 'Neighbors', rsvpStatus: 'pending', relationships: [] },
-  { id: 'g27', name: 'Neighbor Dan', email: 'dan@email.com', group: 'Neighbors', rsvpStatus: 'pending', relationships: [{ guestId: 'g26', type: 'friend', strength: 2 }] },
+  // Assigned guests (5)
+  { id: 'g1', name: 'Alice Johnson', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g2', type: 'partner', strength: 5 }] },
+  { id: 'g2', name: 'Bob Johnson', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g1', type: 'partner', strength: 5 }] },
+  { id: 'g3', name: 'Carol Smith', rsvpStatus: 'confirmed', tableId: 't2', relationships: [] },
+  { id: 'g4', name: 'David Brown', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g5', type: 'friend', strength: 3 }] },
+  { id: 'g5', name: 'Emma Davis', rsvpStatus: 'confirmed', tableId: 't3', relationships: [{ guestId: 'g4', type: 'friend', strength: 3 }] },
+  // Unassigned guests (5)
+  { id: 'g6', name: 'Frank Wilson', rsvpStatus: 'confirmed', relationships: [] },
+  { id: 'g7', name: 'Grace Lee', rsvpStatus: 'confirmed', relationships: [] },
+  { id: 'g8', name: 'Henry Taylor', rsvpStatus: 'confirmed', relationships: [] },
+  { id: 'g9', name: 'Ivy Martinez', rsvpStatus: 'confirmed', relationships: [] },
+  { id: 'g10', name: 'Jack Anderson', rsvpStatus: 'confirmed', relationships: [] },
 ];
 
-export const demoConstraints: Constraint[] = [
-  { id: 'c1', type: 'same_table', guestIds: ['g3', 'g4', 'g5'], priority: 'required', description: "Bride's immediate family together" },
-  { id: 'c2', type: 'same_table', guestIds: ['g6', 'g7', 'g8'], priority: 'required', description: "Groom's immediate family together" },
-  { id: 'c3', type: 'different_table', guestIds: ['g17', 'g18'], priority: 'required', description: 'Keep feuding uncles apart' },
-  { id: 'c4', type: 'same_table', guestIds: ['g9', 'g10'], priority: 'preferred', description: 'Best friends should sit together' },
-];
+export const demoConstraints: Constraint[] = [];
 
-export const demoSurveyQuestions: SurveyQuestion[] = [
-  { id: 'sq1', question: 'Which side are you here for?', type: 'single_select', options: ["Bride's side", "Groom's side", 'Both'], required: true },
-  { id: 'sq2', question: 'Any dietary restrictions?', type: 'multiselect', options: ['Vegetarian', 'Vegan', 'Gluten-free', 'Kosher', 'Halal', 'Nut allergy', 'None'], required: true },
-  { id: 'sq3', question: 'What are your interests?', type: 'text', required: false },
-  { id: 'sq4', question: 'Who else attending do you know well?', type: 'relationship', required: false },
-];
+export const demoSurveyQuestions: SurveyQuestion[] = [];
 
 export const demoEventMetadata = {
-  name: "Sarah & John's Wedding",
+  name: 'Demo Event',
   date: '2025-06-15',
-  type: 'wedding' as const,
+  type: 'social' as const,
 };
