@@ -4,27 +4,14 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { GuestManagementView } from './components/GuestManagementView';
-import { SurveyBuilderView } from './components/SurveyBuilderView';
-import { OptimizeView } from './components/OptimizeView';
-import { GuestSurveyPage } from './components/GuestSurveyPage';
 import { PrintView } from './components/PrintView';
 import { useStore } from './store/useStore';
-import { MockupViewer } from '../mockups/MockupViewer';
 import './App.css';
 
 function App() {
   const { activeView, undo, redo, canUndo, canRedo } = useStore();
-  const [showMockups, setShowMockups] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
-  const [route, setRoute] = useState(window.location.hash);
-
-  // Hash-based routing for guest survey page
-  useEffect(() => {
-    const handleHashChange = () => setRoute(window.location.hash);
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -32,13 +19,6 @@ function App() {
       // Don't trigger shortcuts when typing in inputs
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
-
-      // Mockup viewer toggle (Ctrl+M)
-      if (e.key === 'm' && e.ctrlKey) {
-        e.preventDefault();
-        setShowMockups(prev => !prev);
         return;
       }
 
@@ -73,40 +53,14 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo, canUndo, canRedo]);
 
-  // Show guest survey page at #/survey
-  if (route.startsWith('#/survey')) {
-    return <GuestSurveyPage />;
-  }
-
   // Show print preview
   if (showPrintPreview) {
     return <PrintView onClose={() => setShowPrintPreview(false)} />;
   }
 
-  if (showMockups) {
-    return (
-      <div className="app">
-        <button
-          className="exit-mockups-btn"
-          onClick={() => setShowMockups(false)}
-        >
-          Exit Mockups (Ctrl+M)
-        </button>
-        <MockupViewer />
-      </div>
-    );
-  }
-
   return (
     <div className="app">
       <Header />
-      <button
-        className="view-mockups-btn"
-        onClick={() => setShowMockups(true)}
-        title="View Mockups (Ctrl+M)"
-      >
-        View Mockups
-      </button>
       <div className="main-content">
         {activeView === 'dashboard' && <DashboardView />}
         {activeView === 'canvas' && (
@@ -116,8 +70,6 @@ function App() {
           </>
         )}
         {activeView === 'guests' && <GuestManagementView />}
-        {activeView === 'survey' && <SurveyBuilderView />}
-        {activeView === 'optimize' && <OptimizeView />}
       </div>
 
       {/* Keyboard Shortcuts Help Modal */}
@@ -135,10 +87,6 @@ function App() {
                 <div className="shortcut-row">
                   <span className="shortcut-key">Esc</span>
                   <span className="shortcut-desc">Close modals</span>
-                </div>
-                <div className="shortcut-row">
-                  <span className="shortcut-key">Ctrl+M</span>
-                  <span className="shortcut-desc">Toggle mockups</span>
                 </div>
               </div>
               <div className="shortcut-category">

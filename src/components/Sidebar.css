@@ -1,7 +1,6 @@
 .sidebar {
-  width: 340px;
-  background: rgba(255, 252, 250, 0.7);
-  backdrop-filter: blur(8px);
+  width: 420px;
+  background: var(--color-bg);
   border-right: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
@@ -12,7 +11,7 @@
 
 @media (prefers-color-scheme: dark) {
   .sidebar {
-    background: rgba(36, 28, 24, 0.8);
+    background: var(--color-bg);
   }
 }
 
@@ -241,6 +240,16 @@
   font-weight: var(--font-weight-bold);
 }
 
+.drag-hint {
+  margin: 0 0 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-primary);
+}
+
 .guest-list {
   display: flex;
   flex-direction: column;
@@ -294,7 +303,7 @@
 /* Mobile Responsive */
 @media (max-width: 900px) {
   .sidebar {
-    width: 280px;
+    width: 320px;
   }
 
   .sidebar-stats {
