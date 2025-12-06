@@ -84,18 +84,27 @@ test.describe('TableCraft App Demo', () => {
     await expect(page.locator('.toolbar-btn.optimize, .toolbar-btn.reset')).toBeVisible();
   });
 
-  test('add table button is visible and clickable', async ({ page }) => {
+  test('can add a new table via dropdown', async ({ page }) => {
     await enterApp(page);
+
+    // Count initial tables
+    const initialCount = await page.locator('.table-component').count();
 
     // The Add Table button should be visible in toolbar
     const addTableBtn = page.locator('button:has-text("Add Table")').first();
     await expect(addTableBtn).toBeVisible();
 
-    // Click it to verify it opens dropdown
+    // Click it to open dropdown
     await addTableBtn.click();
 
     // Dropdown should appear with table options
     await expect(page.locator('.dropdown-menu')).toBeVisible({ timeout: 3000 });
+
+    // Click "Round Table" option
+    await page.locator('.dropdown-menu button:has-text("Round")').click();
+
+    // Verify a new table was added
+    await expect(page.locator('.table-component')).toHaveCount(initialCount + 1, { timeout: 5000 });
   });
 
   test('can add a new guest', async ({ page }) => {
