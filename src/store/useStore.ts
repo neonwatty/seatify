@@ -508,9 +508,9 @@ export const useStore = create<AppState>()(
     (set, get) => ({
       event: createDefaultEvent(),
       canvas: {
-        zoom: 1,
-        panX: 100,
-        panY: 50,
+        zoom: 1.25,
+        panX: 50,
+        panY: 20,
         selectedTableIds: [],
         selectedGuestIds: [],
         selectedVenueElementId: null,
@@ -1629,7 +1629,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'seating-arrangement-storage',
-      version: 7, // Increment to reset demo data with separated partners for optimization demo
+      version: 8, // Increment to apply new zoom/pan defaults
       partialize: (state) => ({ event: state.event }),
       migrate: () => {
         // Return fresh default state when version changes
