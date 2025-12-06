@@ -20,7 +20,7 @@ import type { ContextMenuItem } from './ContextMenu';
 import { LayoutToolbar } from './LayoutToolbar';
 import { MainToolbar } from './MainToolbar';
 import { RelationshipMatrix } from './RelationshipMatrix';
-import type { TableShape, Table, AlignmentGuide, Guest } from '../types';
+import type { Table, AlignmentGuide, Guest } from '../types';
 import './Canvas.css';
 
 const SNAP_THRESHOLD = 80; // pixels in canvas coordinates
