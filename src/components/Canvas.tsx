@@ -19,6 +19,7 @@ import { ContextMenu } from './ContextMenu';
 import type { ContextMenuItem } from './ContextMenu';
 import { LayoutToolbar } from './LayoutToolbar';
 import { MainToolbar } from './MainToolbar';
+import { GridControls } from './GridControls';
 import { RelationshipMatrix } from './RelationshipMatrix';
 import type { Table, AlignmentGuide, Guest } from '../types';
 import './Canvas.css';
@@ -663,6 +664,9 @@ export function Canvas() {
         showRelationships={showRelationships}
         onToggleRelationships={() => setShowRelationships(!showRelationships)}
       >
+        {/* Grid controls */}
+        <GridControls />
+
         {/* Go to Table dropdown */}
         {event.tables.length > 0 && (
           <div className="table-nav-dropdown" ref={tableDropdownRef}>
@@ -709,7 +713,7 @@ export function Canvas() {
       >
         <div
           ref={canvasRef}
-          className="canvas"
+          className={`canvas ${canvasPrefs.showGrid ? 'show-grid' : ''}`}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}

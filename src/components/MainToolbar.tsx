@@ -30,6 +30,16 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
   const canOptimize = hasRelationships && hasTablesWithCapacity && event.guests.length > 1;
   const hasSnapshot = hasOptimizationSnapshot();
 
+  // Debug logging
+  console.log('Optimization state:', {
+    hasRelationships,
+    hasTablesWithCapacity,
+    guestCount: event.guests.length,
+    canOptimize,
+    hasSnapshot,
+    guestsWithRelationships: event.guests.filter(g => g.relationships.length > 0).map(g => ({ name: g.name, relCount: g.relationships.length }))
+  });
+
   // Handle optimize seating
   const handleOptimize = () => {
     setIsOptimizing(true);

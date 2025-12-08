@@ -79,11 +79,14 @@
   flex: 1;
   position: relative;
   overflow: hidden;
-  /* Warm dot pattern */
+  background-color: var(--color-bg-secondary);
+}
+
+/* Warm dot pattern - only shown when grid is enabled */
+.canvas.show-grid {
   background-image:
     radial-gradient(circle, var(--color-border) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
-  background-color: var(--color-bg-secondary);
 }
 
 /* Add a gradient overlay for depth */
