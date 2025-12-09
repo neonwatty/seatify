@@ -320,12 +320,28 @@ export function Canvas() {
 
         return memo;
       },
-      onDrag: ({ delta: [dx, dy], touches, pinching, event }) => {
-        // Only pan with two fingers (ignore single-finger for @dnd-kit)
-        if (touches === 2 && !pinching) {
+      onDrag: ({ delta: [dx, dy], touches, pinching, event, first, memo }) => {
+        // Two-finger drag for panning (when not pinching)
+        if (touches >= 2 && !pinching) {
+          event?.preventDefault();
+          setPan(canvas.panX + dx, canvas.panY + dy);
+          return memo;
+        }
+        // Single finger on empty canvas area - also allow pan
+        // Check if we're not over a draggable element
+        if (touches === 1 && first) {
+          const target = event?.target as HTMLElement;
+          const isDraggable = target?.closest?.('[data-draggable]') ||
+                              target?.closest?.('.table-component') ||
+                              target?.closest?.('.guest-chip') ||
+                              target?.closest?.('.canvas-guest');
+          return { allowPan: !isDraggable };
+        }
+        if (touches === 1 && memo?.allowPan) {
           event?.preventDefault();
           setPan(canvas.panX + dx, canvas.panY + dy);
         }
+        return memo;
       },
     },
     {
@@ -338,6 +354,7 @@ export function Canvas() {
       drag: {
         pointer: { touch: true },
         filterTaps: true,
+        threshold: 10,
       },
     }
   );
