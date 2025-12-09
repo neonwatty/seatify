@@ -15,7 +15,7 @@ test.describe('Optimization Engine Integration', () => {
     await page.reload();
   });
 
-  test('optimize button triggers optimization and shows celebration', async ({ page }) => {
+  test('optimize button triggers optimization and changes to reset', async ({ page }) => {
     await enterApp(page);
 
     // Wait for demo data to load
@@ -30,11 +30,10 @@ test.describe('Optimization Engine Integration', () => {
       // Wait for optimization to complete
       await page.waitForTimeout(1500);
 
-      // Celebration overlay should appear or button should change to reset
-      const celebrationVisible = await page.locator('.celebration-overlay').isVisible();
+      // Button should change to reset after optimization
       const resetVisible = await page.locator('.toolbar-btn.reset').isVisible();
 
-      expect(celebrationVisible || resetVisible).toBeTruthy();
+      expect(resetVisible).toBeTruthy();
     }
   });
 
@@ -69,13 +68,6 @@ test.describe('Optimization Engine Integration', () => {
       await optimizeBtn.click();
       await page.waitForTimeout(1000);
 
-      // Dismiss celebration if visible
-      const celebrationClose = page.locator('.celebration-close');
-      if (await celebrationClose.isVisible()) {
-        await celebrationClose.click();
-        await page.waitForTimeout(500);
-      }
-
       // Now look for reset button
       const resetBtn = page.locator('.toolbar-btn.reset');
       if (await resetBtn.isVisible()) {
@@ -84,94 +76,6 @@ test.describe('Optimization Engine Integration', () => {
 
         // After reset, optimize should be visible again
         await expect(optimizeBtn).toBeVisible();
-      }
-    }
-  });
-});
-
-test.describe('Celebration Overlay', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-  });
-
-  test('celebration overlay shows stats', async ({ page }) => {
-    await enterApp(page);
-    await page.waitForTimeout(500);
-
-    const optimizeBtn = page.locator('.toolbar-btn.optimize');
-
-    if (await optimizeBtn.isVisible()) {
-      await optimizeBtn.click();
-
-      // Wait for celebration to appear
-      const celebration = page.locator('.celebration-overlay');
-
-      // Give it time to show
-      await page.waitForTimeout(2000);
-
-      if (await celebration.isVisible()) {
-        // Check for stats display
-        const statsSection = page.locator('.celebration-stats');
-        if (await statsSection.isVisible()) {
-          // Should have stats about guests and tables
-          const statsText = await celebration.textContent();
-          expect(statsText).toBeTruthy();
-        }
-
-        // Check for message
-        const message = page.locator('.celebration-message');
-        if (await message.isVisible()) {
-          await expect(message).not.toBeEmpty();
-        }
-      }
-    }
-  });
-
-  test('celebration overlay can be dismissed', async ({ page }) => {
-    await enterApp(page);
-    await page.waitForTimeout(500);
-
-    const optimizeBtn = page.locator('.toolbar-btn.optimize');
-
-    if (await optimizeBtn.isVisible()) {
-      await optimizeBtn.click();
-      await page.waitForTimeout(2000);
-
-      const celebration = page.locator('.celebration-overlay');
-
-      if (await celebration.isVisible()) {
-        // Try to dismiss by clicking close button
-        const closeBtn = page.locator('.celebration-close');
-        if (await closeBtn.isVisible()) {
-          await closeBtn.click();
-          await page.waitForTimeout(500);
-          await expect(celebration).not.toBeVisible();
-        }
-      }
-    }
-  });
-
-  test('celebration overlay has confetti animation', async ({ page }) => {
-    await enterApp(page);
-    await page.waitForTimeout(500);
-
-    const optimizeBtn = page.locator('.toolbar-btn.optimize');
-
-    if (await optimizeBtn.isVisible()) {
-      await optimizeBtn.click();
-      await page.waitForTimeout(1500);
-
-      const celebration = page.locator('.celebration-overlay');
-
-      if (await celebration.isVisible()) {
-        // Check for confetti pieces
-        const confetti = page.locator('.confetti-piece');
-        const confettiCount = await confetti.count();
-
-        // Should have some confetti pieces
-        expect(confettiCount).toBeGreaterThan(0);
       }
     }
   });
@@ -235,13 +139,6 @@ test.describe('Empty States', () => {
     if (await optimizeBtn.isVisible()) {
       await optimizeBtn.click();
       await page.waitForTimeout(1500);
-
-      // Dismiss celebration if visible
-      const celebrationClose = page.locator('.celebration-close');
-      if (await celebrationClose.isVisible()) {
-        await celebrationClose.click();
-        await page.waitForTimeout(500);
-      }
 
       // Check sidebar for "all assigned" empty state
       const sidebarEmptyState = page.locator('.sidebar .empty-state');
@@ -432,13 +329,6 @@ test.describe('Score Breakdown', () => {
     if (await optimizeBtn.isVisible()) {
       await optimizeBtn.click();
       await page.waitForTimeout(1500);
-
-      // Dismiss celebration
-      const celebrationClose = page.locator('.celebration-close');
-      if (await celebrationClose.isVisible()) {
-        await celebrationClose.click();
-        await page.waitForTimeout(500);
-      }
 
       // Look for any compatibility score displays
       const compatibilityScore = page.locator('.compatibility-score');
