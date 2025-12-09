@@ -107,7 +107,7 @@ export function GroupLegend({
 }
 
 // Helper to compute groups with counts from guests
-export function computeGroupsWithCounts(guests: Array<{ group?: string }>): GroupInfo[] {
+function computeGroupsWithCounts(guests: Array<{ group?: string }>): GroupInfo[] {
   const counts = new Map<string, number>();
 
   guests.forEach((guest) => {
