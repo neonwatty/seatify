@@ -30,12 +30,49 @@
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--color-border-light);
+  gap: 0.5rem;
 }
 
-.panel-header h3 {
+.panel-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-title h3 {
   margin: 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-counter {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.nav-btn {
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  width: 32px;
+  height: 32px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast);
+  flex-shrink: 0;
+}
+
+.nav-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
 }
 
 .close-btn {
@@ -48,11 +85,61 @@
   line-height: 1;
   border-radius: var(--radius-sm);
   transition: all var(--duration-fast);
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
   color: var(--color-text);
   background: var(--color-bg-secondary);
+}
+
+/* Quick Actions Bar */
+.quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.quick-action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  min-height: 44px;
+}
+
+.quick-action-btn svg {
+  flex-shrink: 0;
+}
+
+.quick-action-btn span {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.quick-action-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.quick-action-btn.delete {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.quick-action-btn.delete:hover {
+  background: var(--color-error);
+  color: white;
 }
 
 .property-group {
@@ -88,11 +175,13 @@
 
 .shape-selector {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .shape-selector button {
-  flex: 1;
+  flex: 1 1 calc(33.333% - 0.5rem);
+  min-width: 0;
   padding: 0.625rem;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -101,6 +190,7 @@
   cursor: pointer;
   font-size: 1.25rem;
   transition: all var(--duration-fast);
+  min-height: 44px;
 }
 
 .shape-selector button:hover {
@@ -121,8 +211,8 @@
 }
 
 .capacity-control button {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-secondary);
@@ -133,6 +223,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .capacity-control button:hover:not(:disabled) {
@@ -147,7 +238,8 @@
 }
 
 .capacity-control input {
-  width: 60px;
+  flex: 1;
+  min-width: 50px;
   text-align: center;
   padding: 0.5rem;
   border: 2px solid var(--color-border);
@@ -156,6 +248,7 @@
   font-weight: var(--font-weight-semibold);
   background: var(--color-bg-secondary);
   color: var(--color-text);
+  height: 44px;
 }
 
 .capacity-control input:focus {
@@ -186,6 +279,7 @@
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all var(--duration-fast);
+  min-height: 44px;
 }
 
 .size-presets button:hover {
@@ -222,6 +316,7 @@
   text-align: center;
   background: var(--color-bg-secondary);
   color: var(--color-text);
+  min-height: 44px;
 }
 
 .dimension-inputs input:focus {
@@ -246,6 +341,7 @@
   font-size: var(--font-size-sm);
   cursor: pointer;
   transition: all var(--duration-fast);
+  min-height: 44px;
 }
 
 .delete-btn:hover {
@@ -277,19 +373,106 @@
   border-bottom: none;
 }
 
+/* Advanced toggle button (mobile) */
+.advanced-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  min-height: 44px;
+}
+
+.advanced-toggle:hover {
+  border-color: var(--color-primary);
+}
+
+.advanced-toggle .toggle-icon {
+  transition: transform var(--duration-fast);
+  font-size: 1.25rem;
+}
+
+.advanced-toggle .toggle-icon.open {
+  transform: rotate(90deg);
+}
+
+.advanced-section {
+  padding-top: 0.5rem;
+  animation: fadeIn var(--duration-fast) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile backdrop */
+.table-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  animation: fadeInBackdrop var(--duration-normal) var(--ease-out);
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile drag handle */
+.panel-drag-handle {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 0.75rem;
+  cursor: grab;
+  touch-action: none;
+}
+
+.panel-drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle-bar {
+  width: 40px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
-  .table-properties-panel {
+  .table-properties-panel.mobile {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     top: auto;
     width: 100%;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    max-height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 70vh;
     overflow-y: auto;
     animation: panelSlideUp var(--duration-normal) var(--ease-out);
+    padding: 0 1rem 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
   }
 
   @keyframes panelSlideUp {
@@ -301,5 +484,70 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  .table-properties-panel.mobile .panel-header {
+    position: sticky;
+    top: 0;
+    background: var(--color-bg);
+    padding-top: 0.5rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    z-index: 1;
+  }
+
+  .table-properties-panel.mobile .nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .table-properties-panel.mobile .close-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Quick actions as icon-only on small screens */
+  .table-properties-panel.mobile .quick-action-btn {
+    min-height: 56px;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .table-properties-panel.mobile .quick-action-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Shape selector as 2 rows */
+  .table-properties-panel.mobile .shape-selector button {
+    min-height: 48px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .nav-btn,
+  .close-btn,
+  .quick-action-btn,
+  .shape-selector button,
+  .capacity-control button,
+  .size-presets button,
+  .dimension-inputs input,
+  .advanced-toggle,
+  .delete-btn {
+    min-height: 44px;
+  }
+
+  .capacity-control button {
+    min-width: 44px;
+  }
+
+  .shape-selector button {
+    min-width: 44px;
   }
 }
