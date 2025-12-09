@@ -1,7 +1,8 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { useStore } from '../store/useStore';
 import { getGroupColor } from './groupColors';
+import { DIETARY_ICONS, getDietaryIcon, ACCESSIBILITY_ICON } from '../constants/dietaryIcons';
 import type { Table, Guest } from '../types';
 import './Table.css';
 
@@ -20,21 +21,13 @@ interface SeatGuestProps {
   isSwapTarget?: boolean;
 }
 
-// Dietary restriction icons
-const DIETARY_ICONS: Record<string, string> = {
-  'vegetarian': '🥬',
-  'vegan': '🌱',
-  'gluten-free': '🌾',
-  'kosher': '✡️',
-  'halal': '☪️',
-  'nut allergy': '🥜',
-  'shellfish allergy': '🦐',
-  'dairy-free': '🥛',
-};
-
 function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGuestProps) {
-  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests } = useStore();
+  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups } = useStore();
   const isAnimating = animatingGuestIds.has(guest.id);
+
+  // Check if this guest's group is visible
+  const groupKey = guest.group ?? '';
+  const isGroupVisible = visibleGroups === 'all' || visibleGroups.has(groupKey);
 
   // Clear animation state after animation completes
   useEffect(() => {
@@ -108,7 +101,7 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGue
   return (
     <div
       ref={setNodeRef}
-      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''}`}
+      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''} ${!isGroupVisible ? 'dimmed' : ''}`}
       title={tooltipParts.join('\n')}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
@@ -204,6 +197,39 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
   const ringRadius = ringSize / 2 - 4;
   const circumference = 2 * Math.PI * ringRadius;
   const strokeDashoffset = circumference * (1 - Math.min(occupancy, 1));
+
+  // Calculate table dietary summary
+  const dietarySummary = useMemo(() => {
+    const counts: Record<string, number> = {};
+    let accessibilityCount = 0;
+
+    guests.forEach((guest) => {
+      guest.dietaryRestrictions?.forEach((diet) => {
+        const key = diet.toLowerCase();
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      if (guest.accessibilityNeeds?.length) {
+        accessibilityCount += 1;
+      }
+    });
+
+    return { dietary: counts, accessibility: accessibilityCount };
+  }, [guests]);
+
+  const hasDietaryNeeds = Object.keys(dietarySummary.dietary).length > 0 || dietarySummary.accessibility > 0;
+  const totalDietaryCount = Object.values(dietarySummary.dietary).reduce((a, b) => a + b, 0) + dietarySummary.accessibility;
+
+  const formatDietarySummary = () => {
+    const parts: string[] = [];
+    Object.entries(dietarySummary.dietary).forEach(([diet, count]) => {
+      const icon = getDietaryIcon(diet) || '';
+      parts.push(`${icon} ${diet}: ${count}`);
+    });
+    if (dietarySummary.accessibility > 0) {
+      parts.push(`${ACCESSIBILITY_ICON} Accessibility: ${dietarySummary.accessibility}`);
+    }
+    return parts.join('\n');
+  };
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -335,6 +361,14 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
           title={violationTooltip}
         >
           ⚠️ {violations.length}
+        </div>
+      )}
+
+      {/* Dietary Summary Badge */}
+      {hasDietaryNeeds && (
+        <div className="table-dietary-summary" title={formatDietarySummary()}>
+          <span className="dietary-summary-icon">🍽️</span>
+          <span className="dietary-summary-count">{totalDietaryCount}</span>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
+import { DIETARY_OPTIONS, ACCESSIBILITY_OPTIONS } from '../constants/dietaryIcons';
 import type { Guest, RelationshipType } from '../types';
 import './GuestForm.css';
 
@@ -35,7 +36,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
         interests: existingGuest.interests?.join(', ') || '',
         group: existingGuest.group || '',
         dietaryRestrictions: existingGuest.dietaryRestrictions || [],
-        accessibilityNeeds: existingGuest.accessibilityNeeds?.join(', ') || '',
+        accessibilityNeeds: existingGuest.accessibilityNeeds || [],
         rsvpStatus: existingGuest.rsvpStatus,
         notes: existingGuest.notes || '',
       };
@@ -49,7 +50,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
       interests: '',
       group: '',
       dietaryRestrictions: [] as string[],
-      accessibilityNeeds: '',
+      accessibilityNeeds: [] as string[],
       rsvpStatus: 'pending' as Guest['rsvpStatus'],
       notes: '',
     };
@@ -82,9 +83,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
       interests: formData.interests ? formData.interests.split(',').map((s) => s.trim()) : undefined,
       group: formData.group || undefined,
       dietaryRestrictions: formData.dietaryRestrictions.length > 0 ? formData.dietaryRestrictions : undefined,
-      accessibilityNeeds: formData.accessibilityNeeds
-        ? formData.accessibilityNeeds.split(',').map((s) => s.trim())
-        : undefined,
+      accessibilityNeeds: formData.accessibilityNeeds.length > 0 ? formData.accessibilityNeeds : undefined,
       rsvpStatus: formData.rsvpStatus,
       notes: formData.notes || undefined,
     };
@@ -107,7 +106,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
           interests: '',
           group: currentGroup,
           dietaryRestrictions: [],
-          accessibilityNeeds: '',
+          accessibilityNeeds: [],
           rsvpStatus: 'pending',
           notes: '',
         });
@@ -153,8 +152,6 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
   const otherGuests = event.guests.filter(
     (g) => g.id !== guestId && !existingGuest?.relationships.some((r) => r.guestId === g.id)
   );
-
-  const dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-free', 'Kosher', 'Halal', 'Nut allergy'];
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -263,7 +260,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
             <label>
               Dietary Restrictions
               <div className="checkbox-group">
-                {dietaryOptions.map((opt) => (
+                {DIETARY_OPTIONS.map((opt) => (
                   <label key={opt} className="checkbox-label">
                     <input
                       type="checkbox"
@@ -289,12 +286,30 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
             </label>
             <label>
               Accessibility Needs
-              <input
-                type="text"
-                value={formData.accessibilityNeeds}
-                onChange={(e) => setFormData({ ...formData, accessibilityNeeds: e.target.value })}
-                placeholder="e.g., wheelchair access, hearing loop"
-              />
+              <div className="checkbox-group">
+                {ACCESSIBILITY_OPTIONS.map((opt) => (
+                  <label key={opt} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.accessibilityNeeds.includes(opt)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({
+                            ...formData,
+                            accessibilityNeeds: [...formData.accessibilityNeeds, opt],
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            accessibilityNeeds: formData.accessibilityNeeds.filter((a) => a !== opt),
+                          });
+                        }
+                      }}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
             </label>
           </div>
 

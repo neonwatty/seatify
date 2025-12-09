@@ -205,6 +205,11 @@
   z-index: 1000;
 }
 
+.seat-guest.dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 /* Optimized guest animation */
 .seat-guest.optimized {
   animation: optimizedPulse 1.2s ease-out;
@@ -494,4 +499,37 @@
 
 .availability-indicator.full {
   background: var(--color-error);
+}
+
+/* Table Dietary Summary Badge */
+.table-dietary-summary {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  box-shadow: var(--shadow-sm);
+  cursor: help;
+  opacity: 0.7;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  z-index: 5;
+  border: 1px solid var(--color-border-light);
+}
+
+.table-component:hover .table-dietary-summary {
+  opacity: 1;
+}
+
+.dietary-summary-icon {
+  font-size: 12px;
+}
+
+.dietary-summary-count {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
 }

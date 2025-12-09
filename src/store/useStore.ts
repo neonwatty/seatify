@@ -98,6 +98,9 @@ interface AppState {
   activeView: 'dashboard' | 'canvas' | 'guests';
   sidebarOpen: boolean;
 
+  // Group visibility filter (for canvas dimming)
+  visibleGroups: Set<string> | 'all';
+
   // Context menu state
   contextMenu: {
     isOpen: boolean;
@@ -189,6 +192,11 @@ interface AppState {
   // Actions - View
   setActiveView: (view: AppState['activeView']) => void;
   toggleSidebar: () => void;
+
+  // Actions - Group Visibility
+  toggleGroupVisibility: (groupKey: string) => void;
+  showAllGroups: () => void;
+  hideAllGroups: () => void;
 
   // Actions - Context Menu
   openContextMenu: (x: number, y: number, targetType: 'table' | 'guest' | 'canvas', targetId: string | null) => void;
@@ -526,6 +534,7 @@ export const useStore = create<AppState>()(
       alignmentGuides: [],
       activeView: 'canvas',
       sidebarOpen: false,
+      visibleGroups: 'all',
       contextMenu: {
         isOpen: false,
         x: 0,
@@ -1280,6 +1289,33 @@ export const useStore = create<AppState>()(
       // View actions
       setActiveView: (activeView) => set({ activeView }),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+
+      // Group Visibility actions
+      toggleGroupVisibility: (groupKey) =>
+        set((state) => {
+          if (state.visibleGroups === 'all') {
+            // Switching from 'all' - create Set with all groups except clicked one
+            const allGroups = new Set(
+              state.event.guests
+                .map((g) => g.group ?? '')
+                .filter((g, i, arr) => arr.indexOf(g) === i)
+            );
+            allGroups.delete(groupKey);
+            return { visibleGroups: allGroups };
+          }
+
+          const newSet = new Set(state.visibleGroups);
+          if (newSet.has(groupKey)) {
+            newSet.delete(groupKey);
+          } else {
+            newSet.add(groupKey);
+          }
+          return { visibleGroups: newSet };
+        }),
+
+      showAllGroups: () => set({ visibleGroups: 'all' }),
+
+      hideAllGroups: () => set({ visibleGroups: new Set<string>() }),
 
       // Context Menu actions
       openContextMenu: (x, y, targetType, targetId) =>

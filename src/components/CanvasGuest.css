@@ -20,6 +20,11 @@
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
 }
 
+.canvas-guest.dimmed {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
 .canvas-guest.selected .canvas-guest-circle {
   box-shadow: 0 0 0 4px var(--color-primary), var(--shadow-lg);
 }
@@ -57,6 +62,39 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
+  border: 2px solid var(--color-bg);
+}
+
+/* Dietary and Accessibility Icons */
+.canvas-guest .dietary-icon {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 12px;
+  background: var(--color-bg);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-bg);
+}
+
+.canvas-guest .accessibility-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 12px;
+  background: var(--color-info-light);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
   border: 2px solid var(--color-bg);
 }
 

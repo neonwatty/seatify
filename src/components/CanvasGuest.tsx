@@ -1,5 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import { useStore } from '../store/useStore';
+import { getGroupColor } from './groupColors';
+import { getDietaryIcons, ACCESSIBILITY_ICON } from '../constants/dietaryIcons';
 import type { Guest } from '../types';
 import './CanvasGuest.css';
 
@@ -10,7 +12,7 @@ interface CanvasGuestProps {
 }
 
 export function CanvasGuest({ guest, isSelected, isNearTable }: CanvasGuestProps) {
-  const { toggleGuestSelection, addGuestToSelection, selectGuest, openContextMenu, setEditingGuest } = useStore();
+  const { toggleGuestSelection, addGuestToSelection, selectGuest, openContextMenu, setEditingGuest, visibleGroups } = useStore();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: guest.id,
     data: { type: 'canvas-guest', guest },
@@ -22,6 +24,30 @@ export function CanvasGuest({ guest, isSelected, isNearTable }: CanvasGuestProps
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const groupColor = getGroupColor(guest.group);
+
+  // Check if this guest's group is visible
+  const groupKey = guest.group ?? '';
+  const isGroupVisible = visibleGroups === 'all' || visibleGroups.has(groupKey);
+
+  // Dietary and accessibility indicators
+  const dietaryIcons = getDietaryIcons(guest.dietaryRestrictions);
+  const hasDietary = dietaryIcons.length > 0;
+  const hasAccessibility = guest.accessibilityNeeds && guest.accessibilityNeeds.length > 0;
+
+  // Build tooltip
+  const buildTooltip = () => {
+    const parts = [guest.name];
+    if (guest.group) parts.push(`Group: ${guest.group}`);
+    if (guest.dietaryRestrictions?.length) {
+      parts.push(`Diet: ${guest.dietaryRestrictions.join(', ')}`);
+    }
+    if (guest.accessibilityNeeds?.length) {
+      parts.push(`Accessibility: ${guest.accessibilityNeeds.join(', ')}`);
+    }
+    return parts.join('\n');
+  };
 
   const getStatusColor = () => {
     switch (guest.rsvpStatus) {
@@ -37,11 +63,12 @@ export function CanvasGuest({ guest, isSelected, isNearTable }: CanvasGuestProps
   return (
     <div
       ref={setNodeRef}
-      className={`canvas-guest ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${isNearTable ? 'near-table' : ''}`}
+      className={`canvas-guest ${isSelected ? 'selected' : ''} ${isDragging ? 'dragging' : ''} ${isNearTable ? 'near-table' : ''} ${!isGroupVisible ? 'dimmed' : ''}`}
       style={{
         left: guest.canvasX,
         top: guest.canvasY,
       }}
+      title={buildTooltip()}
       onClick={(e) => {
         e.stopPropagation();
         if (e.metaKey || e.ctrlKey) {
@@ -67,10 +94,15 @@ export function CanvasGuest({ guest, isSelected, isNearTable }: CanvasGuestProps
       {...attributes}
       {...listeners}
     >
-      <div className="canvas-guest-circle">
+      <div
+        className="canvas-guest-circle"
+        style={groupColor ? { boxShadow: `0 0 0 3px ${groupColor}, var(--shadow-md)` } : undefined}
+      >
         <span className="initials">{initials}</span>
       </div>
       <span className="status-dot" style={{ backgroundColor: getStatusColor() }} />
+      {hasDietary && <span className="dietary-icon">{dietaryIcons[0]}</span>}
+      {hasAccessibility && <span className="accessibility-icon">{ACCESSIBILITY_ICON}</span>}
       <div className="canvas-guest-label">{guest.name}</div>
     </div>
   );

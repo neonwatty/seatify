@@ -1,6 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import type { Guest } from '../types';
 import { getGroupColor } from './groupColors';
+import { getDietaryIcons, ACCESSIBILITY_ICON } from '../constants/dietaryIcons';
 import './GuestChip.css';
 
 interface GuestChipProps {
@@ -42,6 +43,25 @@ export function GuestChip({ guest, compact, isDragging, onClick }: GuestChipProp
 
   const groupColor = getGroupColor(guest.group);
 
+  // Dietary and accessibility indicators
+  const dietaryIcons = getDietaryIcons(guest.dietaryRestrictions);
+  const hasDietary = dietaryIcons.length > 0;
+  const hasAccessibility = guest.accessibilityNeeds && guest.accessibilityNeeds.length > 0;
+
+  // Build tooltip with dietary/accessibility info
+  const buildTooltip = () => {
+    const parts = [guest.name];
+    if (guest.company) parts.push(guest.company);
+    if (guest.group) parts.push(`Group: ${guest.group}`);
+    if (guest.dietaryRestrictions?.length) {
+      parts.push(`Diet: ${guest.dietaryRestrictions.join(', ')}`);
+    }
+    if (guest.accessibilityNeeds?.length) {
+      parts.push(`Accessibility: ${guest.accessibilityNeeds.join(', ')}`);
+    }
+    return parts.join('\n');
+  };
+
   if (compact) {
     return (
       <div
@@ -51,7 +71,7 @@ export function GuestChip({ guest, compact, isDragging, onClick }: GuestChipProp
           ...style,
           ...(groupColor ? { borderColor: groupColor } : {}),
         }}
-        title={`${guest.name}${guest.company ? ` - ${guest.company}` : ''}${guest.group ? ` (${guest.group})` : ''}`}
+        title={buildTooltip()}
         onClick={onClick}
         {...attributes}
         {...listeners}
@@ -62,6 +82,11 @@ export function GuestChip({ guest, compact, isDragging, onClick }: GuestChipProp
           style={{ backgroundColor: getStatusColor() }}
         />
         {groupColor && <span className="group-indicator" style={{ backgroundColor: groupColor }} />}
+        {(hasDietary || hasAccessibility) && (
+          <span className="dietary-indicator">
+            {dietaryIcons[0] || ACCESSIBILITY_ICON}
+          </span>
+        )}
       </div>
     );
   }
@@ -74,6 +99,7 @@ export function GuestChip({ guest, compact, isDragging, onClick }: GuestChipProp
         ...style,
         ...(groupColor ? { '--group-color': groupColor } as React.CSSProperties : {}),
       }}
+      title={buildTooltip()}
       onClick={onClick}
       {...attributes}
       {...listeners}
@@ -84,11 +110,23 @@ export function GuestChip({ guest, compact, isDragging, onClick }: GuestChipProp
       <div className="guest-info">
         <span className="guest-name">{guest.name}</span>
         {guest.company && <span className="guest-company">{guest.company}</span>}
-        {guest.group && (
-          <span className="guest-group" style={{ backgroundColor: groupColor || undefined }}>
-            {guest.group}
-          </span>
-        )}
+        <div className="guest-tags">
+          {guest.group && (
+            <span className="guest-group" style={{ backgroundColor: groupColor || undefined }}>
+              {guest.group}
+            </span>
+          )}
+          {(hasDietary || hasAccessibility) && (
+            <span className="guest-dietary-tags">
+              {dietaryIcons.slice(0, 2).map((icon, idx) => (
+                <span key={idx} className="dietary-icon-inline">{icon}</span>
+              ))}
+              {hasAccessibility && (
+                <span className="accessibility-icon-inline">{ACCESSIBILITY_ICON}</span>
+              )}
+            </span>
+          )}
+        </div>
       </div>
       {guest.tableId && (
         <span className="assigned-badge" title="Assigned to table">✓</span>

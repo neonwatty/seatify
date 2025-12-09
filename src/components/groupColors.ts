@@ -1,5 +1,5 @@
 // Generate consistent color from string (group name)
-const GROUP_COLORS = [
+export const GROUP_COLORS = [
   '#7dd3fc', // sky
   '#86efac', // green
   '#fcd34d', // amber

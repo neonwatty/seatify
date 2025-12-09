@@ -2,10 +2,20 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { GuestChip } from './GuestChip';
 import { GuestForm } from './GuestForm';
+import { GroupLegend } from './GroupLegend';
 import './Sidebar.css';
 
 export function Sidebar() {
-  const { event, sidebarOpen, toggleSidebar, selectGuest } = useStore();
+  const {
+    event,
+    sidebarOpen,
+    toggleSidebar,
+    selectGuest,
+    visibleGroups,
+    toggleGroupVisibility,
+    showAllGroups,
+    hideAllGroups,
+  } = useStore();
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGroup, setFilterGroup] = useState<string>('all');
@@ -153,6 +163,14 @@ export function Sidebar() {
           </div>
         </div>
       </div>
+
+      <GroupLegend
+        guests={event.guests}
+        visibleGroups={visibleGroups}
+        onToggleGroup={toggleGroupVisibility}
+        onShowAll={showAllGroups}
+        onHideAll={hideAllGroups}
+      />
 
       {showAddGuest && <GuestForm onClose={() => setShowAddGuest(false)} />}
     </div>
