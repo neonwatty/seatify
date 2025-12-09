@@ -313,6 +313,18 @@ export function Canvas() {
     setPan(newPanX, newPanY);
   }, [event.tables, setPan, setZoom]);
 
+  // Auto-center canvas on initial mount
+  useEffect(() => {
+    // Small delay to ensure canvas dimensions are available
+    const timer = setTimeout(() => {
+      if (event.tables.length > 0) {
+        handleRecenter();
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
