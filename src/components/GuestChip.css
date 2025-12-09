@@ -199,3 +199,53 @@
 .accessibility-icon-inline {
   background: var(--color-info-light);
 }
+
+/* Mobile touch-friendly styles */
+@media (max-width: 768px) {
+  .guest-chip {
+    min-height: var(--touch-target-min);
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .guest-chip {
+    min-height: var(--touch-target-comfortable);
+    padding: 0.875rem 0.75rem;
+  }
+
+  .guest-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .guest-name {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .guest-chip:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .guest-chip:active {
+    transform: scale(0.98);
+    background: var(--color-bg-hover);
+  }
+
+  .guest-chip.compact {
+    width: 44px;
+    height: 44px;
+  }
+
+  .guest-chip.compact:hover {
+    transform: none;
+  }
+
+  .guest-chip.compact:active {
+    transform: scale(0.95);
+  }
+}

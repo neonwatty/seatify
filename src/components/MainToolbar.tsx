@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
+import { useIsMobile } from '../hooks/useResponsive';
 import { ViewToggle } from './ViewToggle';
 import type { TableShape } from '../types';
 import './MainToolbar.css';
@@ -19,6 +20,7 @@ interface OptimizeResult {
 
 export function MainToolbar({ children, onAddGuest, showRelationships, onToggleRelationships }: MainToolbarProps) {
   const { event, addTable, addGuest, activeView, optimizeSeating, resetSeating, hasOptimizationSnapshot } = useStore();
+  const isMobile = useIsMobile();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [optimizeResult, setOptimizeResult] = useState<OptimizeResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -105,8 +107,10 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
             <button
               onClick={() => setShowAddDropdown(!showAddDropdown)}
               className="toolbar-btn primary"
+              title="Add Table"
             >
-              + Add Table
+              <span className="btn-icon">🪑</span>
+              {!isMobile && <span className="btn-text">Add Table</span>}
             </button>
             {showAddDropdown && (
               <div className="dropdown-menu">
@@ -121,8 +125,9 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
           </div>
         )}
 
-        <button onClick={handleAddGuest} className="toolbar-btn primary">
-          + Add Guest
+        <button onClick={handleAddGuest} className="toolbar-btn primary" title="Add Guest">
+          <span className="btn-icon">👤</span>
+          {!isMobile && <span className="btn-text">Add Guest</span>}
         </button>
 
         {activeView === 'canvas' && (
@@ -132,7 +137,8 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
               className="toolbar-btn reset"
               title="Reset to original seating arrangement"
             >
-              Reset
+              <span className="btn-icon">↩️</span>
+              {!isMobile && <span className="btn-text">Reset</span>}
             </button>
           ) : (
             <button
@@ -141,7 +147,8 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
               disabled={!canOptimize || isOptimizing}
               title={!canOptimize ? 'Add guest relationships to enable optimization' : 'Optimize seating based on relationships'}
             >
-              {isOptimizing ? 'Optimizing...' : 'Optimize'}
+              <span className="btn-icon">✨</span>
+              {!isMobile && <span className="btn-text">{isOptimizing ? 'Optimizing...' : 'Optimize'}</span>}
             </button>
           )
         )}

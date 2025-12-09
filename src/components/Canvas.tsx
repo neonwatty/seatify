@@ -5,8 +5,10 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  TouchSensor,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent, DragMoveEvent } from '@dnd-kit/core';
+import { useGesture } from '@use-gesture/react';
 import { useStore } from '../store/useStore';
 import { TableComponent } from './Table';
 import { GuestChip } from './GuestChip';
@@ -277,9 +279,67 @@ export function Canvas() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Slightly larger threshold for better touch support
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // Long-press to initiate drag on touch
+        tolerance: 5, // Allow 5px movement during delay
       },
     })
+  );
+
+  // Pinch-to-zoom and two-finger pan gesture handling
+  const gestureRef = useRef<HTMLDivElement>(null);
+  const initialZoomRef = useRef(canvas.zoom);
+  const initialPanRef = useRef({ x: canvas.panX, y: canvas.panY });
+
+  useGesture(
+    {
+      onPinchStart: () => {
+        initialZoomRef.current = canvas.zoom;
+        initialPanRef.current = { x: canvas.panX, y: canvas.panY };
+      },
+      onPinch: ({ offset: [scale], origin: [ox, oy], memo }) => {
+        const newZoom = Math.min(2, Math.max(0.25, scale));
+
+        // Zoom towards pinch center
+        if (!memo) {
+          memo = {
+            originX: (ox - canvas.panX) / canvas.zoom,
+            originY: (oy - canvas.panY) / canvas.zoom,
+          };
+        }
+
+        const newPanX = ox - memo.originX * newZoom;
+        const newPanY = oy - memo.originY * newZoom;
+
+        setZoom(newZoom);
+        setPan(newPanX, newPanY);
+
+        return memo;
+      },
+      onDrag: ({ delta: [dx, dy], touches, pinching, event }) => {
+        // Only pan with two fingers (ignore single-finger for @dnd-kit)
+        if (touches === 2 && !pinching) {
+          event?.preventDefault();
+          setPan(canvas.panX + dx, canvas.panY + dy);
+        }
+      },
+    },
+    {
+      target: gestureRef,
+      eventOptions: { passive: false },
+      pinch: {
+        scaleBounds: { min: 0.25, max: 2 },
+        from: () => [canvas.zoom, 0],
+      },
+      drag: {
+        pointer: { touch: true },
+        filterTaps: true,
+      },
+    }
   );
 
   const handleWheel = useCallback(
@@ -712,7 +772,10 @@ export function Canvas() {
         onDragEnd={handleDragEnd}
       >
         <div
-          ref={canvasRef}
+          ref={(node) => {
+            (canvasRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+            (gestureRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+          }}
           className={`canvas ${canvasPrefs.showGrid ? 'show-grid' : ''}`}
           onWheel={handleWheel}
           onMouseDown={handleMouseDown}
@@ -721,7 +784,7 @@ export function Canvas() {
           onMouseLeave={handleMouseUp}
           onClick={handleCanvasClick}
           onContextMenu={handleCanvasContextMenu}
-          style={{ cursor: isPanning ? 'grabbing' : 'default' }}
+          style={{ cursor: isPanning ? 'grabbing' : 'default', touchAction: 'none' }}
         >
           <div
             className="canvas-content"

@@ -68,11 +68,36 @@
 
   .toggle-option {
     padding: 0.5rem 0.5rem;
-    min-height: 36px;
+    min-height: 40px;
+    min-width: 40px;
   }
 
   .toggle-option.relationships {
     padding: 0.5rem 0.5rem;
-    min-height: 36px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Touch device optimizations */
+@media (pointer: coarse) {
+  .toggle-option {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    padding: 0.625rem 1rem;
+  }
+
+  .toggle-option:hover {
+    /* Disable hover on touch devices */
+    color: var(--color-text-secondary);
+  }
+
+  .toggle-option.active:hover {
+    color: var(--color-text);
+  }
+
+  .toggle-option:active {
+    transform: scale(0.97);
+    transition: transform var(--duration-micro);
   }
 }

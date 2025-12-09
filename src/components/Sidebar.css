@@ -301,6 +301,11 @@
   font-weight: var(--font-weight-semibold);
 }
 
+/* Mobile backdrop overlay */
+.sidebar-backdrop {
+  display: none;
+}
+
 /* Mobile Responsive */
 @media (max-width: 900px) {
   .sidebar {
@@ -314,6 +319,16 @@
 }
 
 @media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 199;
+    animation: fadeInBackdrop var(--duration-normal) var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .sidebar {
     position: fixed;
     left: 0;

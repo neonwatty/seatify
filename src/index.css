@@ -104,6 +104,25 @@
   --ease-bounce: cubic-bezier(0.34, 1.2, 0.64, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
 
+  /* Touch/Mobile - Target sizes and spacing */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  --mobile-spacing-xs: 8px;
+  --mobile-spacing-sm: 12px;
+  --mobile-spacing-md: 16px;
+  --mobile-spacing-lg: 20px;
+
+  /* Safe areas for notched devices */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Mobile layout dimensions */
+  --mobile-header-height: 56px;
+  --mobile-toolbar-height: 48px;
+  --mobile-bottom-nav-height: 64px;
+
   /* Base typography settings */
   font-family: var(--font-family);
   line-height: var(--line-height-normal);
@@ -382,4 +401,204 @@ input:focus, select:focus, textarea:focus {
 ::selection {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === TOUCH DEVICE OPTIMIZATIONS === */
+@media (pointer: coarse) {
+  /* Disable hover effects that don't work well on touch */
+  button:hover {
+    transform: none;
+  }
+
+  /* Ensure tap highlight is visible but subtle */
+  * {
+    -webkit-tap-highlight-color: rgba(249, 112, 102, 0.15);
+  }
+
+  /* Touch-friendly scrolling */
+  .scrollable {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* === MOBILE BREAKPOINT UTILITIES === */
+@media (max-width: 768px) {
+  /* Prevent overscroll bounce on iOS */
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  #root {
+    /* Account for mobile browser chrome */
+    height: 100dvh;
+  }
+}
+
+/* === TOUCH FEEDBACK ANIMATIONS === */
+@keyframes touchPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes longPressGrow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(249, 112, 102, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(249, 112, 102, 0.1);
+  }
+}
+
+/* === SLIDE ANIMATIONS FOR MOBILE === */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* === TOUCH-FRIENDLY INTERACTIVE ELEMENTS === */
+
+/* Global touch target sizing */
+@media (pointer: coarse) {
+  /* Ensure all interactive elements meet minimum touch target */
+  button,
+  [role="button"],
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+
+  /* Checkboxes and radios need wrapper consideration */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Select dropdowns */
+  select {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Touch ripple effect class */
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(249, 112, 102, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.touch-ripple:active::after {
+  animation: rippleExpand 0.4s ease-out;
+}
+
+/* Touch press state */
+@media (pointer: coarse) {
+  .touch-press:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+    transition: transform var(--duration-micro), opacity var(--duration-micro);
+  }
+}
+
+/* Long press indicator */
+.long-press-indicator {
+  position: relative;
+}
+
+.long-press-indicator::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color var(--duration-normal);
+}
+
+@media (pointer: coarse) {
+  .long-press-indicator:active::before {
+    animation: longPressGrow 0.3s ease-out forwards;
+  }
 }

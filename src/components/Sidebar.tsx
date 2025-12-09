@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { useIsMobile } from '../hooks/useResponsive';
 import { GuestChip } from './GuestChip';
 import { GuestForm } from './GuestForm';
 import { GroupLegend } from './GroupLegend';
@@ -16,6 +17,7 @@ export function Sidebar() {
     showAllGroups,
     hideAllGroups,
   } = useStore();
+  const isMobile = useIsMobile();
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGroup, setFilterGroup] = useState<string>('all');
@@ -57,8 +59,13 @@ export function Sidebar() {
   }
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
+    <>
+      {/* Mobile backdrop overlay */}
+      {isMobile && sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={toggleSidebar} />
+      )}
+      <div className={`sidebar ${isMobile && sidebarOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
         <h2>Guests</h2>
         <button className="sidebar-toggle" onClick={toggleSidebar}>
           ▶
@@ -173,6 +180,7 @@ export function Sidebar() {
       />
 
       {showAddGuest && <GuestForm onClose={() => setShowAddGuest(false)} />}
-    </div>
+      </div>
+    </>
   );
 }
