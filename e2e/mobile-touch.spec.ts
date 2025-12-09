@@ -68,9 +68,6 @@ test.describe('Mobile Responsive Layout', () => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
 
-      // Check that button text is hidden on mobile
-      const addTableBtnText = page.locator('.toolbar-btn.primary .btn-text').first();
-
       // The btn-text element should not exist (conditionally rendered)
       // or have count of 0 since isMobile removes them
       const textElements = await page.locator('.toolbar-left .btn-text').count();

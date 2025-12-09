@@ -59,7 +59,6 @@ export function useIsTouchDevice(): boolean {
   useEffect(() => {
     // Also check for coarse pointer (touch screens)
     const mediaQuery = window.matchMedia('(pointer: coarse)');
-    setIsTouch(mediaQuery.matches || 'ontouchstart' in window);
 
     const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
     mediaQuery.addEventListener('change', handler);
@@ -100,9 +99,6 @@ export function useMediaQuery(query: string): boolean {
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
     const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
-
-    // Set initial value
-    setMatches(mediaQuery.matches);
 
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
