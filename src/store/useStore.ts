@@ -128,6 +128,8 @@ interface AppState {
   updateTable: (id: string, updates: Partial<Table>) => void;
   removeTable: (id: string) => void;
   moveTable: (id: string, x: number, y: number) => void;
+  duplicateTable: (id: string) => void;
+  rotateTable: (id: string, degrees: number) => void;
 
   // Actions - Venue Elements
   addVenueElement: (type: VenueElementType, x: number, y: number) => void;
@@ -608,6 +610,42 @@ export const useStore = create<AppState>()(
             ...state.event,
             tables: state.event.tables.map((t) =>
               t.id === id ? { ...t, x, y } : t
+            ),
+          },
+        })),
+
+      duplicateTable: (id) => {
+        const state = get();
+        const table = state.event.tables.find((t) => t.id === id);
+        if (!table) return;
+
+        const newTable: Table = {
+          ...table,
+          id: uuidv4(),
+          name: `${table.name} (copy)`,
+          x: table.x + 50,
+          y: table.y + 50,
+        };
+
+        set((s) => ({
+          event: {
+            ...s.event,
+            tables: [...s.event.tables, newTable],
+          },
+          canvas: {
+            ...s.canvas,
+            selectedTableIds: [newTable.id],
+          },
+        }));
+        state.pushHistory('Duplicate table');
+      },
+
+      rotateTable: (id, degrees) =>
+        set((state) => ({
+          event: {
+            ...state.event,
+            tables: state.event.tables.map((t) =>
+              t.id === id ? { ...t, rotation: ((t.rotation || 0) + degrees) % 360 } : t
             ),
           },
         })),
