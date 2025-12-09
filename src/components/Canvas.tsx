@@ -266,6 +266,53 @@ export function Canvas() {
   const [showRelationships, setShowRelationships] = useState(false);
   const tableDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Re-center canvas to fit all tables in view
+  const handleRecenter = useCallback(() => {
+    const tables = event.tables;
+    if (tables.length === 0) {
+      // No tables, reset to default view
+      setPan(50, 20);
+      setZoom(1);
+      return;
+    }
+
+    // Calculate bounding box of all tables
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const table of tables) {
+      minX = Math.min(minX, table.x);
+      minY = Math.min(minY, table.y);
+      maxX = Math.max(maxX, table.x + table.width);
+      maxY = Math.max(maxY, table.y + table.height);
+    }
+
+    // Add padding
+    const padding = 100;
+    minX -= padding;
+    minY -= padding;
+    maxX += padding;
+    maxY += padding;
+
+    // Get canvas dimensions (approximate if ref not available)
+    const canvasWidth = canvasRef.current?.clientWidth || 800;
+    const canvasHeight = canvasRef.current?.clientHeight || 600;
+
+    // Calculate zoom to fit
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    const zoomX = canvasWidth / contentWidth;
+    const zoomY = canvasHeight / contentHeight;
+    const newZoom = Math.min(Math.max(Math.min(zoomX, zoomY), 0.25), 2); // Clamp between 0.25 and 2
+
+    // Calculate pan to center content
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const newPanX = (canvasWidth / 2) - (centerX * newZoom);
+    const newPanY = (canvasHeight / 2) - (centerY * newZoom);
+
+    setZoom(newZoom);
+    setPan(newPanX, newPanY);
+  }, [event.tables, setPan, setZoom]);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -780,6 +827,7 @@ export function Canvas() {
           <button onClick={() => setZoom(canvas.zoom - 0.1)} title="Zoom Out">−</button>
           <span className="zoom-display">{Math.round(canvas.zoom * 100)}%</span>
           <button onClick={() => setZoom(canvas.zoom + 0.1)} title="Zoom In">+</button>
+          <button onClick={handleRecenter} title="Re-center to fit all tables" className="recenter-btn">⌖</button>
         </div>
       </MainToolbar>
 

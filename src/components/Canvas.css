@@ -366,6 +366,11 @@
   color: var(--color-primary) !important;
 }
 
+.zoom-controls .recenter-btn {
+  border-left: 1px solid var(--color-border-light) !important;
+  margin-left: 0.25rem;
+}
+
 /* Add Guest Button */
 .add-guest-button {
   padding: 0.625rem 1.25rem;
