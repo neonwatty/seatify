@@ -1,4 +1,37 @@
+/* Venue Element CSS Variables */
 .venue-element {
+  /* Dance floor colors */
+  --venue-dance-primary: #4c1d95;
+  --venue-dance-secondary: #7c3aed;
+
+  /* Stage colors */
+  --venue-stage-dark: #4a3728;
+  --venue-stage-light: #6b4423;
+  --venue-stage-border: #8b5e3c;
+  --venue-stage-text: #fef3c7;
+
+  /* DJ Booth colors */
+  --venue-dj-primary: #4c1d95;
+  --venue-dj-secondary: #7c3aed;
+  --venue-dj-border: #a855f7;
+  --venue-dj-text: #e9d5ff;
+
+  /* Bar colors */
+  --venue-bar-dark: #78350f;
+  --venue-bar-mid: #92400e;
+  --venue-bar-border: #b45309;
+  --venue-bar-text: #fef3c7;
+
+  /* Buffet colors */
+  --venue-buffet-light: #ffffff;
+  --venue-buffet-dark: #f3f4f6;
+
+  /* Photo booth colors */
+  --venue-photo-light: #fecaca;
+  --venue-photo-dark: #fef08a;
+  --venue-photo-border: #f97316;
+  --venue-photo-text: #9a3412;
+
   position: absolute;
   cursor: grab;
   user-select: none;
@@ -6,6 +39,43 @@
   transition: box-shadow var(--duration-normal) var(--ease-bounce),
               border-color var(--duration-normal) var(--ease-bounce),
               opacity var(--duration-normal) var(--ease-bounce);
+}
+
+/* Dark mode adjustments for venue elements */
+@media (prefers-color-scheme: dark) {
+  .venue-element {
+    /* Dance floor - slightly brighter for dark mode */
+    --venue-dance-primary: #5b2ca5;
+    --venue-dance-secondary: #8b4ce8;
+
+    /* Stage - slightly lighter for visibility */
+    --venue-stage-dark: #5a4738;
+    --venue-stage-light: #7b5433;
+    --venue-stage-border: #9b6e4c;
+    --venue-stage-text: #fef9c3;
+
+    /* DJ Booth - slightly brighter */
+    --venue-dj-primary: #5b2ca5;
+    --venue-dj-secondary: #8b4ce8;
+    --venue-dj-border: #b76ff7;
+    --venue-dj-text: #f3e8ff;
+
+    /* Bar - slightly lighter */
+    --venue-bar-dark: #8a4510;
+    --venue-bar-mid: #a4500f;
+    --venue-bar-border: #c46310;
+    --venue-bar-text: #fef9c3;
+
+    /* Buffet - dark surface in dark mode */
+    --venue-buffet-light: #2a2420;
+    --venue-buffet-dark: #1f1a16;
+
+    /* Photo booth - adjusted for dark mode */
+    --venue-photo-light: #4c2020;
+    --venue-photo-dark: #4a4020;
+    --venue-photo-border: #fb923c;
+    --venue-photo-text: #fed7aa;
+  }
 }
 
 .venue-element:active {
@@ -113,10 +183,10 @@
 .venue-element.dance-floor .element-surface {
   background: repeating-linear-gradient(
     45deg,
-    #4c1d95,
-    #4c1d95 20px,
-    #7c3aed 20px,
-    #7c3aed 40px
+    var(--venue-dance-primary),
+    var(--venue-dance-primary) 20px,
+    var(--venue-dance-secondary) 20px,
+    var(--venue-dance-secondary) 40px
   );
   border-style: solid;
   border-color: var(--color-secondary);
@@ -130,40 +200,40 @@
 
 /* Stage - Wood texture */
 .venue-element.stage .element-surface {
-  background: linear-gradient(to top, #4a3728, #6b4423);
-  border: 4px solid #8b5e3c;
+  background: linear-gradient(to top, var(--venue-stage-dark), var(--venue-stage-light));
+  border: 4px solid var(--venue-stage-border);
   color: white;
 }
 
 .venue-element.stage .element-label {
-  color: #fef3c7;
+  color: var(--venue-stage-text);
 }
 
 /* DJ Booth - Dark purple gradient */
 .venue-element.dj-booth .element-surface {
-  background: linear-gradient(135deg, #4c1d95, #7c3aed);
-  border: 3px solid #a855f7;
+  background: linear-gradient(135deg, var(--venue-dj-primary), var(--venue-dj-secondary));
+  border: 3px solid var(--venue-dj-border);
   color: white;
 }
 
 .venue-element.dj-booth .element-label {
-  color: #e9d5ff;
+  color: var(--venue-dj-text);
 }
 
 /* Bar - Wood grain */
 .venue-element.bar .element-surface {
-  background: linear-gradient(90deg, #78350f, #92400e 50%, #78350f);
-  border: 3px solid #b45309;
+  background: linear-gradient(90deg, var(--venue-bar-dark), var(--venue-bar-mid) 50%, var(--venue-bar-dark));
+  border: 3px solid var(--venue-bar-border);
   color: white;
 }
 
 .venue-element.bar .element-label {
-  color: #fef3c7;
+  color: var(--venue-bar-text);
 }
 
-/* Buffet - Clean white */
+/* Buffet - Clean surface */
 .venue-element.buffet .element-surface {
-  background: linear-gradient(180deg, #ffffff, #f3f4f6);
+  background: linear-gradient(180deg, var(--venue-buffet-light), var(--venue-buffet-dark));
   border: 3px solid var(--color-border);
 }
 
@@ -189,10 +259,10 @@
 
 /* Photo Booth - Warm gradient */
 .venue-element.photo-booth .element-surface {
-  background: linear-gradient(135deg, #fecaca, #fef08a);
-  border: 3px solid #f97316;
+  background: linear-gradient(135deg, var(--venue-photo-light), var(--venue-photo-dark));
+  border: 3px solid var(--venue-photo-border);
 }
 
 .venue-element.photo-booth .element-label {
-  color: #9a3412;
+  color: var(--venue-photo-text);
 }

@@ -307,7 +307,7 @@
 
 .btn-danger {
   padding: 0.875rem 1.75rem;
-  background: linear-gradient(135deg, var(--color-error) 0%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--color-error) 0%, var(--color-error-dark) 100%);
   color: white;
   border: none;
   border-radius: var(--radius-lg);
