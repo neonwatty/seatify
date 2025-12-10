@@ -1,24 +1,7 @@
 import { useState } from 'react';
 import { version } from '../../package.json';
+import updates from '../updates.json';
 import './UpdatesPopup.css';
-
-interface Update {
-  version: string;
-  date: string;
-  highlights: string[];
-}
-
-const updates: Update[] = [
-  {
-    version: '0.1.0',
-    date: 'December 2024',
-    highlights: [
-      'New tables and guests now animate when added, making them easy to spot',
-      'Newly added guests are automatically selected and centered on screen',
-      'Improved dropdown menu positioning for better usability',
-    ],
-  },
-];
 
 interface UpdatesPopupProps {
   isOpen: boolean;

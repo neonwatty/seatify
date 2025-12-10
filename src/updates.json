@@ -1,0 +1,11 @@
+[
+  {
+    "version": "0.1.0",
+    "date": "December 2024",
+    "highlights": [
+      "New tables and guests now animate when added, making them easy to spot",
+      "Newly added guests are automatically selected and centered on screen",
+      "Improved dropdown menu positioning for better usability"
+    ]
+  }
+]
