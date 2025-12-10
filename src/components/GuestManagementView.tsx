@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { GuestForm } from './GuestForm';
 import { RelationshipMatrix } from './RelationshipMatrix';
 import { MainToolbar } from './MainToolbar';
+import { EmptyState } from './EmptyState';
 import type { Guest } from '../types';
 import './GuestManagementView.css';
 
@@ -242,13 +243,17 @@ export function GuestManagementView() {
       <div className="gm-content">
         <div className="guest-table-container">
           {filteredGuests.length === 0 ? (
-            <div className="empty-state">
-              <h3>No guests found</h3>
-              <p>Add guests or adjust your filters.</p>
-              <button className="add-guest-btn" onClick={() => setShowAddGuest(true)}>
-                + Add Guest
-              </button>
-            </div>
+            <EmptyState
+              variant={searchQuery || filterStatus !== 'all' || filterAssigned !== 'all' ? 'search' : 'guests'}
+              title={searchQuery || filterStatus !== 'all' || filterAssigned !== 'all' ? 'No guests match your filters' : 'No guests yet'}
+              description={searchQuery || filterStatus !== 'all' || filterAssigned !== 'all'
+                ? 'Try adjusting your search or filter criteria.'
+                : 'Start by adding your first guest to the event.'}
+              action={{
+                label: '+ Add Guest',
+                onClick: () => setShowAddGuest(true)
+              }}
+            />
           ) : (
             <table className="guest-table">
               <thead>

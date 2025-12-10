@@ -1,4 +1,6 @@
 import { useStore } from '../store/useStore';
+import { AnimatedCounter } from './AnimatedCounter';
+import { EmptyState } from './EmptyState';
 import './DashboardView.css';
 
 export function DashboardView() {
@@ -69,27 +71,27 @@ export function DashboardView() {
           <h3>Overview</h3>
           <div className="stats-grid">
             <div className="stat-item">
-              <span className="stat-value">{totalGuests}</span>
+              <AnimatedCounter value={totalGuests} className="stat-value" />
               <span className="stat-label">Total Guests</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{totalTables}</span>
+              <AnimatedCounter value={totalTables} className="stat-value" />
               <span className="stat-label">Tables</span>
             </div>
             <div className="stat-item confirmed">
-              <span className="stat-value">{confirmedGuests}</span>
+              <AnimatedCounter value={confirmedGuests} className="stat-value" />
               <span className="stat-label">Confirmed</span>
             </div>
             <div className="stat-item warning">
-              <span className="stat-value">{pendingGuests}</span>
+              <AnimatedCounter value={pendingGuests} className="stat-value" />
               <span className="stat-label">Pending</span>
             </div>
             <div className="stat-item error">
-              <span className="stat-value">{declinedGuests}</span>
+              <AnimatedCounter value={declinedGuests} className="stat-value" />
               <span className="stat-label">Declined</span>
             </div>
             <div className="stat-item">
-              <span className="stat-value">{unassignedGuests}</span>
+              <AnimatedCounter value={unassignedGuests} className="stat-value" />
               <span className="stat-label">Unassigned</span>
             </div>
           </div>
@@ -120,7 +122,7 @@ export function DashboardView() {
               />
             </svg>
             <div className="progress-text">
-              <span className="progress-percentage">{seatingPercentage}%</span>
+              <span className="progress-percentage"><AnimatedCounter value={seatingPercentage} />%</span>
               <span className="progress-label">Complete</span>
             </div>
           </div>
@@ -166,15 +168,15 @@ export function DashboardView() {
         <div className="dashboard-card tables-summary">
           <h3>Tables</h3>
           {event.tables.length === 0 ? (
-            <div className="empty-state">
-              <p>No tables created yet.</p>
-              <button
-                className="action-btn primary small"
-                onClick={() => setActiveView('canvas')}
-              >
-                Create Floor Plan
-              </button>
-            </div>
+            <EmptyState
+              variant="tables"
+              title="No tables yet"
+              description="Create your floor plan to start arranging seating."
+              action={{
+                label: 'Create Floor Plan',
+                onClick: () => setActiveView('canvas')
+              }}
+            />
           ) : (
             <div className="tables-grid">
               {event.tables.map((table) => {

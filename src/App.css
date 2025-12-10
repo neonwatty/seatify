@@ -64,6 +64,18 @@
   min-height: 0;
   position: relative;
   z-index: 1;
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.main-content.view-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.main-content.view-transitioning {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 /* Mockup Viewer Buttons */

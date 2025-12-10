@@ -281,12 +281,12 @@
 
 .constraint-priority.required {
   background: var(--color-error-light);
-  color: #991b1b;
+  color: var(--color-error);
 }
 
 .constraint-priority.preferred {
   background: var(--color-warning-light);
-  color: #92400e;
+  color: var(--color-warning);
 }
 
 .constraint-priority.optional {
