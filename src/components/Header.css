@@ -57,11 +57,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  padding: 0.25rem 0.625rem;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-bounce);
@@ -71,12 +72,6 @@
   background: var(--color-secondary);
   border-color: var(--color-secondary);
   color: white;
-  transform: scale(1.1);
-}
-
-.tour-btn svg {
-  width: 14px;
-  height: 14px;
 }
 
 /* Help Button */
