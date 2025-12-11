@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useIsMobile } from '../hooks/useResponsive';
 import { ViewToggle } from './ViewToggle';
+import { showToast } from './toastStore';
 import type { TableShape } from '../types';
 import './MainToolbar.css';
 
@@ -12,17 +13,10 @@ interface MainToolbarProps {
   onToggleRelationships?: () => void;
 }
 
-interface OptimizeResult {
-  beforeScore: number;
-  afterScore: number;
-  movedCount: number;
-}
-
 export function MainToolbar({ children, onAddGuest, showRelationships, onToggleRelationships }: MainToolbarProps) {
   const { event, addTable, addGuest, activeView, optimizeSeating, resetSeating, hasOptimizationSnapshot } = useStore();
   const isMobile = useIsMobile();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
-  const [optimizeResult, setOptimizeResult] = useState<OptimizeResult | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const addDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -49,22 +43,22 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
     // Small delay to show animation starting
     setTimeout(() => {
       const result = optimizeSeating();
-      setOptimizeResult({
-        beforeScore: result.beforeScore,
-        afterScore: result.afterScore,
-        movedCount: result.movedGuests.length,
-      });
       setIsOptimizing(false);
 
-      // Auto-hide toast after 5 seconds
-      setTimeout(() => setOptimizeResult(null), 5000);
+      // Show toast using the global toast system (positioned correctly outside toolbar)
+      const movedText = result.movedGuests.length > 0
+        ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
+        : '';
+      showToast(
+        `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
+        'success'
+      );
     }, 300);
   };
 
   // Handle reset seating
   const handleReset = () => {
     resetSeating();
-    setOptimizeResult(null);
   };
 
   // Close dropdown when clicking outside
@@ -166,25 +160,6 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
           onToggleRelationships={onToggleRelationships}
         />
       </div>
-
-      {/* Optimization Result Toast */}
-      {optimizeResult && (
-        <div className="optimize-toast">
-          <div className="toast-content">
-            <span className="toast-icon">✨</span>
-            <div className="toast-message">
-              <strong>Seating Optimized!</strong>
-              <span className="toast-details">
-                Score: {optimizeResult.beforeScore} → {optimizeResult.afterScore}
-                {optimizeResult.movedCount > 0 && (
-                  <> · {optimizeResult.movedCount} guest{optimizeResult.movedCount !== 1 ? 's' : ''} moved</>
-                )}
-              </span>
-            </div>
-            <button className="toast-close" onClick={() => setOptimizeResult(null)}>×</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -408,13 +408,14 @@
   }
 }
 
-/* Optimization Toast */
+/* Optimization Toast - NOTE: No longer used, kept for reference */
+/* Toast is now rendered using the global ToastContainer system */
 .optimize-toast {
   position: fixed;
-  bottom: 24px;
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10000;
+  z-index: 1000;
   animation: slideUp 0.3s ease-out;
 }
 
@@ -483,7 +484,7 @@
 /* Toast mobile responsive */
 @media (max-width: 480px) {
   .optimize-toast {
-    bottom: 16px;
+    bottom: calc(90px + env(safe-area-inset-bottom, 0));
     left: 12px;
     right: 12px;
     transform: none;
