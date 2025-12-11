@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../store/useStore';
 import { ONBOARDING_STEPS } from '../data/onboardingSteps';
@@ -26,6 +26,15 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
   const isLastStep = currentStepIndex === steps.length - 1;
   const isFirstStep = currentStepIndex === 0;
 
+  // Memoize step properties - using primitive deps to avoid compiler issues
+  const stepProps = useMemo(() => ({
+    target: currentStep.target,
+    targetFallback: currentStep.targetFallback,
+    requiredView: currentStep.requiredView,
+    id: currentStep.id,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [currentStepIndex, isMobile]);
+
   // Track viewport size for mobile detection
   useEffect(() => {
     const handleResize = () => {
@@ -37,14 +46,14 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
   // Update target element rect
   const updateTargetRect = useCallback(() => {
-    if (!currentStep.target) {
+    if (!stepProps.target) {
       setTargetRect(null);
       return;
     }
 
-    let element = document.querySelector(currentStep.target);
-    if (!element && currentStep.targetFallback) {
-      element = document.querySelector(currentStep.targetFallback);
+    let element = document.querySelector(stepProps.target);
+    if (!element && stepProps.targetFallback) {
+      element = document.querySelector(stepProps.targetFallback);
     }
 
     if (element) {
@@ -52,21 +61,21 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
     } else {
       setTargetRect(null);
     }
-  }, [currentStep]);
+  }, [stepProps]);
 
   // Navigate to required view
   useEffect(() => {
     if (!isOpen) return;
 
-    if (currentStep.requiredView && activeView !== currentStep.requiredView) {
-      setActiveView(currentStep.requiredView);
+    if (stepProps.requiredView && activeView !== stepProps.requiredView) {
+      setActiveView(stepProps.requiredView);
     }
 
     // Ensure sidebar is open for sidebar step
-    if (currentStep.id === 'sidebar' && !sidebarOpen) {
+    if (stepProps.id === 'sidebar' && !sidebarOpen) {
       toggleSidebar();
     }
-  }, [currentStep, activeView, setActiveView, isOpen, sidebarOpen, toggleSidebar]);
+  }, [stepProps, activeView, setActiveView, isOpen, sidebarOpen, toggleSidebar]);
 
   // Update rect on step change and resize
   useEffect(() => {
