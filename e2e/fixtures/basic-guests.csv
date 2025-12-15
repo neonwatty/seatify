@@ -1,0 +1,11 @@
+First Name,Last Name,Email,Group,RSVP Status
+John,Smith,john.smith@example.com,Family,confirmed
+Jane,Doe,jane.doe@example.com,Friends,confirmed
+Michael,Johnson,michael.j@example.com,Colleagues,pending
+Sarah,Williams,sarah.w@example.com,Family,confirmed
+Robert,Brown,robert.b@example.com,Friends,declined
+Emily,Davis,emily.d@example.com,Colleagues,pending
+David,Miller,david.m@example.com,Family,confirmed
+Jennifer,Wilson,jennifer.w@example.com,Friends,confirmed
+Christopher,Moore,chris.m@example.com,Colleagues,pending
+Amanda,Taylor,amanda.t@example.com,Family,confirmed

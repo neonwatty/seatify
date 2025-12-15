@@ -1,0 +1,11 @@
+First Name,Last Name,Email,Company,Job Title,Department,Dietary Restrictions,Notes
+Alice,Anderson,alice.a@megacorp.com,MegaCorp,CEO,Executive,Vegetarian,Keynote speaker
+Bob,Baker,bob.b@megacorp.com,MegaCorp,CTO,Executive,None,
+Carol,Chen,carol.c@techstart.io,TechStart,Founder,Leadership,Vegan,Investor meeting
+Daniel,Davis,daniel.d@megacorp.com,MegaCorp,VP Engineering,Engineering,Gluten-free,
+Eva,Evans,eva.e@consulting.co,Consulting Co,Senior Partner,Consulting,None,VIP guest
+Frank,Foster,frank.f@megacorp.com,MegaCorp,Director,Marketing,Kosher,
+Grace,Garcia,grace.g@techstart.io,TechStart,Head of Product,Product,None,Demo presenter
+Henry,Harris,henry.h@megacorp.com,MegaCorp,Manager,Sales,Halal,
+Iris,Ibrahim,iris.i@consulting.co,Consulting Co,Analyst,Consulting,Vegetarian,
+Jack,Jones,jack.j@megacorp.com,MegaCorp,Engineer,Engineering,None,

@@ -1,0 +1,11 @@
+First Name,Last Name,Email,Group,Notes
+,Smith,noname@example.com,Test,Missing first name
+John,,john.nolast@example.com,Test,Missing last name
+Complete,Person,complete@example.com,Test,All fields present
+Special,O'Brien,obrien@example.com,Test,Name with apostrophe
+Anna-Maria,Johansson-Smith,anna.maria@example.com,Test,Hyphenated names
+José,García,jose.g@example.com,Test,Accented characters
+李,明,li.ming@example.com,Test,Chinese characters
+,,,Test,All empty except group
+Test,User,,Test,Missing email
+Duplicate,Person,duplicate@example.com,Test,First instance

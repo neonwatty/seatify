@@ -23,6 +23,7 @@ import { LayoutToolbar } from './LayoutToolbar';
 import { MainToolbar } from './MainToolbar';
 import { GridControls } from './GridControls';
 import { RelationshipMatrix } from './RelationshipMatrix';
+import { ImportWizard } from './ImportWizard/ImportWizard';
 import type { Table, AlignmentGuide, Guest } from '../types';
 import { getFullName, getInitials } from '../types';
 import './Canvas.css';
@@ -304,6 +305,7 @@ export function Canvas() {
   const [dragType, setDragType] = useState<string | null>(null);
   const [showTableDropdown, setShowTableDropdown] = useState(false);
   const [showRelationships, setShowRelationships] = useState(false);
+  const [showImportWizard, setShowImportWizard] = useState(false);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const tableDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -981,6 +983,7 @@ export function Canvas() {
       <MainToolbar
         showRelationships={showRelationships}
         onToggleRelationships={() => setShowRelationships(!showRelationships)}
+        onImport={() => setShowImportWizard(true)}
       >
         {/* Grid controls */}
         <GridControls />
@@ -1175,6 +1178,12 @@ export function Canvas() {
           <RelationshipMatrix />
         </div>
       )}
+
+      {/* Import Wizard */}
+      <ImportWizard
+        isOpen={showImportWizard}
+        onClose={() => setShowImportWizard(false)}
+      />
     </div>
   );
 }

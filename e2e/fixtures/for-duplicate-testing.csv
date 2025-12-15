@@ -1,0 +1,5 @@
+First Name,Last Name,Email,Group,Notes
+New,Guest,new.guest@example.com,Import Test,Brand new guest
+Another,NewPerson,another.new@example.com,Import Test,Another new guest
+Test,Duplicate,duplicate@example.com,Import Test,Should match existing duplicate@example.com
+Similar,Name,similar@example.com,Import Test,New unique guest

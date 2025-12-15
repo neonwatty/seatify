@@ -1,0 +1,11 @@
+First Name,Last Name,Email,Guest Of,Party,RSVP,Dietary,Plus One
+Thomas,Anderson,tom.a@email.com,Bride,Family,Yes,None,No
+Margaret,Anderson,margaret.a@email.com,Bride,Family,Yes,Vegetarian,No
+William,Brown,will.b@email.com,Groom,Family,Yes,None,Yes
+Elizabeth,Brown,liz.b@email.com,Groom,Family,Yes,Gluten-free,No
+James,Wilson,james.w@email.com,Bride,Friends,Yes,None,Yes
+Sophia,Martinez,sophia.m@email.com,Bride,Friends,Yes,Vegan,No
+Benjamin,Taylor,ben.t@email.com,Groom,Friends,Yes,None,No
+Olivia,Johnson,olivia.j@email.com,Groom,Friends,Pending,None,Yes
+Alexander,Lee,alex.l@email.com,Bride,Colleagues,Yes,Kosher,No
+Charlotte,Davis,charlotte.d@email.com,Groom,Colleagues,No,None,No
