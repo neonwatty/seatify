@@ -232,23 +232,15 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
         {/* Email Capture */}
         <section className="email-capture">
           <h2>Stay in the loop</h2>
-          <form
-            className="email-form"
-            action="https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
-            method="POST"
+          <p className="email-description">Get notified about new features and updates.</p>
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLScCTLlZ7XzOmKCtkJugnadmzx9F21l9v-lAQWjBs67mVHrElg/viewform"
             target="_blank"
+            rel="noopener noreferrer"
+            className="subscribe-button"
           >
-            <input
-              type="email"
-              className="email-input"
-              name="entry.YOUR_ENTRY_ID"
-              placeholder="your@email.com"
-              required
-            />
-            <button type="submit" className="subscribe-button">
-              Subscribe
-            </button>
-          </form>
+            Subscribe for Updates
+          </a>
         </section>
 
         {/* Footer */}

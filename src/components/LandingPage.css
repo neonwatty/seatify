@@ -572,7 +572,13 @@
 .email-capture h2 {
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.email-description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  margin-bottom: 1.5rem;
 }
 
 .email-form {
@@ -599,6 +605,7 @@
 }
 
 .subscribe-button {
+  display: inline-block;
   padding: 0.875rem 1.5rem;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
@@ -607,6 +614,7 @@
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
+  text-decoration: none;
   transition: all 0.2s var(--ease-out);
 }
 
