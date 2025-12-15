@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.3.0",
+    "highlights": [
+      "Fresh new landing page with a warm, inviting design",
+      "Subscribe for updates to hear about new features first",
+      "Coming Soon preview: AI-powered seating and guest list import",
+      "Improved branding and SEO for easier sharing"
+    ]
+  },
+  {
     "version": "0.2.0",
     "highlights": [
       "Dark mode toggle - switch between light, dark, and system themes",
