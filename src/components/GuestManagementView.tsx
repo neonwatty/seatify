@@ -4,6 +4,7 @@ import { GuestForm } from './GuestForm';
 import { RelationshipMatrix } from './RelationshipMatrix';
 import { MainToolbar } from './MainToolbar';
 import { EmptyState } from './EmptyState';
+import { ImportWizard } from './ImportWizard/ImportWizard';
 import type { Guest } from '../types';
 import { getFullName } from '../types';
 import './GuestManagementView.css';
@@ -30,6 +31,7 @@ export function GuestManagementView() {
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [selectedGuestDetail, setSelectedGuestDetail] = useState<string | null>(null);
+  const [showImportWizard, setShowImportWizard] = useState(false);
 
   // Get table name by ID (for render usage)
   const getTableName = useCallback((tableId: string | undefined) => {
@@ -155,6 +157,7 @@ export function GuestManagementView() {
     <div className="guest-management-view">
       <MainToolbar
         onAddGuest={() => setShowAddGuest(true)}
+        onImport={() => setShowImportWizard(true)}
         showRelationships={viewMode === 'relationships'}
         onToggleRelationships={() => setViewMode(viewMode === 'relationships' ? 'list' : 'relationships')}
       >
@@ -472,6 +475,14 @@ export function GuestManagementView() {
             setShowAddGuest(false);
             setEditingGuest(null);
           }}
+        />
+      )}
+
+      {/* Import Wizard */}
+      {showImportWizard && (
+        <ImportWizard
+          isOpen={showImportWizard}
+          onClose={() => setShowImportWizard(false)}
         />
       )}
     </div>

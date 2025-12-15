@@ -10,11 +10,12 @@ import './MainToolbar.css';
 interface MainToolbarProps {
   children?: React.ReactNode;
   onAddGuest?: () => void;
+  onImport?: () => void;
   showRelationships?: boolean;
   onToggleRelationships?: () => void;
 }
 
-export function MainToolbar({ children, onAddGuest, showRelationships, onToggleRelationships }: MainToolbarProps) {
+export function MainToolbar({ children, onAddGuest, onImport, showRelationships, onToggleRelationships }: MainToolbarProps) {
   const { event, addTable, addGuest, activeView, optimizeSeating, resetSeating, hasOptimizationSnapshot } = useStore();
   const isMobile = useIsMobile();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
@@ -125,6 +126,13 @@ export function MainToolbar({ children, onAddGuest, showRelationships, onToggleR
           <span className="btn-icon">👤</span>
           {!isMobile && <span className="btn-text">Add Guest</span>}
         </button>
+
+        {onImport && (
+          <button onClick={onImport} className="toolbar-btn secondary" title="Import guests from CSV or Excel">
+            <span className="btn-icon">📥</span>
+            {!isMobile && <span className="btn-text">Import</span>}
+          </button>
+        )}
 
         {activeView === 'canvas' && (
           hasSnapshot ? (
