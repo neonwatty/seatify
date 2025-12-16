@@ -1,20 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter the app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import { enterApp } from './test-utils';
 
 // Mobile viewport dimensions
 const MOBILE_VIEWPORT = { width: 375, height: 667 };
@@ -73,18 +58,17 @@ test.describe('Mobile Responsive Layout', () => {
   });
 
   test.describe('Mobile Toolbar', () => {
-    test('toolbar buttons show icons only on mobile', async ({ page }) => {
+    test('mobile toolbar shows hamburger menu button on mobile', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
 
-      // The btn-text element should not exist (conditionally rendered)
-      // or have count of 0 since isMobile removes them
-      const textElements = await page.locator('.toolbar-left .btn-text').count();
-      expect(textElements).toBe(0);
+      // On mobile, the hamburger button should be visible
+      const hamburgerBtn = page.locator('.hamburger-btn');
+      await expect(hamburgerBtn).toBeVisible();
 
-      // But icons should be visible
-      const iconElements = await page.locator('.toolbar-left .btn-icon').count();
-      expect(iconElements).toBeGreaterThan(0);
+      // Desktop toolbar buttons should not be visible
+      const desktopToolbarBtns = await page.locator('.toolbar-left .btn-text').count();
+      expect(desktopToolbarBtns).toBe(0);
     });
 
     test('toolbar buttons show text on desktop', async ({ page }) => {
@@ -96,15 +80,28 @@ test.describe('Mobile Responsive Layout', () => {
       expect(textElements).toBeGreaterThan(0);
     });
 
-    test('toolbar buttons have minimum touch target size on mobile', async ({ page }) => {
+    test('hamburger button has minimum touch target size on mobile', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
 
-      // Get a toolbar button
-      const button = page.locator('.toolbar-btn').first();
+      // Get the hamburger button
+      const button = page.locator('.hamburger-btn');
       const box = await button.boundingBox();
 
       // Should be at least 40px (close to 44px min touch target)
+      expect(box?.width).toBeGreaterThanOrEqual(40);
+      expect(box?.height).toBeGreaterThanOrEqual(40);
+    });
+
+    test('bottom nav buttons have minimum touch target size on mobile', async ({ page }) => {
+      await page.setViewportSize(MOBILE_VIEWPORT);
+      await enterApp(page);
+
+      // Check bottom nav buttons
+      const bottomNavBtn = page.locator('.bottom-nav-item').first();
+      const box = await bottomNavBtn.boundingBox();
+
+      // Should have adequate touch target
       expect(box?.width).toBeGreaterThanOrEqual(40);
       expect(box?.height).toBeGreaterThanOrEqual(40);
     });

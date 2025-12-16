@@ -1,25 +1,10 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import { enterApp, clickAddGuest, switchView } from './test-utils';
 
 // Helper to add a guest and open the edit form
 async function addGuestAndOpenForm(page: import('@playwright/test').Page) {
-  // Click Add Guest to create an unassigned guest on canvas
-  await page.locator('button:has-text("Add Guest")').first().click();
+  // Click Add Guest to create an unassigned guest on canvas (works on mobile and desktop)
+  await clickAddGuest(page);
   // Wait for guest to appear on canvas
   await expect(page.locator('.canvas-guest')).toBeVisible({ timeout: 5000 });
   // Double-click to open the edit form
@@ -196,7 +181,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await page.click('button:has-text("Save")');
 
       // Switch to Guest List view
-      await page.click('button:has-text("Guest List")');
+      await switchView(page, 'guests');
 
       // Wait for the view to load and find the guest
       await expect(page.locator('text=Halal Guest')).toBeVisible({ timeout: 5000 });

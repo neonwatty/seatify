@@ -1,22 +1,13 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter the app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 10;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  // Click CTA button on landing page
-  await page.click('button:has-text("Start Planning")');
-  // Wait for app to load
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import {
+  enterApp,
+  isMobileViewport,
+  addTable,
+  clickAddGuest,
+  switchView,
+  toggleRelationships,
+  openMobileMenu,
+} from './test-utils';
 
 test.describe('TableCraft App Demo', () => {
   test('landing page shows correct branding', async ({ page }) => {
@@ -58,13 +49,13 @@ test.describe('TableCraft App Demo', () => {
     await expect(page.locator('.canvas')).toBeVisible();
 
     // Click on Guest List view
-    await page.click('button:has-text("Guest List")');
+    await switchView(page, 'guests');
 
     // Should show guest list (look for the sidebar content changing)
     await page.waitForTimeout(500);
 
     // Switch back to Canvas
-    await page.click('button:has-text("Canvas")');
+    await switchView(page, 'canvas');
 
     // Canvas should be visible again
     await expect(page.locator('.canvas')).toBeVisible();
@@ -74,7 +65,7 @@ test.describe('TableCraft App Demo', () => {
     await enterApp(page);
 
     // Find and click the Relationships button
-    await page.click('button:has-text("Relationships")');
+    await toggleRelationships(page);
 
     // Relationships panel should appear
     await expect(page.locator('.relationships-panel')).toBeVisible();
@@ -88,9 +79,16 @@ test.describe('TableCraft App Demo', () => {
 
   test('optimize button is visible in canvas view', async ({ page }) => {
     await enterApp(page);
+    const isMobile = await isMobileViewport(page);
 
-    // Optimize button should be visible
-    await expect(page.locator('.toolbar-btn.optimize, .toolbar-btn.reset')).toBeVisible();
+    if (isMobile) {
+      // On mobile, optimize is in the hamburger menu
+      await openMobileMenu(page);
+      await expect(page.locator('.menu-item:has-text("Optimize"), .menu-item:has-text("Reset")')).toBeVisible();
+    } else {
+      // Optimize button should be visible in desktop toolbar
+      await expect(page.locator('.toolbar-btn.optimize, .toolbar-btn.reset')).toBeVisible();
+    }
   });
 
   test('can add a new table via dropdown', async ({ page }) => {
@@ -99,18 +97,8 @@ test.describe('TableCraft App Demo', () => {
     // Count initial tables
     const initialCount = await page.locator('.table-component').count();
 
-    // The Add Table button should be visible in toolbar
-    const addTableBtn = page.locator('button:has-text("Add Table")').first();
-    await expect(addTableBtn).toBeVisible();
-
-    // Click it to open dropdown
-    await addTableBtn.click();
-
-    // Dropdown should appear with table options
-    await expect(page.locator('.dropdown-menu')).toBeVisible({ timeout: 3000 });
-
-    // Click "Round Table" option
-    await page.locator('.dropdown-menu button:has-text("Round")').click();
+    // Use the helper to add a table (works on both mobile and desktop)
+    await addTable(page, 'round');
 
     // Verify a new table was added
     await expect(page.locator('.table-component')).toHaveCount(initialCount + 1, { timeout: 5000 });
@@ -124,8 +112,8 @@ test.describe('TableCraft App Demo', () => {
     const initialCanvas = await page.locator('.canvas-guest').count();
     const initialTotal = initialSeated + initialCanvas;
 
-    // Click Add Guest button in toolbar (look for button with "Add Guest" text)
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Click Add Guest button (works on both mobile and desktop)
+    await clickAddGuest(page);
 
     // Wait for guest to be added
     await page.waitForTimeout(500);
@@ -140,6 +128,13 @@ test.describe('TableCraft App Demo', () => {
 
   test('can zoom in and out on canvas', async ({ page }) => {
     await enterApp(page);
+
+    // Zoom controls are hidden on very small screens (< 480px)
+    const viewportSize = page.viewportSize();
+    if (viewportSize && viewportSize.width < 480) {
+      test.skip();
+      return;
+    }
 
     // Get initial zoom display value
     const zoomDisplay = page.locator('.zoom-display');
@@ -170,6 +165,7 @@ test.describe('TableCraft App Demo', () => {
 test.describe('Optimization Feature', () => {
   test('clicking optimize changes button to reset', async ({ page }) => {
     await enterApp(page);
+    const isMobile = await isMobileViewport(page);
 
     // Clear localStorage to ensure fresh state, but preserve onboarding completion
     await page.evaluate(() => {
@@ -186,19 +182,36 @@ test.describe('Optimization Feature', () => {
 
     await page.waitForTimeout(1000);
 
-    // Check if optimize button exists
-    const optimizeBtn = page.locator('.toolbar-btn.optimize');
-    const resetBtn = page.locator('.toolbar-btn.reset');
+    if (isMobile) {
+      // On mobile, optimize is in the hamburger menu
+      await openMobileMenu(page);
+      const optimizeItem = page.locator('.menu-item:has-text("Optimize")');
+      const resetItem = page.locator('.menu-item:has-text("Reset")');
 
-    // If optimize is visible, clicking it should show reset
-    if (await optimizeBtn.isVisible()) {
-      await optimizeBtn.click();
+      // If optimize is visible, clicking it should change it to reset
+      if (await optimizeItem.isVisible()) {
+        await optimizeItem.click();
+        await page.waitForTimeout(1000);
 
-      // Wait for animation/processing
-      await page.waitForTimeout(1000);
+        // Re-open menu and check for reset
+        await openMobileMenu(page);
+        await expect(resetItem).toBeVisible({ timeout: 5000 });
+      }
+    } else {
+      // Check if optimize button exists
+      const optimizeBtn = page.locator('.toolbar-btn.optimize');
+      const resetBtn = page.locator('.toolbar-btn.reset');
 
-      // Should now show reset button
-      await expect(resetBtn).toBeVisible({ timeout: 5000 });
+      // If optimize is visible, clicking it should show reset
+      if (await optimizeBtn.isVisible()) {
+        await optimizeBtn.click();
+
+        // Wait for animation/processing
+        await page.waitForTimeout(1000);
+
+        // Should now show reset button
+        await expect(resetBtn).toBeVisible({ timeout: 5000 });
+      }
     }
   });
 });

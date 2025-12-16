@@ -1,20 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import { enterApp, addTable } from './test-utils';
 
 test.describe('New Table Visibility', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,11 +7,8 @@ test.describe('New Table Visibility', () => {
   });
 
   test('newly added table has highlight animation class', async ({ page }) => {
-    // Click Add Table dropdown button
-    await page.locator('button:has-text("Add Table")').first().click();
-
-    // Select Round Table from dropdown
-    await page.locator('button:has-text("Round Table")').click();
+    // Add a round table (works on mobile and desktop)
+    await addTable(page, 'round');
 
     // The new table should have the newly-added class immediately
     const newlyAddedTable = page.locator('.table-component.newly-added');
@@ -34,11 +16,8 @@ test.describe('New Table Visibility', () => {
   });
 
   test('highlight animation class is removed after animation completes', async ({ page }) => {
-    // Click Add Table dropdown button
-    await page.locator('button:has-text("Add Table")').first().click();
-
-    // Select Round Table from dropdown
-    await page.locator('button:has-text("Round Table")').click();
+    // Add a round table (works on mobile and desktop)
+    await addTable(page, 'round');
 
     // Verify newly-added class is present initially
     const newlyAddedTable = page.locator('.table-component.newly-added');
@@ -52,9 +31,8 @@ test.describe('New Table Visibility', () => {
   });
 
   test('different table shapes get highlight animation', async ({ page }) => {
-    // Test rectangle table
-    await page.locator('button:has-text("Add Table")').first().click();
-    await page.locator('button:has-text("Rectangle Table")').click();
+    // Test rectangle table (works on mobile and desktop)
+    await addTable(page, 'rectangle');
 
     const newlyAddedTable = page.locator('.table-component.newly-added');
     await expect(newlyAddedTable).toBeVisible();

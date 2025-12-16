@@ -5,6 +5,30 @@ All notable changes to TableCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-12-15
+
+### Added
+- CSV/Excel import wizard for bulk guest import with smart column detection
+- Auto-detection of common guest fields (First Name, Last Name, Email, Group, etc.)
+- Full Name column splitting - automatically separates "John Smith" into first/last name
+- Wedding-specific column support (Partner, RSVP Status, Meal Choice, Plus One)
+- Corporate event columns (Company, Title, Department)
+- Preview and validation step before importing
+- Ability to exclude specific rows from import
+- Mobile-friendly hamburger menu for toolbar on small screens
+- Mobile bottom navigation bar for quick view switching
+- Shared E2E test utilities for mobile-aware testing
+
+### Changed
+- Guest data model now uses separate firstName/lastName fields
+- Toolbar adapts to mobile viewport with hamburger menu pattern
+- E2E tests updated to support both mobile and desktop viewports
+
+### Fixed
+- Mobile tests now properly interact with hamburger menu instead of desktop toolbar
+- Grid controls tests skip appropriately on mobile viewports
+- Mouse wheel tests skip on mobile WebKit (unsupported)
+
 ## [0.3.0] - 2025-12-15
 
 ### Added

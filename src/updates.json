@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.4.0",
+    "highlights": [
+      "Import guests from CSV or Excel files - no more manual entry!",
+      "Smart column detection automatically maps your spreadsheet data",
+      "Support for wedding fields (RSVP, Meal Choice, Plus One) and corporate events",
+      "New mobile-friendly menu makes planning on the go even easier"
+    ]
+  },
+  {
     "version": "0.3.0",
     "highlights": [
       "Fresh new landing page with a warm, inviting design",

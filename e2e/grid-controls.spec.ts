@@ -1,26 +1,22 @@
 import { test, expect } from '@playwright/test';
+import { enterApp, isMobileViewport } from './test-utils';
 
-// Helper to enter the app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-  // Wait for grid controls to be visible
-  await expect(page.locator('.grid-controls')).toBeVisible({ timeout: 5000 });
-}
+// Grid controls are only visible on desktop (viewport >= 768px)
+// These tests should skip on mobile viewports
 
 test.describe('Grid Controls', () => {
   test.beforeEach(async ({ page }) => {
     await enterApp(page);
+
+    // Skip all grid control tests on mobile - grid controls are not visible
+    const isMobile = await isMobileViewport(page);
+    if (isMobile) {
+      test.skip();
+      return;
+    }
+
+    // Wait for grid controls to be visible (desktop only)
+    await expect(page.locator('.grid-controls')).toBeVisible({ timeout: 5000 });
   });
 
   test.describe('Grid Toggle Button', () => {

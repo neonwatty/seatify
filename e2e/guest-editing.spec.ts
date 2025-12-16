@@ -1,20 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 10;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import { enterApp, addTable, clickAddGuest } from './test-utils';
 
 test.describe('Guest Editing', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,12 +16,11 @@ test.describe('Guest Editing', () => {
     await page.click('button:has-text("Start Planning")');
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
-    // Add a table first using the toolbar dropdown
-    await page.locator('button:has-text("Add Table")').first().click();
-    await page.locator('.dropdown-menu button:has-text("Round")').click({ force: true });
+    // Add a table first using the helper (works on both mobile and desktop)
+    await addTable(page, 'round');
 
-    // Add a guest using the toolbar button
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Add a guest using the helper (works on both mobile and desktop)
+    await clickAddGuest(page);
 
     // Wait for guest to appear on canvas
     await expect(page.locator('.canvas-guest')).toHaveCount(1, { timeout: 5000 });

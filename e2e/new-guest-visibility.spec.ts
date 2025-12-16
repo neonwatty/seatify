@@ -1,20 +1,5 @@
 import { test, expect } from '@playwright/test';
-
-// Helper to enter app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
+import { enterApp, clickAddGuest } from './test-utils';
 
 test.describe('New Guest Visibility', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,8 +7,8 @@ test.describe('New Guest Visibility', () => {
   });
 
   test('newly added guest is automatically selected', async ({ page }) => {
-    // Click Add Guest button
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Click Add Guest button (works on mobile and desktop)
+    await clickAddGuest(page);
 
     // Wait for the new guest to appear
     await page.waitForTimeout(300);
@@ -34,8 +19,8 @@ test.describe('New Guest Visibility', () => {
   });
 
   test('newly added guest has highlight animation class', async ({ page }) => {
-    // Click Add Guest button
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Click Add Guest button (works on mobile and desktop)
+    await clickAddGuest(page);
 
     // The new guest should have the newly-added class immediately
     const newlyAddedGuest = page.locator('.canvas-guest.newly-added');
@@ -43,8 +28,8 @@ test.describe('New Guest Visibility', () => {
   });
 
   test('highlight animation class is removed after animation completes', async ({ page }) => {
-    // Click Add Guest button
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Click Add Guest button (works on mobile and desktop)
+    await clickAddGuest(page);
 
     // Verify newly-added class is present initially
     const newlyAddedGuest = page.locator('.canvas-guest.newly-added');
@@ -58,8 +43,8 @@ test.describe('New Guest Visibility', () => {
   });
 
   test('newly added guest shows name label (due to selection)', async ({ page }) => {
-    // Click Add Guest button
-    await page.locator('button:has-text("Add Guest")').first().click();
+    // Click Add Guest button (works on mobile and desktop)
+    await clickAddGuest(page);
 
     // Wait for the new guest
     await page.waitForTimeout(300);

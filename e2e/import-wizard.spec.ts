@@ -1,39 +1,10 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { enterApp, switchView, clickImport, openImportWizard } from './test-utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Helper to enter the app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 10;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-}
-
-// Helper to navigate to Guest List view and open import wizard
-async function openImportWizard(page: import('@playwright/test').Page) {
-  await enterApp(page);
-
-  // Navigate to Guest List view
-  await page.click('button:has-text("Guest List")');
-  await page.waitForTimeout(500);
-
-  // Click Import button
-  await page.locator('button:has-text("Import")').click();
-
-  // Wait for wizard modal to appear
-  await expect(page.locator('.import-wizard-modal')).toBeVisible({ timeout: 3000 });
-}
 
 // Helper to get fixture path
 function getFixturePath(filename: string): string {
@@ -251,14 +222,13 @@ test.describe('Import Wizard - Full Import Flow', () => {
     await enterApp(page);
 
     // Navigate to Guest List view
-    await page.click('button:has-text("Guest List")');
-    await page.waitForTimeout(500);
+    await switchView(page, 'guests');
 
     // Count existing guests
     const initialGuestRows = await page.locator('.guest-table tbody tr').count();
 
     // Open import wizard
-    await page.locator('button:has-text("Import")').click();
+    await clickImport(page);
     await expect(page.locator('.import-wizard-modal')).toBeVisible();
 
     // Upload file
@@ -301,8 +271,8 @@ test.describe('Import Wizard - Full Import Flow', () => {
     // Should be in Canvas view by default
     await expect(page.locator('.canvas')).toBeVisible();
 
-    // Click Import button in toolbar
-    await page.locator('button:has-text("Import")').click();
+    // Click Import button in toolbar (works on both mobile and desktop)
+    await clickImport(page);
 
     // Wizard should open
     await expect(page.locator('.import-wizard-modal')).toBeVisible();
@@ -310,10 +280,9 @@ test.describe('Import Wizard - Full Import Flow', () => {
 
   test('handles Full Name splitting correctly', async ({ page }) => {
     await enterApp(page);
-    await page.click('button:has-text("Guest List")');
-    await page.waitForTimeout(500);
+    await switchView(page, 'guests');
 
-    await page.locator('button:has-text("Import")').click();
+    await clickImport(page);
 
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(getFixturePath('full-name-guests.csv'));

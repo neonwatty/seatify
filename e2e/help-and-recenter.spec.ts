@@ -1,19 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { enterApp } from './test-utils';
 
-// Helper to enter app from landing page
-async function enterApp(page: import('@playwright/test').Page) {
-  // First set localStorage before the app hydrates
-  await page.addInitScript(() => {
-    const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
-    data.state = data.state || {};
-    data.state.hasCompletedOnboarding = true;
-    data.version = 9;
-    localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
-  });
-  await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
-  await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
+// Check if running on mobile WebKit (which doesn't support mouse.wheel)
+function isMobileWebKit(browserName: string, viewportWidth: number | null): boolean {
+  return browserName === 'webkit' && (viewportWidth === null || viewportWidth < 768);
 }
 
 test.describe('Help button and recenter hotkey', () => {
@@ -52,7 +42,14 @@ test.describe('Help button and recenter hotkey', () => {
     await expect(page.locator('.shortcuts-modal')).not.toBeVisible();
   });
 
-  test('pressing 0 key recenters the canvas', async ({ page }) => {
+  test('pressing 0 key recenters the canvas', async ({ page, browserName }) => {
+    // Skip on mobile WebKit - mouse.wheel is not supported
+    const viewportSize = page.viewportSize();
+    if (isMobileWebKit(browserName, viewportSize?.width ?? null)) {
+      test.skip();
+      return;
+    }
+
     // First, pan the canvas away from center by scrolling
     const canvas = page.locator('.canvas');
     await canvas.hover();
@@ -70,7 +67,14 @@ test.describe('Help button and recenter hotkey', () => {
     await expect(page.locator('.table-component').first()).toBeVisible();
   });
 
-  test('pressing c key recenters the canvas', async ({ page }) => {
+  test('pressing c key recenters the canvas', async ({ page, browserName }) => {
+    // Skip on mobile WebKit - mouse.wheel is not supported
+    const viewportSize = page.viewportSize();
+    if (isMobileWebKit(browserName, viewportSize?.width ?? null)) {
+      test.skip();
+      return;
+    }
+
     // Pan the canvas away
     const canvas = page.locator('.canvas');
     await canvas.hover();
