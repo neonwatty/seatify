@@ -144,6 +144,7 @@ interface AppState extends OnboardingState {
 
   // Actions - Tables
   addTable: (shape: TableShape, x: number, y: number) => void;
+  addTables: (tables: Array<{ shape: TableShape; x: number; y: number; capacity?: number }>) => string[];
   updateTable: (id: string, updates: Partial<Table>) => void;
   removeTable: (id: string) => void;
   moveTable: (id: string, x: number, y: number) => void;
@@ -618,6 +619,38 @@ export const useStore = create<AppState>()(
           // Track the newly added table for highlight animation
           newlyAddedTableId: newId,
         }));
+      },
+
+      addTables: (tableDefs) => {
+        const currentTableCount = get().event.tables.length;
+        const newTables: Table[] = [];
+        const newIds: string[] = [];
+
+        tableDefs.forEach((def, index) => {
+          const defaults = getTableDefaults(def.shape);
+          const newId = uuidv4();
+          newIds.push(newId);
+          newTables.push({
+            id: newId,
+            name: `Table ${currentTableCount + index + 1}`,
+            shape: def.shape,
+            x: def.x,
+            y: def.y,
+            width: defaults.width,
+            height: defaults.height,
+            capacity: def.capacity ?? defaults.capacity,
+            rotation: 0,
+          });
+        });
+
+        set((state) => ({
+          event: {
+            ...state.event,
+            tables: [...state.event.tables, ...newTables],
+          },
+        }));
+
+        return newIds;
       },
 
       updateTable: (id, updates) =>

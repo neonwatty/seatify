@@ -1,4 +1,4 @@
-import type { Guest, EventType } from '../../types';
+import type { Guest, EventType, TableShape } from '../../types';
 
 // Column mapping types
 export interface ColumnMapping {
@@ -43,6 +43,18 @@ export interface DuplicateCandidate {
 // Resolution action for duplicates
 export type DuplicateResolution = 'skip' | 'merge' | 'import';
 
+// Distribution strategy for table assignment
+export type DistributionStrategy = 'even' | 'groups' | 'optimized' | 'skip';
+
+// Table assignment configuration
+export interface TableAssignmentConfig {
+  enabled: boolean;
+  tableShape: TableShape;
+  tableCapacity: number;
+  tableCount: number;
+  distributionStrategy: DistributionStrategy;
+}
+
 // Parsed file result
 export interface ParsedFile {
   headers: string[];
@@ -68,7 +80,11 @@ export interface ImportWizardState {
   validationErrors: ValidationError[];
   excludedRowIndices: Set<number>;
 
-  // Step 4: Duplicates
+  // Step 4: Table Assignment
+  tableAssignment: TableAssignmentConfig;
+  tableAssignmentPreview: Map<number, string[]>; // tableIndex -> guestNames[]
+
+  // Step 5: Duplicates
   duplicates: DuplicateCandidate[];
   duplicateResolutions: Map<number, DuplicateResolution>;
 
@@ -88,6 +104,12 @@ export type ImportWizardAction =
   | { type: 'SET_PARSED_GUESTS'; payload: Partial<Guest>[] }
   | { type: 'SET_VALIDATION_ERRORS'; payload: ValidationError[] }
   | { type: 'TOGGLE_EXCLUDE_ROW'; payload: number }
+  | { type: 'SET_TABLE_ASSIGNMENT_ENABLED'; payload: boolean }
+  | { type: 'SET_TABLE_SHAPE'; payload: TableShape }
+  | { type: 'SET_TABLE_CAPACITY'; payload: number }
+  | { type: 'SET_TABLE_COUNT'; payload: number }
+  | { type: 'SET_DISTRIBUTION_STRATEGY'; payload: DistributionStrategy }
+  | { type: 'SET_TABLE_ASSIGNMENT_PREVIEW'; payload: Map<number, string[]> }
   | { type: 'SET_DUPLICATES'; payload: DuplicateCandidate[] }
   | { type: 'SET_DUPLICATE_RESOLUTION'; payload: { index: number; resolution: DuplicateResolution } }
   | { type: 'SET_ALL_DUPLICATE_RESOLUTIONS'; payload: DuplicateResolution }
@@ -105,6 +127,14 @@ export const initialImportState: ImportWizardState = {
   parsedGuests: [],
   validationErrors: [],
   excludedRowIndices: new Set(),
+  tableAssignment: {
+    enabled: false,
+    tableShape: 'round',
+    tableCapacity: 8,
+    tableCount: 0,
+    distributionStrategy: 'even',
+  },
+  tableAssignmentPreview: new Map(),
   duplicates: [],
   duplicateResolutions: new Map(),
   isImporting: false,
@@ -152,6 +182,39 @@ export function importReducer(
       }
       return { ...state, excludedRowIndices: newExcluded };
     }
+    case 'SET_TABLE_ASSIGNMENT_ENABLED':
+      return {
+        ...state,
+        tableAssignment: { ...state.tableAssignment, enabled: action.payload },
+      };
+    case 'SET_TABLE_SHAPE': {
+      const shapeDefaults = TABLE_SHAPE_DEFAULTS[action.payload];
+      return {
+        ...state,
+        tableAssignment: {
+          ...state.tableAssignment,
+          tableShape: action.payload,
+          tableCapacity: shapeDefaults.capacity,
+        },
+      };
+    }
+    case 'SET_TABLE_CAPACITY':
+      return {
+        ...state,
+        tableAssignment: { ...state.tableAssignment, tableCapacity: action.payload },
+      };
+    case 'SET_TABLE_COUNT':
+      return {
+        ...state,
+        tableAssignment: { ...state.tableAssignment, tableCount: action.payload },
+      };
+    case 'SET_DISTRIBUTION_STRATEGY':
+      return {
+        ...state,
+        tableAssignment: { ...state.tableAssignment, distributionStrategy: action.payload },
+      };
+    case 'SET_TABLE_ASSIGNMENT_PREVIEW':
+      return { ...state, tableAssignmentPreview: action.payload };
     case 'SET_DUPLICATES':
       return { ...state, duplicates: action.payload };
     case 'SET_DUPLICATE_RESOLUTION': {
@@ -194,3 +257,43 @@ export const GUEST_FIELD_LABELS: Record<GuestField | 'fullName', string> = {
 
 // Required fields for import
 export const REQUIRED_FIELDS: GuestField[] = ['firstName', 'lastName'];
+
+// Table shape defaults (capacity and dimensions)
+export const TABLE_SHAPE_DEFAULTS: Record<TableShape, { capacity: number; width: number; height: number }> = {
+  round: { capacity: 8, width: 120, height: 120 },
+  rectangle: { capacity: 10, width: 200, height: 80 },
+  square: { capacity: 8, width: 100, height: 100 },
+  oval: { capacity: 10, width: 180, height: 120 },
+  'half-round': { capacity: 5, width: 160, height: 80 },
+  serpentine: { capacity: 12, width: 300, height: 100 },
+};
+
+// Table shape display labels
+export const TABLE_SHAPE_LABELS: Record<TableShape, string> = {
+  round: 'Round',
+  rectangle: 'Rectangle',
+  square: 'Square',
+  oval: 'Oval',
+  'half-round': 'Half-Round',
+  serpentine: 'Serpentine',
+};
+
+// Distribution strategy information for UI
+export const DISTRIBUTION_STRATEGY_INFO: Record<DistributionStrategy, { label: string; description: string }> = {
+  even: {
+    label: 'Distribute Evenly',
+    description: 'Spread guests uniformly across all tables',
+  },
+  groups: {
+    label: 'Keep Groups Together',
+    description: 'Seat guests with the same group at the same table when possible',
+  },
+  optimized: {
+    label: 'Smart Optimization',
+    description: 'Use relationship data (partners, friends, avoid) to optimize seating',
+  },
+  skip: {
+    label: "Don't Assign",
+    description: 'Create tables but leave all guests unassigned',
+  },
+};
