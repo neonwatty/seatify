@@ -89,8 +89,8 @@
   opacity: 0.8;
 }
 
-/* Hide on small mobile */
-@media (max-width: 480px) {
+/* Hide on mobile - minimap is less useful with touch gestures and conflicts with bottom nav */
+@media (max-width: 768px) {
   .canvas-minimap {
     display: none;
   }

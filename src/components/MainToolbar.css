@@ -372,6 +372,21 @@
   .btn-icon {
     font-size: 1.125rem;
   }
+
+  /* Mobile toolbar with hamburger menu */
+  .main-toolbar.mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .main-toolbar.mobile .toolbar-middle.mobile-middle {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {

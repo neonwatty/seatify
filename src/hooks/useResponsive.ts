@@ -3,32 +3,46 @@ import { useState, useEffect } from 'react';
 export type Breakpoint = 'mobile' | 'tablet' | 'desktop';
 
 /**
- * Hook to detect current breakpoint
+ * Hook to detect current breakpoint using CSS media queries.
+ * Uses matchMedia which is more reliable than window.innerWidth in headless browsers.
  */
 export function useBreakpoint(): Breakpoint {
-  const [breakpoint, setBreakpoint] = useState<Breakpoint>(() => {
+  const getBreakpoint = (): Breakpoint => {
     if (typeof window === 'undefined') return 'desktop';
-    if (window.innerWidth < 768) return 'mobile';
-    if (window.innerWidth < 1024) return 'tablet';
+    // Use matchMedia for reliable detection in headless browsers
+    if (window.matchMedia('(max-width: 767px)').matches) return 'mobile';
+    if (window.matchMedia('(max-width: 1023px)').matches) return 'tablet';
     return 'desktop';
-  });
+  };
+
+  const [breakpoint, setBreakpoint] = useState<Breakpoint>(getBreakpoint);
 
   useEffect(() => {
-    const checkBreakpoint = () => {
-      if (window.innerWidth < 768) {
+    // Create media query lists
+    const mobileQuery = window.matchMedia('(max-width: 767px)');
+    const tabletQuery = window.matchMedia('(max-width: 1023px)');
+
+    const updateBreakpoint = () => {
+      if (mobileQuery.matches) {
         setBreakpoint('mobile');
-      } else if (window.innerWidth < 1024) {
+      } else if (tabletQuery.matches) {
         setBreakpoint('tablet');
       } else {
         setBreakpoint('desktop');
       }
     };
 
-    // Check immediately on mount in case viewport changed after initial render
-    checkBreakpoint();
+    // Check immediately on mount
+    updateBreakpoint();
 
-    window.addEventListener('resize', checkBreakpoint);
-    return () => window.removeEventListener('resize', checkBreakpoint);
+    // Listen for media query changes
+    mobileQuery.addEventListener('change', updateBreakpoint);
+    tabletQuery.addEventListener('change', updateBreakpoint);
+
+    return () => {
+      mobileQuery.removeEventListener('change', updateBreakpoint);
+      tabletQuery.removeEventListener('change', updateBreakpoint);
+    };
   }, []);
 
   return breakpoint;
