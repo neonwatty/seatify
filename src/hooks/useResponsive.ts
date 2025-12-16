@@ -24,6 +24,9 @@ export function useBreakpoint(): Breakpoint {
       }
     };
 
+    // Check immediately on mount in case viewport changed after initial render
+    checkBreakpoint();
+
     window.addEventListener('resize', checkBreakpoint);
     return () => window.removeEventListener('resize', checkBreakpoint);
   }, []);
