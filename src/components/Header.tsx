@@ -11,7 +11,10 @@ interface HeaderProps {
 }
 
 export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
-  const { event, setEventName, theme, cycleTheme } = useStore();
+  const { event, setEventName, theme, cycleTheme, activeView, setActiveView, currentEventId } = useStore();
+
+  // Check if we're inside an event (not on event list)
+  const isInsideEvent = currentEventId && activeView !== 'event-list';
 
   // Apply theme to document
   useEffect(() => {
@@ -45,6 +48,16 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
   return (
     <header className="header">
       <div className="header-left">
+        {isInsideEvent && (
+          <button
+            className="back-to-events-btn"
+            onClick={() => setActiveView('event-list')}
+            title="Back to events"
+          >
+            <span className="back-arrow">&larr;</span>
+            <span className="back-text">Events</span>
+          </button>
+        )}
         <h1
           className="logo"
           onClick={onLogoClick}
@@ -81,14 +94,16 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
         >
           {getThemeIcon()}
         </button>
-        <div className="event-info">
-          <input
-            type="text"
-            value={event.name}
-            onChange={(e) => setEventName(e.target.value)}
-            className="event-name-input"
-          />
-        </div>
+        {isInsideEvent && (
+          <div className="event-info">
+            <input
+              type="text"
+              value={event.name}
+              onChange={(e) => setEventName(e.target.value)}
+              className="event-name-input"
+            />
+          </div>
+        )}
       </div>
     </header>
   );

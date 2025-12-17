@@ -268,7 +268,13 @@ test.describe('Grid Controls', () => {
 
       // Reload page
       await page.reload();
-      await page.click('button:has-text("Start Planning")');
+      await page.click('button:has-text("Start Planning Free")');
+      await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
+      // Navigate through event list if visible
+      const eventCard = page.locator('.event-card').first();
+      if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await eventCard.click();
+      }
       await expect(page.locator('.grid-controls')).toBeVisible({ timeout: 5000 });
 
       // All controls should be back to defaults
