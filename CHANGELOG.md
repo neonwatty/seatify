@@ -5,6 +5,31 @@ All notable changes to TableCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-12-16
+
+### Added
+- Multi-event support - manage up to 10 events in one app
+- Event list view as the new main entry point after landing page
+- Event creation modal with name, type, date, and venue information
+- Event editing to update event metadata anytime
+- Event deletion with confirmation dialog
+- Back navigation button to return to event list from any event
+- Venue information fields (name, address, capacity limit) for events
+- Event timestamps (createdAt, updatedAt) for sorting
+- Event cards display guest count, table count, and event type badges
+- 29 new E2E tests for multi-event functionality
+
+### Changed
+- App flow: Landing page → Event list → Event canvas (instead of directly to canvas)
+- Store state refactored to use `events[]` array instead of single `event`
+- Data migration from v10 to v11 automatically converts existing single event
+- Header shows back button and event name only when inside an event
+
+### Fixed
+- Re-enabled keyboard-shortcuts.spec.ts and toast-notifications.spec.ts test suites
+- Updated all E2E test helpers to handle new multi-event navigation flow
+- Fixed test assertions to work with demo data instead of requiring fresh state
+
 ## [0.5.0] - 2025-12-16
 
 ### Added

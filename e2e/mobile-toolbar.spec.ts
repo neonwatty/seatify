@@ -20,17 +20,24 @@ async function enterAppMobile(page: import('@playwright/test').Page) {
   // Set up localStorage via init script (runs before each page load)
   await page.addInitScript(() => {
     const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
+    const data = stored ? JSON.parse(stored) : { state: {}, version: 11 };
     data.state = data.state || {};
     data.state.hasCompletedOnboarding = true;
-    data.version = 10;
+    data.version = 11;
     localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
   });
 
   // Navigate to the app - viewport is already set to mobile
   await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
+  await page.click('button:has-text("Start Planning Free")');
   await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
+
+  // Click on first event to enter it (if event list view is shown)
+  const eventCard = page.locator('.event-card').first();
+  if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await eventCard.click();
+    await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
+  }
 
   // Wait for the mobile toolbar to appear
   await expect(page.locator('.hamburger-btn')).toBeVisible({ timeout: 5000 });
@@ -41,15 +48,22 @@ async function enterAppDesktop(page: import('@playwright/test').Page) {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.addInitScript(() => {
     const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
+    const data = stored ? JSON.parse(stored) : { state: {}, version: 11 };
     data.state = data.state || {};
     data.state.hasCompletedOnboarding = true;
-    data.version = 10;
+    data.version = 11;
     localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
   });
   await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
+  await page.click('button:has-text("Start Planning Free")');
   await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
+
+  // Click on first event to enter it (if event list view is shown)
+  const eventCard = page.locator('.event-card').first();
+  if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await eventCard.click();
+    await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
+  }
 }
 
 test.describe('Mobile Toolbar Menu - Visibility', () => {

@@ -80,6 +80,7 @@ interface HistoryEntry {
 }
 
 const MAX_HISTORY_SIZE = 50;
+const MAX_EVENTS = 10;
 
 // Theme type
 type Theme = 'light' | 'dark' | 'system';
@@ -92,7 +93,11 @@ interface OnboardingState {
 }
 
 interface AppState extends OnboardingState {
-  // Current event
+  // Multi-event support
+  events: Event[];
+  currentEventId: string | null;
+
+  // Current event (computed from events + currentEventId)
   event: Event;
   canvas: CanvasState;
   canvasPrefs: CanvasPreferences;
@@ -108,7 +113,7 @@ interface AppState extends OnboardingState {
   alignmentGuides: AlignmentGuide[];
 
   // View state
-  activeView: 'dashboard' | 'canvas' | 'guests';
+  activeView: 'event-list' | 'dashboard' | 'canvas' | 'guests';
   sidebarOpen: boolean;
 
   // Group visibility filter (for canvas dimming)
@@ -138,7 +143,14 @@ interface AppState extends OnboardingState {
   // Pre-optimization snapshot for reset
   preOptimizationSnapshot: { guestId: string; tableId: string | undefined }[] | null;
 
-  // Actions - Event
+  // Actions - Event Management (multi-event)
+  createEvent: (data?: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => string;
+  deleteEvent: (eventId: string) => void;
+  switchEvent: (eventId: string) => void;
+  updateEventMetadata: (eventId: string, updates: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => void;
+  canCreateEvent: () => boolean;
+
+  // Actions - Current Event
   setEventName: (name: string) => void;
   setEventType: (eventType: Event['eventType']) => void;
 
@@ -275,11 +287,14 @@ const createDefaultEvent = (): Event => {
   const table1Id = 'demo-table-1';
   const table2Id = 'demo-table-2';
   const table3Id = 'demo-table-3';
+  const now = new Date().toISOString();
 
   return {
     id: uuidv4(),
     name: 'My Event',
     eventType: 'wedding',
+    createdAt: now,
+    updatedAt: now,
     tables: [
       {
         id: table1Id,
@@ -504,6 +519,28 @@ const createDefaultEvent = (): Event => {
   };
 };
 
+// Create a new empty event (no demo data)
+const createEmptyEvent = (data?: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>): Event => {
+  const now = new Date().toISOString();
+  return {
+    id: uuidv4(),
+    name: data?.name || 'Untitled Event',
+    eventType: data?.eventType || 'other',
+    date: data?.date,
+    venueName: data?.venueName,
+    venueAddress: data?.venueAddress,
+    guestCapacityLimit: data?.guestCapacityLimit,
+    createdAt: now,
+    updatedAt: now,
+    tables: [],
+    guests: [],
+    constraints: [],
+    surveyQuestions: [],
+    surveyResponses: [],
+    venueElements: [],
+  };
+};
+
 const getTableDefaults = (shape: TableShape): { width: number; height: number; capacity: number } => {
   switch (shape) {
     case 'round':
@@ -543,10 +580,42 @@ const getVenueElementDefaults = (type: VenueElementType): { width: number; heigh
   }
 };
 
+// Helper to get current event from events array
+const getCurrentEvent = (events: Event[], currentEventId: string | null): Event => {
+  if (currentEventId) {
+    const found = events.find(e => e.id === currentEventId);
+    if (found) return found;
+  }
+  // Fallback to first event or create default
+  return events[0] || createDefaultEvent();
+};
+
+// Helper type for updating both events array and event
+type EventUpdater = (event: Event) => Event;
+
+// Helper to create state update that syncs events array with event
+const syncEventUpdate = (
+  state: { events: Event[]; currentEventId: string | null; event: Event },
+  updater: EventUpdater
+): { events: Event[]; event: Event } => {
+  const updatedEvent = updater(state.event);
+  return {
+    events: state.events.map(e => e.id === state.currentEventId ? updatedEvent : e),
+    event: updatedEvent,
+  };
+};
+
 export const useStore = create<AppState>()(
   persist(
-    (set, get) => ({
-      event: createDefaultEvent(),
+    (set, get) => {
+      const defaultEvent = createDefaultEvent();
+      return {
+      // Multi-event state
+      events: [defaultEvent],
+      currentEventId: defaultEvent.id,
+
+      // Computed current event (kept in sync with events/currentEventId)
+      event: defaultEvent,
       canvas: {
         zoom: 1.25,
         panX: 50,
@@ -587,16 +656,144 @@ export const useStore = create<AppState>()(
       setOnboardingComplete: () => set({ hasCompletedOnboarding: true }),
       resetOnboarding: () => set({ hasCompletedOnboarding: false }),
 
-      // Event actions
-      setEventName: (name) =>
-        set((state) => ({
-          event: { ...state.event, name },
-        })),
+      // Event Management actions (multi-event)
+      createEvent: (data) => {
+        const state = get();
+        if (state.events.length >= MAX_EVENTS) {
+          console.warn('Maximum events limit reached');
+          return state.events[0]?.id || '';
+        }
+        const newEvent = createEmptyEvent(data);
+        set({
+          events: [...state.events, newEvent],
+          currentEventId: newEvent.id,
+          event: newEvent,
+          // Reset canvas state for new event
+          canvas: {
+            zoom: 1,
+            panX: 50,
+            panY: 50,
+            selectedTableIds: [],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+          // Clear history for new event
+          history: [],
+          historyIndex: -1,
+        });
+        return newEvent.id;
+      },
 
-      setEventType: (eventType) =>
-        set((state) => ({
-          event: { ...state.event, eventType },
-        })),
+      deleteEvent: (eventId) => {
+        const state = get();
+        const eventIndex = state.events.findIndex(e => e.id === eventId);
+        if (eventIndex === -1) return;
+
+        const newEvents = state.events.filter(e => e.id !== eventId);
+
+        // If we deleted the current event, switch to another
+        let newCurrentEventId = state.currentEventId;
+        let newEvent = state.event;
+
+        if (state.currentEventId === eventId) {
+          if (newEvents.length > 0) {
+            // Switch to the previous event, or the first one
+            const newIndex = Math.max(0, eventIndex - 1);
+            newCurrentEventId = newEvents[newIndex].id;
+            newEvent = newEvents[newIndex];
+          } else {
+            // No events left - create a new default one
+            const defaultEvent = createDefaultEvent();
+            newEvents.push(defaultEvent);
+            newCurrentEventId = defaultEvent.id;
+            newEvent = defaultEvent;
+          }
+        }
+
+        set({
+          events: newEvents,
+          currentEventId: newCurrentEventId,
+          event: newEvent,
+          // Reset canvas and history when switching events
+          canvas: {
+            zoom: 1,
+            panX: 50,
+            panY: 50,
+            selectedTableIds: [],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+          history: [],
+          historyIndex: -1,
+        });
+      },
+
+      switchEvent: (eventId) => {
+        const state = get();
+        const targetEvent = state.events.find(e => e.id === eventId);
+        if (!targetEvent || eventId === state.currentEventId) return;
+
+        set({
+          currentEventId: eventId,
+          event: targetEvent,
+          // Reset canvas state when switching events
+          canvas: {
+            zoom: 1,
+            panX: 50,
+            panY: 50,
+            selectedTableIds: [],
+            selectedGuestIds: [],
+            selectedVenueElementId: null,
+          },
+          // Clear history when switching events
+          history: [],
+          historyIndex: -1,
+        });
+      },
+
+      updateEventMetadata: (eventId, updates) => {
+        const now = new Date().toISOString();
+        set((state) => {
+          const newEvents = state.events.map(e =>
+            e.id === eventId ? { ...e, ...updates, updatedAt: now } : e
+          );
+          const updatedEvent = newEvents.find(e => e.id === eventId);
+          return {
+            events: newEvents,
+            // If we updated the current event, also update the event property
+            event: state.currentEventId === eventId && updatedEvent ? updatedEvent : state.event,
+          };
+        });
+      },
+
+      canCreateEvent: () => get().events.length < MAX_EVENTS,
+
+      // Current Event actions
+      setEventName: (name) => {
+        const now = new Date().toISOString();
+        set((state) => {
+          const newEvents = state.events.map(e =>
+            e.id === state.currentEventId ? { ...e, name, updatedAt: now } : e
+          );
+          return {
+            events: newEvents,
+            event: { ...state.event, name, updatedAt: now },
+          };
+        });
+      },
+
+      setEventType: (eventType) => {
+        const now = new Date().toISOString();
+        set((state) => {
+          const newEvents = state.events.map(e =>
+            e.id === state.currentEventId ? { ...e, eventType, updatedAt: now } : e
+          );
+          return {
+            events: newEvents,
+            event: { ...state.event, eventType, updatedAt: now },
+          };
+        });
+      },
 
       // Table actions
       addTable: (shape, x, y) => {
@@ -612,11 +809,10 @@ export const useStore = create<AppState>()(
           ...defaults,
         };
         set((state) => ({
-          event: {
-            ...state.event,
-            tables: [...state.event.tables, newTable],
-          },
-          // Track the newly added table for highlight animation
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: [...event.tables, newTable],
+          })),
           newlyAddedTableId: newId,
         }));
       },
@@ -643,35 +839,29 @@ export const useStore = create<AppState>()(
           });
         });
 
-        set((state) => ({
-          event: {
-            ...state.event,
-            tables: [...state.event.tables, ...newTables],
-          },
-        }));
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          tables: [...event.tables, ...newTables],
+        })));
 
         return newIds;
       },
 
       updateTable: (id, updates) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            tables: state.event.tables.map((t) =>
-              t.id === id ? { ...t, ...updates } : t
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          tables: event.tables.map((t) => t.id === id ? { ...t, ...updates } : t),
+        }))),
 
       removeTable: (id) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            tables: state.event.tables.filter((t) => t.id !== id),
-            guests: state.event.guests.map((g) =>
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.filter((t) => t.id !== id),
+            guests: event.guests.map((g) =>
               g.tableId === id ? { ...g, tableId: undefined, seatIndex: undefined } : g
             ),
-          },
+          })),
           canvas: {
             ...state.canvas,
             selectedTableIds: state.canvas.selectedTableIds.filter((tid) => tid !== id),
@@ -679,14 +869,10 @@ export const useStore = create<AppState>()(
         })),
 
       moveTable: (id, x, y) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            tables: state.event.tables.map((t) =>
-              t.id === id ? { ...t, x, y } : t
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          tables: event.tables.map((t) => t.id === id ? { ...t, x, y } : t),
+        }))),
 
       duplicateTable: (id) => {
         const state = get();
@@ -702,10 +888,10 @@ export const useStore = create<AppState>()(
         };
 
         set((s) => ({
-          event: {
-            ...s.event,
-            tables: [...s.event.tables, newTable],
-          },
+          ...syncEventUpdate(s, (event) => ({
+            ...event,
+            tables: [...event.tables, newTable],
+          })),
           canvas: {
             ...s.canvas,
             selectedTableIds: [newTable.id],
@@ -715,14 +901,12 @@ export const useStore = create<AppState>()(
       },
 
       rotateTable: (id, degrees) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            tables: state.event.tables.map((t) =>
-              t.id === id ? { ...t, rotation: ((t.rotation || 0) + degrees) % 360 } : t
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          tables: event.tables.map((t) =>
+            t.id === id ? { ...t, rotation: ((t.rotation || 0) + degrees) % 360 } : t
+          ),
+        }))),
 
       // Venue Element actions
       addVenueElement: (type, x, y) => {
@@ -736,30 +920,26 @@ export const useStore = create<AppState>()(
           width: defaults.width,
           height: defaults.height,
         };
-        set((state) => ({
-          event: {
-            ...state.event,
-            venueElements: [...(state.event.venueElements || []), newElement],
-          },
-        }));
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          venueElements: [...(event.venueElements || []), newElement],
+        })));
       },
 
       updateVenueElement: (id, updates) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            venueElements: (state.event.venueElements || []).map((el) =>
-              el.id === id ? { ...el, ...updates } : el
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          venueElements: (event.venueElements || []).map((el) =>
+            el.id === id ? { ...el, ...updates } : el
+          ),
+        }))),
 
       removeVenueElement: (id) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            venueElements: (state.event.venueElements || []).filter((el) => el.id !== id),
-          },
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            venueElements: (event.venueElements || []).filter((el) => el.id !== id),
+          })),
           canvas: {
             ...state.canvas,
             selectedVenueElementId: state.canvas.selectedVenueElementId === id ? null : state.canvas.selectedVenueElementId,
@@ -767,14 +947,12 @@ export const useStore = create<AppState>()(
         })),
 
       moveVenueElement: (id, x, y) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            venueElements: (state.event.venueElements || []).map((el) =>
-              el.id === id ? { ...el, x, y } : el
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          venueElements: (event.venueElements || []).map((el) =>
+            el.id === id ? { ...el, x, y } : el
+          ),
+        }))),
 
       selectVenueElement: (id) =>
         set((state) => ({
@@ -827,18 +1005,16 @@ export const useStore = create<AppState>()(
           ...guestData,
         };
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: [...state.event.guests, newGuest],
-          },
-          // Select the new guest so they're highlighted
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: [...event.guests, newGuest],
+          })),
           canvas: {
             ...state.canvas,
             selectedGuestIds: [newId],
             selectedTableIds: [],
             selectedVenueElementId: null,
           },
-          // Track the newly added guest for highlight animation
           newlyAddedGuestId: newId,
         }));
         return newId;
@@ -857,41 +1033,36 @@ export const useStore = create<AppState>()(
           relationships: [],
         };
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: [...state.event.guests, newGuest],
-          },
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: [...event.guests, newGuest],
+          })),
           canvas: {
             ...state.canvas,
             selectedGuestIds: [newId],
             selectedTableIds: [],
             selectedVenueElementId: null,
           },
-          // Track the newly added guest for highlight animation
           newlyAddedGuestId: newId,
         }));
         return newId;
       },
 
       updateGuest: (id, updates) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
-              g.id === id ? { ...g, ...updates } : g
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) => g.id === id ? { ...g, ...updates } : g),
+        }))),
 
       removeGuest: (id) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.filter((g) => g.id !== id).map((g) => ({
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests.filter((g) => g.id !== id).map((g) => ({
               ...g,
               relationships: g.relationships.filter((r) => r.guestId !== id),
             })),
-          },
+          })),
           canvas: {
             ...state.canvas,
             selectedGuestIds: state.canvas.selectedGuestIds.filter((gid) => gid !== id),
@@ -899,38 +1070,32 @@ export const useStore = create<AppState>()(
         })),
 
       assignGuestToTable: (guestId, tableId, seatIndex) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
-              g.id === guestId
-                ? { ...g, tableId, seatIndex, canvasX: undefined, canvasY: undefined }
-                : g
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) =>
+            g.id === guestId
+              ? { ...g, tableId, seatIndex, canvasX: undefined, canvasY: undefined }
+              : g
+          ),
+        }))),
 
       moveGuestOnCanvas: (guestId, x, y) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
-              g.id === guestId ? { ...g, canvasX: x, canvasY: y } : g
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) =>
+            g.id === guestId ? { ...g, canvasX: x, canvasY: y } : g
+          ),
+        }))),
 
       detachGuestFromTable: (guestId, canvasX, canvasY) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
-              g.id === guestId
-                ? { ...g, tableId: undefined, seatIndex: undefined, canvasX, canvasY }
-                : g
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) =>
+            g.id === guestId
+              ? { ...g, tableId: undefined, seatIndex: undefined, canvasX, canvasY }
+              : g
+          ),
+        }))),
 
       swapGuestSeats: (guestId1, guestId2) =>
         set((state) => {
@@ -938,118 +1103,100 @@ export const useStore = create<AppState>()(
           const guest2 = state.event.guests.find((g) => g.id === guestId2);
           if (!guest1 || !guest2) return state;
 
-          return {
-            event: {
-              ...state.event,
-              guests: state.event.guests.map((g) => {
-                if (g.id === guestId1) {
-                  return { ...g, tableId: guest2.tableId, seatIndex: guest2.seatIndex };
-                }
-                if (g.id === guestId2) {
-                  return { ...g, tableId: guest1.tableId, seatIndex: guest1.seatIndex };
-                }
-                return g;
-              }),
-            },
-          };
-        }),
-
-      addRelationship: (guestId, targetGuestId, type, strength) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) => {
-              if (g.id === guestId) {
-                const existingIdx = g.relationships.findIndex((r) => r.guestId === targetGuestId);
-                if (existingIdx >= 0) {
-                  const updated = [...g.relationships];
-                  updated[existingIdx] = { guestId: targetGuestId, type, strength };
-                  return { ...g, relationships: updated };
-                }
-                return {
-                  ...g,
-                  relationships: [...g.relationships, { guestId: targetGuestId, type, strength }],
-                };
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests.map((g) => {
+              if (g.id === guestId1) {
+                return { ...g, tableId: guest2.tableId, seatIndex: guest2.seatIndex };
+              }
+              if (g.id === guestId2) {
+                return { ...g, tableId: guest1.tableId, seatIndex: guest1.seatIndex };
               }
               return g;
             }),
-          },
-        })),
+          }));
+        }),
+
+      addRelationship: (guestId, targetGuestId, type, strength) =>
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) => {
+            if (g.id === guestId) {
+              const existingIdx = g.relationships.findIndex((r) => r.guestId === targetGuestId);
+              if (existingIdx >= 0) {
+                const updated = [...g.relationships];
+                updated[existingIdx] = { guestId: targetGuestId, type, strength };
+                return { ...g, relationships: updated };
+              }
+              return {
+                ...g,
+                relationships: [...g.relationships, { guestId: targetGuestId, type, strength }],
+              };
+            }
+            return g;
+          }),
+        }))),
 
       removeRelationship: (guestId, targetGuestId) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
-              g.id === guestId
-                ? { ...g, relationships: g.relationships.filter((r) => r.guestId !== targetGuestId) }
-                : g
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: event.guests.map((g) =>
+            g.id === guestId
+              ? { ...g, relationships: g.relationships.filter((r) => r.guestId !== targetGuestId) }
+              : g
+          ),
+        }))),
 
       importGuests: (guests) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            guests: [
-              ...state.event.guests,
-              ...guests.map((g) => ({
-                id: uuidv4(),
-                firstName: g.firstName || 'Unknown',
-                lastName: g.lastName || '',
-                relationships: [],
-                rsvpStatus: 'pending' as const,
-                ...g,
-              })),
-            ],
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          guests: [
+            ...event.guests,
+            ...guests.map((g) => ({
+              id: uuidv4(),
+              firstName: g.firstName || 'Unknown',
+              lastName: g.lastName || '',
+              relationships: [],
+              rsvpStatus: 'pending' as const,
+              ...g,
+            })),
+          ],
+        }))),
 
       // Constraint actions
       addConstraint: (constraint) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            constraints: [...state.event.constraints, { ...constraint, id: uuidv4() }],
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          constraints: [...event.constraints, { ...constraint, id: uuidv4() }],
+        }))),
 
       removeConstraint: (id) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            constraints: state.event.constraints.filter((c) => c.id !== id),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          constraints: event.constraints.filter((c) => c.id !== id),
+        }))),
 
       // Survey actions
       addSurveyQuestion: (question) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            surveyQuestions: [...state.event.surveyQuestions, { ...question, id: uuidv4() }],
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          surveyQuestions: [...event.surveyQuestions, { ...question, id: uuidv4() }],
+        }))),
 
       updateSurveyQuestion: (id, updates) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            surveyQuestions: state.event.surveyQuestions.map((q) =>
-              q.id === id ? { ...q, ...updates } : q
-            ),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          surveyQuestions: event.surveyQuestions.map((q) =>
+            q.id === id ? { ...q, ...updates } : q
+          ),
+        }))),
 
       removeSurveyQuestion: (id) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            surveyQuestions: state.event.surveyQuestions.filter((q) => q.id !== id),
-            surveyResponses: state.event.surveyResponses.filter((r) => r.questionId !== id),
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          surveyQuestions: event.surveyQuestions.filter((q) => q.id !== id),
+          surveyResponses: event.surveyResponses.filter((r) => r.questionId !== id),
+        }))),
 
       reorderSurveyQuestions: (questionIds) =>
         set((state) => {
@@ -1057,21 +1204,17 @@ export const useStore = create<AppState>()(
           const reordered = questionIds
             .map((id) => questionMap.get(id))
             .filter((q): q is SurveyQuestion => q !== undefined);
-          return {
-            event: {
-              ...state.event,
-              surveyQuestions: reordered,
-            },
-          };
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            surveyQuestions: reordered,
+          }));
         }),
 
       addSurveyResponse: (response) =>
-        set((state) => ({
-          event: {
-            ...state.event,
-            surveyResponses: [...state.event.surveyResponses, response],
-          },
-        })),
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          surveyResponses: [...event.surveyResponses, response],
+        }))),
 
       // Canvas actions
       setZoom: (zoom) =>
@@ -1280,42 +1423,42 @@ export const useStore = create<AppState>()(
       // Batch Operations
       batchAssignGuests: (guestIds, tableId) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map((g) =>
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests.map((g) =>
               guestIds.includes(g.id)
                 ? { ...g, tableId, seatIndex: undefined, canvasX: undefined, canvasY: undefined }
                 : g
             ),
-          },
+          })),
           canvas: { ...state.canvas, selectedGuestIds: [] },
         })),
 
       batchRemoveGuests: (guestIds) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests
               .filter((g) => !guestIds.includes(g.id))
               .map((g) => ({
                 ...g,
                 relationships: g.relationships.filter((r) => !guestIds.includes(r.guestId)),
               })),
-          },
+          })),
           canvas: { ...state.canvas, selectedGuestIds: [] },
         })),
 
       batchRemoveTables: (tableIds) =>
         set((state) => ({
-          event: {
-            ...state.event,
-            tables: state.event.tables.filter((t) => !tableIds.includes(t.id)),
-            guests: state.event.guests.map((g) =>
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.filter((t) => !tableIds.includes(t.id)),
+            guests: event.guests.map((g) =>
               tableIds.includes(g.tableId || '')
                 ? { ...g, tableId: undefined, seatIndex: undefined }
                 : g
             ),
-          },
+          })),
           canvas: { ...state.canvas, selectedTableIds: [] },
         })),
 
@@ -1354,31 +1497,29 @@ export const useStore = create<AppState>()(
               break;
           }
 
-          return {
-            event: {
-              ...state.event,
-              tables: state.event.tables.map((t) => {
-                if (!tableIds.includes(t.id)) return t;
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.map((t) => {
+              if (!tableIds.includes(t.id)) return t;
 
-                switch (alignment) {
-                  case 'left':
-                    return { ...t, x: targetValue };
-                  case 'center':
-                    return { ...t, x: targetValue - t.width / 2 };
-                  case 'right':
-                    return { ...t, x: targetValue - t.width };
-                  case 'top':
-                    return { ...t, y: targetValue };
-                  case 'middle':
-                    return { ...t, y: targetValue - t.height / 2 };
-                  case 'bottom':
-                    return { ...t, y: targetValue - t.height };
-                  default:
-                    return t;
-                }
-              }),
-            },
-          };
+              switch (alignment) {
+                case 'left':
+                  return { ...t, x: targetValue };
+                case 'center':
+                  return { ...t, x: targetValue - t.width / 2 };
+                case 'right':
+                  return { ...t, x: targetValue - t.width };
+                case 'top':
+                  return { ...t, y: targetValue };
+                case 'middle':
+                  return { ...t, y: targetValue - t.height / 2 };
+                case 'bottom':
+                  return { ...t, y: targetValue - t.height };
+                default:
+                  return t;
+              }
+            }),
+          }));
         }),
 
       distributeTables: (tableIds, direction) =>
@@ -1412,20 +1553,18 @@ export const useStore = create<AppState>()(
             currentPos += (direction === 'horizontal' ? table.width : table.height) + gap;
           }
 
-          return {
-            event: {
-              ...state.event,
-              tables: state.event.tables.map((t) => {
-                if (!tableIds.includes(t.id)) return t;
-                const newPos = positionMap.get(t.id);
-                if (newPos === undefined) return t;
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.map((t) => {
+              if (!tableIds.includes(t.id)) return t;
+              const newPos = positionMap.get(t.id);
+              if (newPos === undefined) return t;
 
-                return direction === 'horizontal'
-                  ? { ...t, x: newPos }
-                  : { ...t, y: newPos };
-              }),
-            },
-          };
+              return direction === 'horizontal'
+                ? { ...t, x: newPos }
+                : { ...t, y: newPos };
+            }),
+          }));
         }),
 
       nudgeSelectedTables: (dx, dy) =>
@@ -1433,16 +1572,14 @@ export const useStore = create<AppState>()(
           const selectedIds = state.canvas.selectedTableIds;
           if (selectedIds.length === 0) return state;
 
-          return {
-            event: {
-              ...state.event,
-              tables: state.event.tables.map((t) =>
-                selectedIds.includes(t.id)
-                  ? { ...t, x: t.x + dx, y: t.y + dy }
-                  : t
-              ),
-            },
-          };
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.map((t) =>
+              selectedIds.includes(t.id)
+                ? { ...t, x: t.x + dx, y: t.y + dy }
+                : t
+            ),
+          }));
         }),
 
       autoArrangeTables: (tableIds) =>
@@ -1495,16 +1632,14 @@ export const useStore = create<AppState>()(
             });
           });
 
-          return {
-            event: {
-              ...state.event,
-              tables: state.event.tables.map((t) => {
-                const newPos = positionMap.get(t.id);
-                if (!newPos) return t;
-                return { ...t, x: newPos.x, y: newPos.y };
-              }),
-            },
-          };
+          return syncEventUpdate(state, (event) => ({
+            ...event,
+            tables: event.tables.map((t) => {
+              const newPos = positionMap.get(t.id);
+              if (!newPos) return t;
+              return { ...t, x: newPos.x, y: newPos.y };
+            }),
+          }));
         }),
 
       // View actions
@@ -1621,8 +1756,10 @@ export const useStore = create<AppState>()(
         set((state) => {
           if (state.historyIndex < 0) return state;
           const prevEntry = state.history[state.historyIndex];
+          const restoredEvent = JSON.parse(JSON.stringify(prevEntry.event)) as Event;
           return {
-            event: JSON.parse(JSON.stringify(prevEntry.event)),
+            events: state.events.map(e => e.id === state.currentEventId ? restoredEvent : e),
+            event: restoredEvent,
             historyIndex: state.historyIndex - 1,
           };
         }),
@@ -1631,8 +1768,10 @@ export const useStore = create<AppState>()(
         set((state) => {
           if (state.historyIndex >= state.history.length - 1) return state;
           const nextEntry = state.history[state.historyIndex + 1];
+          const restoredEvent = JSON.parse(JSON.stringify(nextEntry.event)) as Event;
           return {
-            event: JSON.parse(JSON.stringify(nextEntry.event)),
+            events: state.events.map(e => e.id === state.currentEventId ? restoredEvent : e),
+            event: restoredEvent,
             historyIndex: state.historyIndex + 1,
           };
         }),
@@ -1641,34 +1780,54 @@ export const useStore = create<AppState>()(
       canRedo: () => get().historyIndex < get().history.length - 1,
 
       // Persistence
-      resetEvent: () => set({ event: createDefaultEvent() }),
+      resetEvent: () => {
+        const state = get();
+        const newEvent = createDefaultEvent();
+        set({
+          events: state.events.map(e => e.id === state.currentEventId ? newEvent : e),
+          event: newEvent,
+        });
+      },
 
       exportEvent: () => JSON.stringify(get().event, null, 2),
 
       importEvent: (json) => {
         try {
-          const event = JSON.parse(json) as Event;
-          set({ event });
+          const state = get();
+          const importedEvent = JSON.parse(json) as Event;
+          // Ensure the imported event has the current event's ID to maintain consistency
+          const updatedEvent = { ...importedEvent, id: state.currentEventId || importedEvent.id };
+          set({
+            events: state.events.map(e => e.id === state.currentEventId ? updatedEvent : e),
+            event: updatedEvent,
+          });
         } catch (e) {
           console.error('Failed to import event:', e);
         }
       },
 
-      loadDemoData: () =>
+      loadDemoData: () => {
+        const state = get();
+        const now = new Date().toISOString();
+        const demoEvent: Event = {
+          id: state.currentEventId || uuidv4(),
+          name: demoEventMetadata.name,
+          date: demoEventMetadata.date,
+          eventType: demoEventMetadata.eventType,
+          createdAt: now,
+          updatedAt: now,
+          tables: demoTables,
+          guests: demoGuests,
+          constraints: demoConstraints,
+          surveyQuestions: demoSurveyQuestions,
+          surveyResponses: [],
+          venueElements: [],
+        };
         set({
-          event: {
-            id: uuidv4(),
-            name: demoEventMetadata.name,
-            date: demoEventMetadata.date,
-            eventType: demoEventMetadata.eventType,
-            tables: demoTables,
-            guests: demoGuests,
-            constraints: demoConstraints,
-            surveyQuestions: demoSurveyQuestions,
-            surveyResponses: [],
-            venueElements: [],
-          },
-        }),
+          events: state.events.map(e => e.id === state.currentEventId ? demoEvent : e),
+          event: demoEvent,
+        });
+      },
 
       // Constraint Violations
       getViolations: () => detectConstraintViolations(get().event),
@@ -1841,9 +2000,9 @@ export const useStore = create<AppState>()(
 
         // Apply assignments and set animation state
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map(guest => {
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests.map(guest => {
               // Find new table for this guest
               for (const [tableId, guestIds] of tableAssignments) {
                 if (guestIds.includes(guest.id)) {
@@ -1852,7 +2011,7 @@ export const useStore = create<AppState>()(
               }
               return guest;
             }),
-          },
+          })),
           animatingGuestIds: new Set(movedGuests),
           preOptimizationSnapshot: snapshot,
         }));
@@ -1880,16 +2039,16 @@ export const useStore = create<AppState>()(
 
         console.log('Resetting seating, movedGuests:', movedGuests);
         set((state) => ({
-          event: {
-            ...state.event,
-            guests: state.event.guests.map(guest => {
+          ...syncEventUpdate(state, (event) => ({
+            ...event,
+            guests: event.guests.map(guest => {
               const snapshotEntry = snapshot.find(s => s.guestId === guest.id);
               if (snapshotEntry) {
                 return { ...guest, tableId: snapshotEntry.tableId };
               }
               return guest;
             }),
-          },
+          })),
           animatingGuestIds: new Set(movedGuests),
           preOptimizationSnapshot: null,
         }));
@@ -1902,19 +2061,35 @@ export const useStore = create<AppState>()(
       clearNewlyAddedGuest: () => set({ newlyAddedGuestId: null }),
 
       clearNewlyAddedTable: () => set({ newlyAddedTableId: null }),
-    }),
+    };
+    },
     {
       name: 'seating-arrangement-storage',
-      version: 10, // Increment for firstName/lastName split and eventType rename
+      version: 11, // Increment for multi-event support
       partialize: (state) => ({
-        event: state.event,
+        events: state.events,
+        currentEventId: state.currentEventId,
         theme: state.theme,
         hasCompletedOnboarding: state.hasCompletedOnboarding,
       }),
+      onRehydrateStorage: () => (state) => {
+        // After rehydration, compute `event` from `events` and `currentEventId`
+        if (state && state.events && state.events.length > 0) {
+          const currentEvent = getCurrentEvent(state.events, state.currentEventId);
+          // We can't call set directly here, but we can mutate the state object
+          // since this is called during rehydration
+          state.event = currentEvent;
+          // Ensure currentEventId is set
+          if (!state.currentEventId) {
+            state.currentEventId = currentEvent.id;
+          }
+        }
+      },
       migrate: (persistedState: unknown, version: number) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state = persistedState as any;
 
+        // Migration for v10 and earlier: name split and eventType rename
         if (version < 10 && state?.event) {
           // Migrate guests from 'name' to 'firstName'/'lastName'
           if (state.event.guests) {
@@ -1935,6 +2110,26 @@ export const useStore = create<AppState>()(
           if (state.event.type && !state.event.eventType) {
             state.event.eventType = state.event.type;
             delete state.event.type;
+          }
+        }
+
+        // Migration for v10 → v11: single event to multi-event
+        if (version < 11) {
+          // Check if we have the old single-event format
+          if (state?.event && !state?.events) {
+            const now = new Date().toISOString();
+            // Add timestamps if missing
+            if (!state.event.createdAt) {
+              state.event.createdAt = now;
+            }
+            if (!state.event.updatedAt) {
+              state.event.updatedAt = now;
+            }
+            // Transform to multi-event format
+            state.events = [state.event];
+            state.currentEventId = state.event.id;
+            // Remove old event property (will be computed from events)
+            delete state.event;
           }
         }
 

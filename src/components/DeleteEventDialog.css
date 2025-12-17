@@ -1,0 +1,116 @@
+.delete-event-dialog {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  width: 400px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideUp var(--duration-slow) var(--ease-spring);
+}
+
+.dialog-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.delete-event-dialog h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.event-name-display {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin: 0 0 1rem 0;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+.warning-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.deletion-summary {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+}
+
+.summary-icon {
+  font-size: 1rem;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.delete-event-dialog .btn-cancel {
+  flex: 1;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.delete-event-dialog .btn-cancel:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text);
+}
+
+.delete-event-dialog .btn-delete {
+  flex: 1;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-error);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: white;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
+
+.delete-event-dialog .btn-delete:hover {
+  background: var(--color-error-hover, #dc2626);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .delete-event-dialog {
+    padding: 1.5rem;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+}

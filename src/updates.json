@@ -1,5 +1,23 @@
 [
   {
+    "version": "0.6.0",
+    "highlights": [
+      "Multi-event support - manage up to 10 separate events in one app!",
+      "New event list view to easily switch between your events",
+      "Create events with name, type, date, and venue information",
+      "Event cards show guest count, table count, and event type at a glance"
+    ]
+  },
+  {
+    "version": "0.5.0",
+    "highlights": [
+      "Table Assignment in import wizard - create tables and assign guests automatically!",
+      "Choose from 6 table shapes and set capacity during import",
+      "Smart distribution strategies: Evenly, Keep Groups Together, or AI Optimization",
+      "Marquee selection - drag to select multiple tables and guests at once"
+    ]
+  },
+  {
     "version": "0.4.1",
     "highlights": [
       "Improved mobile responsiveness - the app now detects your device size more reliably",

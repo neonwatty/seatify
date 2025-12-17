@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 // Helper to enter app from landing page
 async function enterApp(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
+  await page.click('button:has-text("Start Planning Free")');
   await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 }
 
@@ -19,7 +19,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('wizard auto-shows for first-time users after entering app', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
 
     // Wizard should appear after a short delay
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
@@ -30,7 +30,7 @@ test.describe('Onboarding Wizard', () => {
 
   test('wizard does not auto-show for returning users who completed it', async ({ page }) => {
     // First, complete the wizard
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Skip through all steps
@@ -42,7 +42,7 @@ test.describe('Onboarding Wizard', () => {
 
     // Reload and re-enter
     await page.reload();
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
     // Wait a moment to ensure wizard doesn't appear
@@ -51,7 +51,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('can navigate through wizard steps using Next button', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Step 1: Welcome
@@ -60,12 +60,12 @@ test.describe('Onboarding Wizard', () => {
     // Click Next
     await page.click('.onboarding-btn--next');
 
-    // Step 2: Canvas Overview
-    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Canvas');
+    // Step 2: Events Dashboard (new step after multi-event support)
+    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Events Dashboard');
   });
 
   test('can go back to previous steps', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Go to step 2
@@ -78,7 +78,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('skip button closes wizard', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     await page.click('.onboarding-btn--skip');
@@ -86,7 +86,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('completing wizard shows success toast', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Click through all steps to the end
@@ -105,7 +105,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('progress dots show current step', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // First dot should be active
@@ -121,7 +121,7 @@ test.describe('Onboarding Wizard', () => {
 
   test('Take Tour button in header restarts wizard', async ({ page }) => {
     // First complete the wizard
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
     await page.click('.onboarding-btn--skip');
     await expect(page.locator('.onboarding-tooltip')).not.toBeVisible();
@@ -148,7 +148,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('Escape key closes wizard', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     await page.keyboard.press('Escape');
@@ -156,7 +156,7 @@ test.describe('Onboarding Wizard', () => {
   });
 
   test('Arrow keys navigate wizard steps', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Arrow Right goes to next step
@@ -176,18 +176,25 @@ test.describe('Onboarding Wizard - Spotlight', () => {
   });
 
   test('spotlight highlights target elements', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    // Skip on small mobile viewports where spotlight is hidden by design
+    const viewportSize = page.viewportSize();
+    if (viewportSize && viewportSize.width < 480) {
+      test.skip();
+      return;
+    }
+
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
-    // Go to step with spotlight (step 2: Canvas)
+    // Go to step with spotlight (step 2: Events Dashboard targets event-cards-grid)
     await page.click('.onboarding-btn--next');
 
-    // Spotlight ring should be visible
+    // Spotlight ring should be visible (targets event-cards-grid)
     await expect(page.locator('.onboarding-spotlight-ring')).toBeVisible({ timeout: 2000 });
   });
 
   test('welcome step has no spotlight (center placement)', async ({ page }) => {
-    await page.click('button:has-text("Start Planning")');
+    await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // Welcome step should not have spotlight ring

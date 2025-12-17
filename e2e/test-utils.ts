@@ -12,20 +12,29 @@ export async function isMobileViewport(page: Page): Promise<boolean> {
 }
 
 /**
- * Enter the app from landing page, bypassing onboarding
+ * Enter the app from landing page, bypassing onboarding.
+ * After entering, clicks on the first event to go to canvas view.
  */
 export async function enterApp(page: Page): Promise<void> {
   await page.addInitScript(() => {
     const stored = localStorage.getItem('seating-arrangement-storage');
-    const data = stored ? JSON.parse(stored) : { state: {}, version: 10 };
+    const data = stored ? JSON.parse(stored) : { state: {}, version: 11 };
     data.state = data.state || {};
     data.state.hasCompletedOnboarding = true;
-    data.version = 10;
+    data.version = 11;
     localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
   });
   await page.goto('/');
-  await page.click('button:has-text("Start Planning")');
+  await page.click('button:has-text("Start Planning Free")');
   await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
+
+  // Click on first event to enter it (if event list view is shown)
+  const eventCard = page.locator('.event-card').first();
+  if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await eventCard.click();
+    // Wait for canvas to load (indicates we're inside an event)
+    await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
+  }
 }
 
 /**

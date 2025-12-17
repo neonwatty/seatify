@@ -4,6 +4,20 @@ import { useStore } from '../store/useStore';
 import { ONBOARDING_STEPS } from '../data/onboardingSteps';
 import './OnboardingWizard.css';
 
+// Helper to perform step actions
+const performStepAction = (action: string | undefined, setActiveView: (view: 'event-list' | 'dashboard' | 'canvas' | 'guests') => void) => {
+  if (action === 'click-event-card') {
+    // Click the first event card to enter it
+    const eventCard = document.querySelector('.event-card') as HTMLElement;
+    if (eventCard) {
+      eventCard.click();
+    } else {
+      // Fallback: just navigate to canvas
+      setActiveView('canvas');
+    }
+  }
+};
+
 interface OnboardingWizardProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +46,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
     targetFallback: currentStep.targetFallback,
     requiredView: currentStep.requiredView,
     id: currentStep.id,
+    action: currentStep.action,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [currentStepIndex, isMobile]);
 
@@ -114,6 +129,10 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
         if (isLastStep) {
           handleComplete();
         } else {
+          // Perform any action for current step before advancing
+          if (stepProps.action) {
+            performStepAction(stepProps.action, setActiveView);
+          }
           setCurrentStepIndex((i) => i + 1);
         }
       } else if (e.key === 'ArrowLeft' && !isFirstStep) {
@@ -278,6 +297,10 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
                 if (isLastStep) {
                   handleComplete();
                 } else {
+                  // Perform any action for current step before advancing
+                  if (stepProps.action) {
+                    performStepAction(stepProps.action, setActiveView);
+                  }
                   setCurrentStepIndex((i) => i + 1);
                 }
               }}

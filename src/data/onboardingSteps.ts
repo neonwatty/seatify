@@ -5,8 +5,9 @@ export interface OnboardingStep {
   title: string;
   description: string;
   placement: 'top' | 'bottom' | 'left' | 'right' | 'center';
-  requiredView?: 'dashboard' | 'canvas' | 'guests';
+  requiredView?: 'event-list' | 'dashboard' | 'canvas' | 'guests';
   highlightPadding?: number;    // Extra padding around highlighted element
+  action?: 'click-event-card';  // Special action to perform before moving to next step
 }
 
 export const ONBOARDING_STEPS: OnboardingStep[] = [
@@ -16,6 +17,35 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     title: 'Welcome to TableCraft!',
     description: "Let's take a quick tour of the key features. This will only take about a minute.",
     placement: 'center',
+  },
+  {
+    id: 'event-list-overview',
+    target: '.event-cards-grid',
+    targetFallback: '.event-list-view',
+    title: 'Your Events Dashboard',
+    description: 'This is where all your events live. Each card represents a separate event you\'re planning - weddings, corporate dinners, galas, and more.',
+    placement: 'center',
+    requiredView: 'event-list',
+    highlightPadding: 16,
+  },
+  {
+    id: 'create-event',
+    target: '.create-event-btn',
+    title: 'Create New Events',
+    description: 'Click here to create a new event. You can add up to 10 events, each with its own venue details, guest list, and seating arrangement.',
+    placement: 'bottom',
+    requiredView: 'event-list',
+    highlightPadding: 8,
+  },
+  {
+    id: 'event-card',
+    target: '.event-card',
+    title: 'Enter an Event',
+    description: 'Click any event card to open it and start planning the seating arrangement. Let\'s go inside this event now!',
+    placement: 'right',
+    requiredView: 'event-list',
+    highlightPadding: 8,
+    action: 'click-event-card',
   },
   {
     id: 'canvas-overview',

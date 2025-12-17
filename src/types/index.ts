@@ -117,6 +117,15 @@ export interface Event {
   surveyQuestions: SurveyQuestion[];
   surveyResponses: SurveyResponse[];
   venueElements: VenueElement[];
+
+  // Venue Information
+  venueName?: string;
+  venueAddress?: string;
+  guestCapacityLimit?: number;
+
+  // Timestamps
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CanvasState {

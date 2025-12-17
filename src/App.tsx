@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { GuestManagementView } from './components/GuestManagementView';
+import { EventListView } from './components/EventListView';
 import { PrintView } from './components/PrintView';
 import { GuestForm } from './components/GuestForm';
 import { ToastContainer } from './components/Toast';
@@ -16,6 +17,8 @@ import './App.css';
 function App() {
   const {
     activeView,
+    setActiveView,
+    currentEventId,
     undo,
     redo,
     canUndo,
@@ -146,7 +149,10 @@ function App() {
 
   // Show landing page
   if (showLanding) {
-    return <LandingPage onEnterApp={() => setShowLanding(false)} />;
+    return <LandingPage onEnterApp={() => {
+      setShowLanding(false);
+      setActiveView('event-list');
+    }} />;
   }
 
   // Show print preview
@@ -162,14 +168,15 @@ function App() {
         onStartTour={() => setShowOnboarding(true)}
       />
       <div className="main-content view-visible">
-        {activeView === 'dashboard' && <DashboardView />}
-        {activeView === 'canvas' && (
+        {activeView === 'event-list' && <EventListView />}
+        {activeView === 'dashboard' && currentEventId && <DashboardView />}
+        {activeView === 'canvas' && currentEventId && (
           <>
             <Sidebar />
             <Canvas />
           </>
         )}
-        {activeView === 'guests' && <GuestManagementView />}
+        {activeView === 'guests' && currentEventId && <GuestManagementView />}
       </div>
 
       {/* Guest Edit Modal (global - accessible from anywhere) */}
