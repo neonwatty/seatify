@@ -1,4 +1,5 @@
 import type { Guest, EventType, TableShape } from '../../types';
+import type { SourcePlatformInfo } from './utils/columnDetector';
 
 // Column mapping types
 export interface ColumnMapping {
@@ -70,6 +71,7 @@ export interface ImportWizardState {
   file: File | null;
   parsedFile: ParsedFile | null;
   detectedEventType: EventType | null;
+  detectedPlatform: SourcePlatformInfo | null;
   fileError: string | null;
 
   // Step 2: Mapping
@@ -99,6 +101,7 @@ export type ImportWizardAction =
   | { type: 'SET_FILE_ERROR'; payload: string }
   | { type: 'CLEAR_FILE' }
   | { type: 'SET_DETECTED_EVENT_TYPE'; payload: EventType }
+  | { type: 'SET_DETECTED_PLATFORM'; payload: SourcePlatformInfo }
   | { type: 'SET_COLUMN_MAPPINGS'; payload: ColumnMapping[] }
   | { type: 'UPDATE_COLUMN_MAPPING'; payload: { index: number; mapping: Partial<ColumnMapping> } }
   | { type: 'SET_PARSED_GUESTS'; payload: Partial<Guest>[] }
@@ -122,6 +125,7 @@ export const initialImportState: ImportWizardState = {
   file: null,
   parsedFile: null,
   detectedEventType: null,
+  detectedPlatform: null,
   fileError: null,
   columnMappings: [],
   parsedGuests: [],
@@ -160,6 +164,8 @@ export function importReducer(
       return { ...initialImportState };
     case 'SET_DETECTED_EVENT_TYPE':
       return { ...state, detectedEventType: action.payload };
+    case 'SET_DETECTED_PLATFORM':
+      return { ...state, detectedPlatform: action.payload };
     case 'SET_COLUMN_MAPPINGS':
       return { ...state, columnMappings: action.payload };
     case 'UPDATE_COLUMN_MAPPING':

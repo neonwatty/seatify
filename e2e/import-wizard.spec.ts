@@ -953,3 +953,199 @@ test.describe('Import Wizard - Table Assignment Integration', () => {
     expect(finalTables).toBe(initialTables + 2);
   });
 });
+
+// =============================================================================
+// Platform Detection Tests
+// =============================================================================
+
+test.describe('Import Wizard - Platform Detection', () => {
+  // Import wizard has issues on mobile viewports - skip these tests on mobile
+  test.beforeEach(async ({ page }, testInfo) => {
+    const isMobile = testInfo.project.name.includes('Mobile') || testInfo.project.name.includes('Tablet');
+    if (isMobile) {
+      test.skip();
+    }
+  });
+
+  test('detects RSVPify format and shows platform hint', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('rsvpify-export.csv'));
+
+    // Should show file info
+    await expect(page.locator('.file-info')).toBeVisible();
+
+    // Should detect RSVPify platform
+    await expect(page.locator('.platform-hint')).toBeVisible();
+    await expect(page.locator('.platform-hint')).toContainText('RSVPify');
+  });
+
+  test('detects Zola format and shows platform hint', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('zola-export.csv'));
+
+    // Should show file info
+    await expect(page.locator('.file-info')).toBeVisible();
+
+    // Should detect Zola platform
+    await expect(page.locator('.platform-hint')).toBeVisible();
+    await expect(page.locator('.platform-hint')).toContainText('Zola');
+  });
+
+  test('does not show platform hint for generic CSV', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('basic-guests.csv'));
+
+    // Should show file info
+    await expect(page.locator('.file-info')).toBeVisible();
+
+    // Should NOT show platform hint for generic CSV
+    await expect(page.locator('.platform-hint')).not.toBeVisible();
+  });
+
+  test('RSVPify import auto-maps Group ID to group field', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('rsvpify-export.csv'));
+
+    // Go to mapping step
+    await page.locator('.wizard-footer .btn-primary').click();
+
+    // Check that Group ID is mapped to Group
+    const groupIdRow = page.locator('.mapping-row').filter({ hasText: 'Group ID' });
+    await expect(groupIdRow.locator('select')).toHaveValue('group');
+  });
+
+  test('Zola import auto-maps Name to fullName field', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('zola-export.csv'));
+
+    // Go to mapping step
+    await page.locator('.wizard-footer .btn-primary').click();
+
+    // Check that Name is mapped to Full Name (look for column-name element with exact text)
+    const nameRow = page.locator('.mapping-row').filter({ has: page.locator('.column-name', { hasText: 'Name' }) }).first();
+    await expect(nameRow.locator('select')).toHaveValue('fullName');
+  });
+
+  test('can complete full import flow with RSVPify format', async ({ page }) => {
+    await enterApp(page);
+    await switchView(page, 'canvas');
+
+    const initialGuests = await page.locator('.guest-list-item, .sidebar-list li').count();
+
+    await clickImport(page);
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('rsvpify-export.csv'));
+
+    // Verify platform detected
+    await expect(page.locator('.platform-hint')).toContainText('RSVPify');
+
+    // Navigate through wizard
+    await page.locator('.wizard-footer .btn-primary').click(); // To mapping
+    await page.locator('.wizard-footer .btn-primary').click(); // To preview
+    await page.locator('.wizard-footer .btn-primary').click(); // To tables
+    await page.locator('.wizard-footer .btn-primary').click(); // Complete import
+
+    // Wait for import to complete
+    await expect(page.locator('.import-wizard-modal')).not.toBeVisible({ timeout: 5000 });
+
+    // Verify guests were imported (10 guests in RSVPify fixture)
+    await switchView(page, 'guests');
+    await page.waitForTimeout(300);
+    const finalGuests = await page.locator('.guest-card, [class*="guest"]').count();
+    expect(finalGuests).toBeGreaterThan(initialGuests);
+  });
+
+  test('can complete full import flow with Zola format', async ({ page }) => {
+    await enterApp(page);
+    await switchView(page, 'canvas');
+
+    const initialGuests = await page.locator('.guest-list-item, .sidebar-list li').count();
+
+    await clickImport(page);
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('zola-export.csv'));
+
+    // Verify platform detected
+    await expect(page.locator('.platform-hint')).toContainText('Zola');
+
+    // Navigate through wizard
+    await page.locator('.wizard-footer .btn-primary').click(); // To mapping
+    await page.locator('.wizard-footer .btn-primary').click(); // To preview
+    await page.locator('.wizard-footer .btn-primary').click(); // To tables
+    await page.locator('.wizard-footer .btn-primary').click(); // Complete import
+
+    // Wait for import to complete
+    await expect(page.locator('.import-wizard-modal')).not.toBeVisible({ timeout: 5000 });
+
+    // Verify guests were imported (10 guests in Zola fixture)
+    await switchView(page, 'guests');
+    await page.waitForTimeout(300);
+    const finalGuests = await page.locator('.guest-card, [class*="guest"]').count();
+    expect(finalGuests).toBeGreaterThan(initialGuests);
+  });
+
+  test('Zola full name is split correctly into first and last name', async ({ page }) => {
+    await enterApp(page);
+    await switchView(page, 'canvas');
+
+    await clickImport(page);
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('zola-export.csv'));
+
+    // Go to mapping step
+    await page.locator('.wizard-footer .btn-primary').click();
+
+    // Go to preview step
+    await page.locator('.wizard-footer .btn-primary').click();
+
+    // Check that names are split correctly in preview
+    // "John Smith" should become First: John, Last: Smith
+    const previewTable = page.locator('.preview-table, .data-preview');
+    await expect(previewTable).toContainText('John');
+    await expect(previewTable).toContainText('Smith');
+  });
+});
+
+// =============================================================================
+// Landing Page Platform Messaging Tests
+// =============================================================================
+
+test.describe('Landing Page - Platform Messaging', () => {
+  test('shows supported platforms on landing page', async ({ page }) => {
+    await page.goto('/seating-arrangement/');
+
+    // Should show the platforms section
+    await expect(page.locator('.supported-platforms')).toBeVisible();
+
+    // Should list active platforms
+    await expect(page.locator('.platform-name').filter({ hasText: 'Zola' })).toBeVisible();
+    await expect(page.locator('.platform-name').filter({ hasText: 'RSVPify' })).toBeVisible();
+    await expect(page.locator('.platform-name').filter({ hasText: 'CSV/Excel' })).toBeVisible();
+
+    // Should show coming soon platforms
+    await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'Joy' })).toBeVisible();
+    await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'The Knot' })).toBeVisible();
+    await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'Eventbrite' })).toBeVisible();
+  });
+
+  test('coming soon platforms are visually distinct', async ({ page }) => {
+    await page.goto('/seating-arrangement/');
+
+    // Coming soon platforms should have the coming-soon class
+    const comingSoonPlatforms = page.locator('.platform-name.coming-soon');
+    await expect(comingSoonPlatforms).toHaveCount(3);
+
+    // They should contain "(coming soon)" text
+    await expect(comingSoonPlatforms.first()).toContainText('coming soon');
+  });
+});

@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react';
 import type { ImportWizardState, ImportWizardAction } from '../types';
 import { parseFile, formatFileSize } from '../utils/fileParser';
-import { autoDetectMappings, detectEventType } from '../utils/columnDetector';
+import {
+  autoDetectMappings,
+  detectEventType,
+  detectSourcePlatform,
+  PLATFORM_DISPLAY_NAMES,
+} from '../utils/columnDetector';
 
 interface FileUploadStepProps {
   state: ImportWizardState;
@@ -22,12 +27,21 @@ export function FileUploadStep({ state, dispatch }: FileUploadStepProps) {
 
       dispatch({ type: 'SET_FILE', payload: { file, parsedFile: result.data } });
 
+      // Detect source platform (e.g., Zola, RSVPify, The Knot, Joy)
+      const platformInfo = detectSourcePlatform(result.data.headers);
+      dispatch({ type: 'SET_DETECTED_PLATFORM', payload: platformInfo });
+
       // Detect event type from headers
       const eventType = detectEventType(result.data.headers);
       dispatch({ type: 'SET_DETECTED_EVENT_TYPE', payload: eventType });
 
-      // Auto-detect column mappings
-      const mappings = autoDetectMappings(result.data.headers, result.data.rows, eventType);
+      // Auto-detect column mappings using platform-specific patterns
+      const mappings = autoDetectMappings(
+        result.data.headers,
+        result.data.rows,
+        eventType,
+        platformInfo.platform
+      );
       dispatch({ type: 'SET_COLUMN_MAPPINGS', payload: mappings });
     },
     [dispatch]
@@ -75,6 +89,10 @@ export function FileUploadStep({ state, dispatch }: FileUploadStepProps) {
       <div className="step-description">
         <p>Upload a CSV or Excel file containing your guest list.</p>
         <p className="hint">Supported formats: .csv, .xlsx, .xls (max 5MB, 10,000 rows)</p>
+        <p className="hint platforms-hint">
+          Works with exports from <strong>Zola</strong>, <strong>RSVPify</strong>, and CSV/Excel.{' '}
+          <span className="coming-soon-platforms">Joy, The Knot, Eventbrite coming soon.</span>
+        </p>
       </div>
 
       {!state.parsedFile ? (
@@ -125,6 +143,27 @@ export function FileUploadStep({ state, dispatch }: FileUploadStepProps) {
             {state.detectedEventType && (
               <p className="event-type-hint">
                 Detected event type: <strong>{state.detectedEventType}</strong>
+              </p>
+            )}
+            {state.detectedPlatform && state.detectedPlatform.platform !== 'generic' && (
+              <p className="platform-hint">
+                Source detected:{' '}
+                <strong>{PLATFORM_DISPLAY_NAMES[state.detectedPlatform.platform]}</strong>
+                {state.detectedPlatform.confidence !== 'high' && (
+                  <span className="confidence-indicator" title={`${state.detectedPlatform.confidence} confidence`}>
+                    {' '}({state.detectedPlatform.confidence})
+                  </span>
+                )}
+              </p>
+            )}
+            {state.detectedPlatform?.note && (
+              <p className="platform-note">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+                {state.detectedPlatform.note}
               </p>
             )}
           </div>

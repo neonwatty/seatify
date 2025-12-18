@@ -1,0 +1,11 @@
+Title,First Name,Last Name,Email Address,Group ID,Additional Guest(s) Allowed (+1's),Tags
+Mr.,John,Smith,john.smith@email.com,1,1,VIP
+Mrs.,Jane,Smith,jane.smith@email.com,1,0,VIP
+Mr.,Michael,Johnson,michael.j@email.com,2,0,Family
+Ms.,Sarah,Williams,sarah.w@email.com,3,1,Friends
+Dr.,Robert,Brown,robert.b@email.com,4,0,Colleagues
+Mrs.,Emily,Davis,emily.d@email.com,5,2,Family
+Mr.,David,Miller,david.m@email.com,5,0,Family
+Ms.,Jennifer,Wilson,jennifer.w@email.com,6,1,Friends
+Mr.,Christopher,Moore,chris.m@email.com,7,0,Colleagues
+Mrs.,Amanda,Taylor,amanda.t@email.com,8,0,VIP

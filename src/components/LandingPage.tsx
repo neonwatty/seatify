@@ -222,9 +222,18 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
             <div className="coming-soon-card">
               <h3>Guest Import & RSVP</h3>
               <p>
-                Upload your guest list from a spreadsheet and track responses as
-                they come in.
+                Import your guest list from your favorite planning tools and
+                track responses as they come in.
               </p>
+              <div className="supported-platforms">
+                <span className="platforms-label">Works with:</span>
+                <span className="platform-name">Zola</span>
+                <span className="platform-name">RSVPify</span>
+                <span className="platform-name">CSV/Excel</span>
+                <span className="platform-name coming-soon">Joy <small>(coming soon)</small></span>
+                <span className="platform-name coming-soon">The Knot <small>(coming soon)</small></span>
+                <span className="platform-name coming-soon">Eventbrite <small>(coming soon)</small></span>
+              </div>
             </div>
           </div>
         </section>

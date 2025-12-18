@@ -125,6 +125,19 @@
   margin-top: 0.5rem;
 }
 
+.step-description .platforms-hint {
+  margin-top: 0.25rem;
+}
+
+.step-description .platforms-hint strong {
+  color: var(--color-text);
+}
+
+.step-description .coming-soon-platforms {
+  opacity: 0.7;
+  font-style: italic;
+}
+
 .step-description .warning {
   display: flex;
   align-items: center;
@@ -216,6 +229,34 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   margin: 0.5rem 0 0;
+}
+
+.platform-hint {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0.25rem 0 0;
+}
+
+.platform-hint .confidence-indicator {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+}
+
+.platform-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--color-warning);
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-warning-bg, rgba(234, 179, 8, 0.1));
+  border-radius: var(--radius-sm);
+}
+
+.platform-note svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
 }
 
 .clear-file {

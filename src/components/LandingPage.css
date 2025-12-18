@@ -559,6 +559,36 @@
   margin: 0;
 }
 
+.supported-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.platforms-label {
+  color: var(--color-text-secondary);
+}
+
+.platform-name {
+  padding: 0.25rem 0.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.platform-name.coming-soon {
+  opacity: 0.6;
+}
+
+.platform-name.coming-soon small {
+  font-weight: 400;
+  font-size: 0.7em;
+}
+
 /* ===== EMAIL CAPTURE ===== */
 .email-capture {
   padding: 3rem 2rem;

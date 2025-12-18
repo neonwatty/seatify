@@ -95,7 +95,7 @@ test.describe('Landing Page', () => {
     test('Guest Import & RSVP card has correct content', async ({ page }) => {
       const importCard = page.locator('.coming-soon-card').filter({ hasText: 'Guest Import' });
       await expect(importCard).toBeVisible();
-      await expect(importCard).toContainText('spreadsheet');
+      await expect(importCard).toContainText('favorite planning tools');
       await expect(importCard).toContainText('track responses');
     });
   });
