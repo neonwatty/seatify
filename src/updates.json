@@ -1,5 +1,14 @@
 [
   {
+    "version": "0.8.0",
+    "highlights": [
+      "Smart platform detection - we now recognize Zola and RSVPify exports automatically!",
+      "Better column mapping when importing from your favorite wedding planning tools",
+      "See which platform your guest list came from during import",
+      "Coming soon: Joy, The Knot, and Eventbrite support"
+    ]
+  },
+  {
     "version": "0.7.0",
     "highlights": [
       "New list view option for your events - toggle between cards and list layout",

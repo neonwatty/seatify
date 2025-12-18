@@ -5,6 +5,17 @@ All notable changes to TableCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-12-17
+
+### Added
+- Platform detection for CSV imports - automatically detects Zola and RSVPify exports
+- Platform-specific column mappings for improved auto-detection accuracy
+- Platform hint displayed in import wizard showing detected source (with confidence indicator)
+- Platform messaging on landing page and import wizard showing supported platforms
+- Coming soon indicators for Joy, The Knot, and Eventbrite platforms
+- E2E test fixtures for RSVPify and Zola CSV formats
+- 11 new E2E tests for platform detection and landing page messaging
+
 ## [0.7.0] - 2025-12-17
 
 ### Added
