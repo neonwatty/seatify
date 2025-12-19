@@ -266,6 +266,41 @@
   white-space: nowrap;
 }
 
+/* Card size options */
+.pdf-size-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pdf-size-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.pdf-size-option input[type="radio"] {
+  display: none;
+}
+
+.pdf-size-label {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition: all var(--duration-fast);
+}
+
+.pdf-size-option input[type="radio"]:checked + .pdf-size-label {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pdf-size-label:hover {
+  border-color: var(--color-primary);
+}
+
 .pdf-options-note {
   font-size: var(--font-size-xs);
   color: var(--color-text-light);

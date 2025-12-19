@@ -17,17 +17,52 @@ async function loadJsPDF(): Promise<typeof import('jspdf')> {
   return jsPDFModule;
 }
 
+// Card size type
+export type CardSize = 'compact' | 'standard' | 'large';
+
 // Card dimensions in mm (jsPDF uses mm by default)
-const TABLE_CARD = {
-  width: 101.6, // 4 inches
-  height: 76.2, // 3 inches (folded)
-  margin: 10,
+interface CardDimensions {
+  width: number;
+  height: number;
+  margin: number;
+}
+
+// Table card size presets
+export const TABLE_CARD_SIZES: Record<CardSize, CardDimensions> = {
+  compact: {
+    width: 76.2,  // 3 inches
+    height: 50.8, // 2 inches (folded)
+    margin: 6,
+  },
+  standard: {
+    width: 101.6, // 4 inches
+    height: 76.2, // 3 inches (folded)
+    margin: 10,
+  },
+  large: {
+    width: 127,   // 5 inches
+    height: 101.6, // 4 inches (folded)
+    margin: 12,
+  },
 };
 
-const PLACE_CARD = {
-  width: 88.9, // 3.5 inches
-  height: 50.8, // 2 inches
-  margin: 5,
+// Place card size presets
+export const PLACE_CARD_SIZES: Record<CardSize, CardDimensions> = {
+  compact: {
+    width: 63.5,  // 2.5 inches
+    height: 38.1, // 1.5 inches
+    margin: 4,
+  },
+  standard: {
+    width: 88.9,  // 3.5 inches
+    height: 50.8, // 2 inches
+    margin: 5,
+  },
+  large: {
+    width: 101.6, // 4 inches
+    height: 63.5, // 2.5 inches
+    margin: 6,
+  },
 };
 
 // Default colors (used when no theme is specified)
@@ -97,9 +132,10 @@ export async function generateTableCardsPDF(
   tables: Table[],
   options: TableCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme } = options;
+  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme, cardSize = 'standard' } = options;
   const fontSizes = TABLE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
+  const cardDimensions = TABLE_CARD_SIZES[cardSize];
   const { jsPDF } = await loadJsPDF();
 
   const doc = new jsPDF({
@@ -111,14 +147,14 @@ export async function generateTableCardsPDF(
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Calculate cards per page (2 columns, 2 rows)
-  const cardsPerRow = 2;
-  const cardsPerCol = 2;
+  // Calculate cards per page based on card size
+  const cardsPerRow = Math.floor(pageWidth / (cardDimensions.width + 5)) || 1;
+  const cardsPerCol = Math.floor(pageHeight / (cardDimensions.height + 5)) || 1;
   const cardsPerPage = cardsPerRow * cardsPerCol;
 
   // Calculate spacing
-  const totalCardWidth = TABLE_CARD.width * cardsPerRow;
-  const totalCardHeight = TABLE_CARD.height * cardsPerCol;
+  const totalCardWidth = cardDimensions.width * cardsPerRow + 5 * (cardsPerRow - 1);
+  const totalCardHeight = cardDimensions.height * cardsPerCol + 5 * (cardsPerCol - 1);
   const xOffset = (pageWidth - totalCardWidth) / 2;
   const yOffset = (pageHeight - totalCardHeight) / 2;
 
@@ -132,10 +168,10 @@ export async function generateTableCardsPDF(
     const col = positionOnPage % cardsPerRow;
     const row = Math.floor(positionOnPage / cardsPerRow);
 
-    const x = xOffset + col * TABLE_CARD.width;
-    const y = yOffset + row * TABLE_CARD.height;
+    const x = xOffset + col * (cardDimensions.width + 5);
+    const y = yOffset + row * (cardDimensions.height + 5);
 
-    drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName, themeColors });
+    drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName, themeColors, cardDimensions });
   });
 
   return doc;
@@ -156,10 +192,11 @@ function drawTableCard(
     showGuestCount: boolean;
     showEventName: boolean;
     themeColors: ThemeColors;
+    cardDimensions: { width: number; height: number; margin: number };
   }
 ): void {
-  const { width, height, margin } = TABLE_CARD;
-  const { fontSizes, fontFamily, showGuestCount, showEventName, themeColors } = options;
+  const { fontSizes, fontFamily, showGuestCount, showEventName, themeColors, cardDimensions } = options;
+  const { width, height, margin } = cardDimensions;
 
   // Draw card border (dashed for cutting guide)
   doc.setDrawColor(themeColors.border);
@@ -278,6 +315,7 @@ export interface TableCardPDFOptions {
   showGuestCount?: boolean;
   showEventName?: boolean;
   colorTheme?: ColorTheme;
+  cardSize?: CardSize;
 }
 
 export interface PlaceCardPDFOptions {
@@ -286,6 +324,7 @@ export interface PlaceCardPDFOptions {
   fontSize?: FontSize;
   fontFamily?: FontFamily;
   colorTheme?: ColorTheme;
+  cardSize?: CardSize;
 }
 
 /**
@@ -296,10 +335,11 @@ export async function generatePlaceCardsPDF(
   guests: Guest[],
   options: PlaceCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme } = options;
+  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme, cardSize = 'standard' } = options;
 
   const fontSizes = PLACE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
+  const cardDimensions = PLACE_CARD_SIZES[cardSize];
   const { jsPDF } = await loadJsPDF();
 
   const doc = new jsPDF({
@@ -311,16 +351,16 @@ export async function generatePlaceCardsPDF(
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
-  // Calculate cards per page (3 columns, 4 rows)
-  const cardsPerRow = 3;
-  const cardsPerCol = 4;
+  // Calculate cards per page based on card size
+  const gapX = 5;
+  const gapY = 5;
+  const cardsPerRow = Math.floor((pageWidth + gapX) / (cardDimensions.width + gapX)) || 1;
+  const cardsPerCol = Math.floor((pageHeight + gapY) / (cardDimensions.height + gapY)) || 1;
   const cardsPerPage = cardsPerRow * cardsPerCol;
 
   // Calculate spacing
-  const gapX = 5;
-  const gapY = 5;
-  const totalCardWidth = PLACE_CARD.width * cardsPerRow + gapX * (cardsPerRow - 1);
-  const totalCardHeight = PLACE_CARD.height * cardsPerCol + gapY * (cardsPerCol - 1);
+  const totalCardWidth = cardDimensions.width * cardsPerRow + gapX * (cardsPerRow - 1);
+  const totalCardHeight = cardDimensions.height * cardsPerCol + gapY * (cardsPerCol - 1);
   const xOffset = (pageWidth - totalCardWidth) / 2;
   const yOffset = (pageHeight - totalCardHeight) / 2;
 
@@ -342,11 +382,11 @@ export async function generatePlaceCardsPDF(
     const col = positionOnPage % cardsPerRow;
     const row = Math.floor(positionOnPage / cardsPerRow);
 
-    const x = xOffset + col * (PLACE_CARD.width + gapX);
-    const y = yOffset + row * (PLACE_CARD.height + gapY);
+    const x = xOffset + col * (cardDimensions.width + gapX);
+    const y = yOffset + row * (cardDimensions.height + gapY);
 
     const table = event.tables.find(t => t.id === guest.tableId);
-    drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily, themeColors });
+    drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily, themeColors, cardDimensions });
   });
 
   return doc;
@@ -362,10 +402,10 @@ function drawPlaceCard(
   event: Event,
   x: number,
   y: number,
-  options: { includeTableName: boolean; includeDietary: boolean; fontSizes: typeof PLACE_CARD_FONT_SIZES['medium']; fontFamily: FontFamily; themeColors: ThemeColors }
+  options: { includeTableName: boolean; includeDietary: boolean; fontSizes: typeof PLACE_CARD_FONT_SIZES['medium']; fontFamily: FontFamily; themeColors: ThemeColors; cardDimensions: { width: number; height: number; margin: number } }
 ): void {
-  const { width, height, margin } = PLACE_CARD;
-  const { fontSizes, fontFamily, themeColors } = options;
+  const { fontSizes, fontFamily, themeColors, cardDimensions } = options;
+  const { width, height, margin } = cardDimensions;
 
   // Draw card border
   doc.setDrawColor(themeColors.border);

@@ -3,6 +3,7 @@ import './PDFPreviewModal.css';
 
 export type FontFamily = 'helvetica' | 'times' | 'courier';
 export type ColorTheme = 'classic' | 'elegant' | 'modern' | 'nature' | 'romantic';
+export type CardSize = 'compact' | 'standard' | 'large';
 
 // Theme labels and accent colors for UI display
 const THEME_OPTIONS: { value: ColorTheme; label: string; color: string }[] = [
@@ -13,12 +14,20 @@ const THEME_OPTIONS: { value: ColorTheme; label: string; color: string }[] = [
   { value: 'romantic', label: 'Romantic', color: '#EC4899' },
 ];
 
+// Card size options
+const SIZE_OPTIONS: { value: CardSize; label: string; description: string }[] = [
+  { value: 'compact', label: 'Compact', description: 'More cards per page' },
+  { value: 'standard', label: 'Standard', description: 'Balanced size' },
+  { value: 'large', label: 'Large', description: 'High visibility' },
+];
+
 export interface PlaceCardOptions {
   includeTableName: boolean;
   includeDietary: boolean;
   fontSize: 'small' | 'medium' | 'large';
   fontFamily: FontFamily;
   colorTheme: ColorTheme;
+  cardSize: CardSize;
 }
 
 export interface TableCardOptions {
@@ -27,6 +36,7 @@ export interface TableCardOptions {
   showGuestCount: boolean;
   showEventName: boolean;
   colorTheme: ColorTheme;
+  cardSize: CardSize;
 }
 
 interface PDFPreviewModalProps {
@@ -46,6 +56,7 @@ const defaultPlaceOptions: PlaceCardOptions = {
   fontSize: 'medium',
   fontFamily: 'helvetica',
   colorTheme: 'classic',
+  cardSize: 'standard',
 };
 
 const defaultTableOptions: TableCardOptions = {
@@ -54,6 +65,7 @@ const defaultTableOptions: TableCardOptions = {
   showGuestCount: true,
   showEventName: true,
   colorTheme: 'classic',
+  cardSize: 'standard',
 };
 
 export function PDFPreviewModal({
@@ -288,6 +300,27 @@ export function PDFPreviewModal({
                     />
                     <span className="pdf-theme-swatch" style={{ backgroundColor: theme.color }} />
                     <span className="pdf-theme-label">{theme.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            {/* Card size - shared between both types */}
+            <div className="pdf-option-group">
+              <span className="pdf-option-title">Card Size</span>
+              <div className="pdf-size-options">
+                {SIZE_OPTIONS.map((size) => (
+                  <label key={size.value} className="pdf-size-option" title={size.description}>
+                    <input
+                      type="radio"
+                      name="cardSize"
+                      value={size.value}
+                      checked={type === 'place' ? placeOptions.cardSize === size.value : tableOptions.cardSize === size.value}
+                      onChange={() => type === 'place'
+                        ? handlePlaceOptionChange('cardSize', size.value)
+                        : handleTableOptionChange('cardSize', size.value)
+                      }
+                    />
+                    <span className="pdf-size-label">{size.label}</span>
                   </label>
                 ))}
               </div>

@@ -641,4 +641,80 @@ test.describe('PDF Customization Options', () => {
     await expect(page.getByText('Classic', { exact: true })).toBeVisible();
     await expect(page.getByText('Elegant', { exact: true })).toBeVisible();
   });
+
+  test('options panel has card size options', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check for card size options (use .pdf-size-label class to distinguish from font size)
+    await expect(page.locator('.pdf-option-title').filter({ hasText: 'Card Size' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Compact' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Standard' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Large' })).toBeVisible();
+  });
+
+  test('standard card size is selected by default', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check that standard is selected by default
+    const standardRadio = page.locator('input[name="cardSize"][value="standard"]');
+    await expect(standardRadio).toBeChecked();
+  });
+
+  test('can select different card sizes', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Select Compact size (use .pdf-size-label to distinguish from other labels)
+    const compactLabel = page.locator('.pdf-size-label').filter({ hasText: 'Compact' });
+    await compactLabel.click();
+    const compactRadio = page.locator('input[name="cardSize"][value="compact"]');
+    await expect(compactRadio).toBeChecked();
+
+    // Select Large size (use .pdf-size-label to distinguish from font size Large)
+    const largeLabel = page.locator('.pdf-size-label').filter({ hasText: 'Large' });
+    await largeLabel.click();
+    const largeRadio = page.locator('input[name="cardSize"][value="large"]');
+    await expect(largeRadio).toBeChecked();
+
+    // Standard should no longer be checked
+    const standardRadio = page.locator('input[name="cardSize"][value="standard"]');
+    await expect(standardRadio).not.toBeChecked();
+  });
+
+  test('table cards preview has card size options', async ({ page }) => {
+    // Open table cards preview
+    const tableCardsRow = page.locator('.print-material-row').first();
+    await tableCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check for card size options (use .pdf-size-label class to distinguish from font size)
+    await expect(page.locator('.pdf-option-title').filter({ hasText: 'Card Size' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Compact' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Standard' })).toBeVisible();
+    await expect(page.locator('.pdf-size-label').filter({ hasText: 'Large' })).toBeVisible();
+  });
 });
