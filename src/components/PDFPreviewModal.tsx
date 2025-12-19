@@ -111,9 +111,10 @@ export function PDFPreviewModal({
     };
   }, [pdfUrl]);
 
-  // Reset options when modal opens
+  // Reset options when modal opens - intentional state reset on modal open
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional state reset on modal open
       setPlaceOptions(defaultPlaceOptions);
       setTableOptions(defaultTableOptions);
       setShowOptions(true); // Keep options visible by default

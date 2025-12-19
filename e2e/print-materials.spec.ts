@@ -3,7 +3,7 @@ import { enterApp } from './test-utils';
 
 // Skip mobile tests - PDF downloads have browser-dependent behavior
 // and mobile dashboard navigation has timing issues
-test.skip(({ browserName, viewport }) => {
+test.skip(({ viewport }) => {
   return viewport !== null && viewport.width < 768;
 }, 'Skipping PDF tests on mobile viewports');
 

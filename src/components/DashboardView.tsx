@@ -58,46 +58,6 @@ export function DashboardView() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadTableCards = async () => {
-    if (totalTables === 0) {
-      showToast('Add tables first to generate table cards', 'warning');
-      return;
-    }
-
-    setIsGeneratingTableCards(true);
-    try {
-      await downloadTableCards(event);
-      showToast('Table cards PDF downloaded', 'success');
-    } catch (error) {
-      console.error('Failed to generate table cards:', error);
-      showToast('Failed to generate PDF. Please try again.', 'error');
-    } finally {
-      setIsGeneratingTableCards(false);
-    }
-  };
-
-  const handleDownloadPlaceCards = async () => {
-    const seatedConfirmed = event.guests.filter(
-      g => g.tableId && g.rsvpStatus === 'confirmed'
-    ).length;
-
-    if (seatedConfirmed === 0) {
-      showToast('Assign confirmed guests to tables first', 'warning');
-      return;
-    }
-
-    setIsGeneratingPlaceCards(true);
-    try {
-      await downloadPlaceCards(event);
-      showToast('Place cards PDF downloaded', 'success');
-    } catch (error) {
-      console.error('Failed to generate place cards:', error);
-      showToast('Failed to generate PDF. Please try again.', 'error');
-    } finally {
-      setIsGeneratingPlaceCards(false);
-    }
-  };
-
   const handlePreviewTableCards = async () => {
     if (totalTables === 0) {
       showToast('Add tables first to preview table cards', 'warning');
