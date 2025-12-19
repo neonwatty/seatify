@@ -4,6 +4,7 @@ import { AnimatedCounter } from './AnimatedCounter';
 import { EmptyState } from './EmptyState';
 import { QRCodePrintView } from './QRCodePrintView';
 import { PDFPreviewModal, type PlaceCardOptions, type TableCardOptions } from './PDFPreviewModal';
+import { ShareLinkModal } from './ShareLinkModal';
 import { OnboardingWizard } from './OnboardingWizard';
 import { QR_TOUR_STEPS } from '../data/onboardingSteps';
 import {
@@ -25,6 +26,7 @@ export function DashboardView() {
   } = useStore();
   const [showQRPrintView, setShowQRPrintView] = useState(false);
   const [showQRTour, setShowQRTour] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [isGeneratingTableCards, setIsGeneratingTableCards] = useState(false);
   const [isGeneratingPlaceCards, setIsGeneratingPlaceCards] = useState(false);
 
@@ -349,6 +351,14 @@ export function DashboardView() {
               <span className="action-icon">↓</span>
               <span>Export Event</span>
             </button>
+            <button
+              className="action-btn secondary"
+              onClick={() => setShowShareModal(true)}
+              disabled={totalGuests === 0 && totalTables === 0}
+            >
+              <span className="action-icon">↗</span>
+              <span>Share View</span>
+            </button>
           </div>
         </div>
 
@@ -494,6 +504,13 @@ export function DashboardView() {
         onClose={() => setShowQRTour(false)}
         onComplete={() => setShowQRTour(false)}
         customSteps={QR_TOUR_STEPS}
+      />
+
+      {/* Share Link Modal */}
+      <ShareLinkModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        event={event}
       />
     </div>
   );

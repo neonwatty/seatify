@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from '../components/LandingPage';
 import { EventListView } from '../components/EventListView';
 import { QRTableInfoPage } from '../components/QRTableInfoPage';
+import { ShareableViewPage } from '../components/ShareableViewPage';
 import { EventLayout } from './EventLayout';
 import { DashboardView } from '../components/DashboardView';
 import { Canvas } from '../components/Canvas';
@@ -41,6 +42,10 @@ export function AppRouter() {
 
         {/* QR code table info page */}
         <Route path="/table/:encodedData" element={<QRTableInfoPage />} />
+
+        {/* Shareable read-only view */}
+        <Route path="/share/:encodedData" element={<ShareableViewPage />} />
+        <Route path="/share" element={<ShareableViewPage />} />
 
         {/* Fallback redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
