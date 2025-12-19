@@ -5,6 +5,23 @@ All notable changes to TableCraft will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2025-12-19
+
+### Added
+- Shareable read-only view for event seating charts
+- URL-based routing with compressed event data encoding
+- Share modal with copy link, QR code, and file download options
+- Read-only canvas with full visual parity to main canvas
+- Enhanced shareable view features: RSVP status dots, group indicators, capacity rings, dietary badges
+- Grid toggle in shareable view (enabled by default)
+- Warm gradient overlay matching main canvas styling
+- Tour wizard now mentions sharing in Quick Actions step
+- 50 new E2E tests for shareable view functionality
+
+### Changed
+- Logo styling in shareable view now uses Caveat cursive font for "Craft"
+- Shareable view grid pattern matches main canvas (24px dots)
+
 ## [0.8.0] - 2025-12-17
 
 ### Added

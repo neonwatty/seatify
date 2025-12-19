@@ -171,6 +171,7 @@ export function ShareableViewPage() {
           tables={displayEvent?.tables || []}
           guests={displayEvent?.guests || []}
           venueElements={displayEvent?.venueElements}
+          constraints={displayEvent?.constraints}
           eventName={displayEvent?.name}
         />
       </div>

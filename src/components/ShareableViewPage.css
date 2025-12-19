@@ -36,6 +36,10 @@
 
 .shareable-brand .logo-craft {
   color: var(--color-primary);
+  font-family: 'Caveat', cursive;
+  font-size: 1.15em;
+  font-weight: 600;
+  vertical-align: baseline;
 }
 
 /* Upload prompt */
@@ -165,6 +169,10 @@
 
 .shareable-brand-small .logo-craft {
   color: var(--color-primary);
+  font-family: 'Caveat', cursive;
+  font-size: 1.15em;
+  font-weight: 600;
+  vertical-align: baseline;
 }
 
 .shareable-badge {

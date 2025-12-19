@@ -63,7 +63,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
     id: 'quick-actions',
     target: '.quick-actions',
     title: 'Quick Actions',
-    description: 'Jump to common tasks: add tables, manage guests, or export your event data.',
+    description: 'Jump to common tasks: add tables, manage guests, share your seating chart, or export event data.',
     placement: 'left',
     requiredView: 'dashboard',
     highlightPadding: 8,
