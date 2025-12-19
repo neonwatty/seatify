@@ -399,80 +399,54 @@ export function DashboardView() {
             Generate printable PDFs for your event
           </p>
           <div className="print-materials-grid">
-            <div className="print-material-row">
-              <button
-                className="print-material-btn"
-                onClick={handleDownloadTableCards}
-                disabled={totalTables === 0 || isGeneratingTableCards}
-              >
-                <div className="print-material-icon">
-                  {isGeneratingTableCards ? (
-                    <div className="btn-loading-spinner" />
-                  ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <path d="M12 8v8M8 12h8" />
-                    </svg>
-                  )}
-                </div>
-                <div className="print-material-info">
-                  <span className="print-material-title">
-                    {isGeneratingTableCards ? 'Generating...' : 'Table Cards'}
-                  </span>
-                  <span className="print-material-desc">Tent cards for each table</span>
-                </div>
-                <span className="print-material-count">{totalTables} cards</span>
-              </button>
-              <button
-                className="print-material-preview-btn"
-                onClick={handlePreviewTableCards}
-                disabled={totalTables === 0 || isGeneratingTableCards}
-                title="Preview table cards"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </button>
-            </div>
-            <div className="print-material-row">
-              <button
-                className="print-material-btn"
-                onClick={handleDownloadPlaceCards}
-                disabled={assignedGuests === 0 || confirmedGuests === 0 || isGeneratingPlaceCards}
-              >
-                <div className="print-material-icon">
-                  {isGeneratingPlaceCards ? (
-                    <div className="btn-loading-spinner" />
-                  ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  )}
-                </div>
-                <div className="print-material-info">
-                  <span className="print-material-title">
-                    {isGeneratingPlaceCards ? 'Generating...' : 'Place Cards'}
-                  </span>
-                  <span className="print-material-desc">Name cards for seated guests</span>
-                </div>
-                <span className="print-material-count">
-                  {event.guests.filter(g => g.tableId && g.rsvpStatus === 'confirmed').length} cards
+            <button
+              className="print-material-btn"
+              onClick={handlePreviewTableCards}
+              disabled={totalTables === 0 || isGeneratingTableCards}
+            >
+              <div className="print-material-icon">
+                {isGeneratingTableCards ? (
+                  <div className="btn-loading-spinner" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M12 8v8M8 12h8" />
+                  </svg>
+                )}
+              </div>
+              <div className="print-material-info">
+                <span className="print-material-title">
+                  {isGeneratingTableCards ? 'Loading preview...' : 'Table Cards'}
                 </span>
-              </button>
-              <button
-                className="print-material-preview-btn"
-                onClick={handlePreviewPlaceCards}
-                disabled={assignedGuests === 0 || confirmedGuests === 0 || isGeneratingPlaceCards}
-                title="Preview place cards"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </button>
-            </div>
+                <span className="print-material-desc">Tent cards for each table</span>
+              </div>
+              <span className="print-material-count">{totalTables} cards</span>
+            </button>
+            <button
+              className="print-material-btn"
+              onClick={handlePreviewPlaceCards}
+              disabled={assignedGuests === 0 || confirmedGuests === 0 || isGeneratingPlaceCards}
+            >
+              <div className="print-material-icon">
+                {isGeneratingPlaceCards ? (
+                  <div className="btn-loading-spinner" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                )}
+              </div>
+              <div className="print-material-info">
+                <span className="print-material-title">
+                  {isGeneratingPlaceCards ? 'Loading preview...' : 'Place Cards'}
+                </span>
+                <span className="print-material-desc">Name cards for seated guests</span>
+              </div>
+              <span className="print-material-count">
+                {event.guests.filter(g => g.tableId && g.rsvpStatus === 'confirmed').length} cards
+              </span>
+            </button>
           </div>
         </div>
 
