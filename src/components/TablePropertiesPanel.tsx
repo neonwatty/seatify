@@ -3,6 +3,7 @@ import { useDrag } from '@use-gesture/react';
 import { useStore } from '../store/useStore';
 import { getFullName } from '../types';
 import { useIsMobile } from '../hooks/useResponsive';
+import { QRCodeModal } from './QRCodeModal';
 import type { TableShape } from '../types';
 import './TablePropertiesPanel.css';
 
@@ -19,6 +20,7 @@ export function TablePropertiesPanel() {
   const isMobile = useIsMobile();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [dragY, setDragY] = useState(0);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // Only show panel when exactly one table is selected
   const selectedTable =
@@ -230,6 +232,20 @@ export function TablePropertiesPanel() {
               />
             </svg>
             <span>Rotate</span>
+          </button>
+          <button
+            className="quick-action-btn"
+            onClick={() => setShowQRModal(true)}
+            title="Generate QR Code"
+            aria-label="Generate QR Code"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M3 11h8V3H3v8zm2-6h4v4H5V5zm8-2v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm13 2h-2v4h2v2h2v-2h2v-2h-2v-4h-2v2zm0-6h2v2h-2v-2zm-4 2h2v4h-2v-4zm-2 2h2v2h-2v-2z"
+              />
+            </svg>
+            <span>QR Code</span>
           </button>
           <button
             className="quick-action-btn delete"
@@ -470,6 +486,14 @@ export function TablePropertiesPanel() {
           </div>
         )}
       </div>
+
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <QRCodeModal
+          tableId={selectedTable.id}
+          onClose={() => setShowQRModal(false)}
+        />
+      )}
     </>
   );
 }

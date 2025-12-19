@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { version } from '../../package.json';
 import { UpdatesButton } from './UpdatesPopup';
@@ -11,10 +12,12 @@ interface HeaderProps {
 }
 
 export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
-  const { event, setEventName, theme, cycleTheme, activeView, setActiveView, currentEventId } = useStore();
+  const navigate = useNavigate();
+  const { eventId } = useParams<{ eventId?: string }>();
+  const { event, setEventName, theme, cycleTheme, currentEventId } = useStore();
 
-  // Check if we're inside an event (not on event list)
-  const isInsideEvent = currentEventId && activeView !== 'event-list';
+  // Check if we're inside an event (has eventId in URL)
+  const isInsideEvent = !!eventId || (currentEventId && window.location.hash.includes('/events/'));
 
   // Apply theme to document
   useEffect(() => {
@@ -51,7 +54,7 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
         {isInsideEvent && (
           <button
             className="back-to-events-btn"
-            onClick={() => setActiveView('event-list')}
+            onClick={() => navigate('/events')}
             title="Back to events"
           >
             <span className="back-arrow">&larr;</span>

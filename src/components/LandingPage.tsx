@@ -1,12 +1,14 @@
+import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 import { version } from '../../package.json';
 import { UpdatesButton } from './UpdatesPopup';
 
-interface LandingPageProps {
-  onEnterApp: () => void;
-}
+export function LandingPage() {
+  const navigate = useNavigate();
 
-export function LandingPage({ onEnterApp }: LandingPageProps) {
+  const handleEnterApp = () => {
+    navigate('/events');
+  };
   return (
     <div className="landing-page">
       <div className="landing-content">
@@ -23,7 +25,7 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
             Design floor plans, manage guest lists, and let smart optimization
             handle the tricky seating decisions.
           </p>
-          <button className="cta-button" onClick={onEnterApp}>
+          <button className="cta-button" onClick={handleEnterApp}>
             Start Planning Free
           </button>
         </section>
@@ -229,8 +231,8 @@ export function LandingPage({ onEnterApp }: LandingPageProps) {
                 <span className="platforms-label">Works with:</span>
                 <span className="platform-name">Zola</span>
                 <span className="platform-name">RSVPify</span>
+                <span className="platform-name">Joy</span>
                 <span className="platform-name">CSV/Excel</span>
-                <span className="platform-name coming-soon">Joy <small>(coming soon)</small></span>
                 <span className="platform-name coming-soon">The Knot <small>(coming soon)</small></span>
                 <span className="platform-name coming-soon">Eventbrite <small>(coming soon)</small></span>
               </div>

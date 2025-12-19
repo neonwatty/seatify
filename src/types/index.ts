@@ -106,6 +106,16 @@ export interface SurveyResponse {
 
 export type EventType = 'wedding' | 'corporate' | 'gala' | 'party' | 'other';
 
+// QR Code data structure for table lookup
+export interface QRTableData {
+  v: number; // Version for future compatibility
+  e: string; // Event name
+  d?: string; // Event date (optional)
+  t: string; // Table name
+  g: string[]; // Guest names (first + last)
+  c: number; // Capacity
+}
+
 export interface Event {
   id: string;
   name: string;

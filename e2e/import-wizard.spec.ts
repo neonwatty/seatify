@@ -1115,6 +1115,77 @@ test.describe('Import Wizard - Platform Detection', () => {
     await expect(previewTable).toContainText('John');
     await expect(previewTable).toContainText('Smith');
   });
+
+  test('detects Joy format and shows platform hint', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('joy-export.csv'));
+
+    // Should show file info
+    await expect(page.locator('.file-info')).toBeVisible();
+
+    // Should detect Joy platform
+    await expect(page.locator('.platform-hint')).toBeVisible();
+    await expect(page.locator('.platform-hint')).toContainText('Joy');
+  });
+
+  test('Joy import auto-maps Party to group field', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('joy-export.csv'));
+
+    // Go to mapping step
+    await page.locator('.wizard-footer .btn-primary').click();
+
+    // Check that Party is mapped to Group
+    const partyRow = page.locator('.mapping-row').filter({ hasText: 'Party' });
+    await expect(partyRow.locator('select')).toHaveValue('group');
+  });
+
+  test('can complete full import flow with Joy format', async ({ page }) => {
+    await enterApp(page);
+    await switchView(page, 'canvas');
+
+    const initialGuests = await page.locator('.guest-list-item, .sidebar-list li').count();
+
+    await clickImport(page);
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('joy-export.csv'));
+
+    // Verify platform detected
+    await expect(page.locator('.platform-hint')).toContainText('Joy');
+
+    // Navigate through wizard
+    await page.locator('.wizard-footer .btn-primary').click(); // To mapping
+    await page.locator('.wizard-footer .btn-primary').click(); // To preview
+    await page.locator('.wizard-footer .btn-primary').click(); // To tables
+    await page.locator('.wizard-footer .btn-primary').click(); // Complete import
+
+    // Wait for import to complete
+    await expect(page.locator('.import-wizard-modal')).not.toBeVisible({ timeout: 5000 });
+
+    // Verify guests were imported (10 guests in Joy fixture)
+    await switchView(page, 'guests');
+    await page.waitForTimeout(300);
+    const finalGuests = await page.locator('.guest-card, [class*="guest"]').count();
+    expect(finalGuests).toBeGreaterThan(initialGuests);
+  });
+
+  test('shows Help Us Improve prompt for generic CSV', async ({ page }) => {
+    await openImportWizard(page);
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(getFixturePath('basic-guests.csv'));
+
+    // Should show file info
+    await expect(page.locator('.file-info')).toBeVisible();
+
+    // Should show Help Us Improve prompt for generic CSV
+    await expect(page.locator('.help-improve-hint')).toBeVisible();
+    await expect(page.locator('.help-improve-hint')).toContainText('Help us improve detection');
+  });
 });
 
 // =============================================================================
@@ -1128,23 +1199,32 @@ test.describe('Landing Page - Platform Messaging', () => {
     // Should show the platforms section
     await expect(page.locator('.supported-platforms')).toBeVisible();
 
-    // Should list active platforms
+    // Should list active platforms (Zola, RSVPify, Joy, CSV/Excel)
     await expect(page.locator('.platform-name').filter({ hasText: 'Zola' })).toBeVisible();
     await expect(page.locator('.platform-name').filter({ hasText: 'RSVPify' })).toBeVisible();
+    await expect(page.locator('.platform-name').filter({ hasText: /^Joy$/ })).toBeVisible();
     await expect(page.locator('.platform-name').filter({ hasText: 'CSV/Excel' })).toBeVisible();
 
-    // Should show coming soon platforms
-    await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'Joy' })).toBeVisible();
+    // Should show coming soon platforms (The Knot, Eventbrite)
     await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'The Knot' })).toBeVisible();
     await expect(page.locator('.platform-name.coming-soon').filter({ hasText: 'Eventbrite' })).toBeVisible();
+  });
+
+  test('Joy is an active platform (not coming soon)', async ({ page }) => {
+    await page.goto('/seating-arrangement/');
+
+    // Joy should be in the platforms list without the coming-soon class
+    const joyPlatform = page.locator('.platform-name').filter({ hasText: /^Joy$/ });
+    await expect(joyPlatform).toBeVisible();
+    await expect(joyPlatform).not.toHaveClass(/coming-soon/);
   });
 
   test('coming soon platforms are visually distinct', async ({ page }) => {
     await page.goto('/seating-arrangement/');
 
-    // Coming soon platforms should have the coming-soon class
+    // Coming soon platforms should have the coming-soon class (The Knot, Eventbrite)
     const comingSoonPlatforms = page.locator('.platform-name.coming-soon');
-    await expect(comingSoonPlatforms).toHaveCount(3);
+    await expect(comingSoonPlatforms).toHaveCount(2);
 
     // They should contain "(coming soon)" text
     await expect(comingSoonPlatforms.first()).toContainText('coming soon');

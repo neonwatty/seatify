@@ -24,6 +24,7 @@ import { MainToolbar } from './MainToolbar';
 import { GridControls } from './GridControls';
 import { RelationshipMatrix } from './RelationshipMatrix';
 import { ImportWizard } from './ImportWizard/ImportWizard';
+import { QRCodeModal } from './QRCodeModal';
 import type { Table, AlignmentGuide, Guest } from '../types';
 import { getFullName, getInitials } from '../types';
 import './Canvas.css';
@@ -381,6 +382,7 @@ export function Canvas() {
   const [showTableDropdown, setShowTableDropdown] = useState(false);
   const [showRelationships, setShowRelationships] = useState(false);
   const [showImportWizard, setShowImportWizard] = useState(false);
+  const [qrModalTableId, setQrModalTableId] = useState<string | null>(null);
   const [isCanvasReady, setIsCanvasReady] = useState(false);
   const tableDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -927,6 +929,11 @@ export function Canvas() {
             addTable(table.shape, table.x + 50, table.y + 50);
           },
         },
+        {
+          label: 'Generate QR Code',
+          icon: '📱',
+          onClick: () => setQrModalTableId(table.id),
+        },
         { label: '', onClick: () => {}, divider: true },
         {
           label: hasMultipleSelected ? `Delete ${canvas.selectedTableIds.length} Tables` : 'Delete Table',
@@ -1264,6 +1271,14 @@ export function Canvas() {
         isOpen={showImportWizard}
         onClose={() => setShowImportWizard(false)}
       />
+
+      {/* QR Code Modal */}
+      {qrModalTableId && (
+        <QRCodeModal
+          tableId={qrModalTableId}
+          onClose={() => setQrModalTableId(null)}
+        />
+      )}
     </div>
   );
 }

@@ -91,9 +91,10 @@ test.describe('Theme toggle functionality', () => {
     await themeBtn.click(); // dark
     await expect(html).toHaveAttribute('data-theme', 'dark');
 
-    // Reload the page and re-enter the app
-    await page.reload();
-    await page.click('button:has-text("Start Planning")');
+    // Reload the page and re-enter the app (navigate to root to clear hash route)
+    await page.goto('/');
+    await page.click('button:has-text("Start Planning Free")');
+    await page.waitForURL(/\/#\/events/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
     // Theme should still be dark (persisted in localStorage)

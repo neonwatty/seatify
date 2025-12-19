@@ -26,12 +26,17 @@ export async function enterApp(page: Page): Promise<void> {
   });
   await page.goto('/');
   await page.click('button:has-text("Start Planning Free")');
+
+  // Wait for navigation to events page (URL-based routing)
+  await page.waitForURL(/\/#\/events/);
   await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
   // Click on first event to enter it (if event list view is shown)
   const eventCard = page.locator('.event-card').first();
   if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
     await eventCard.click();
+    // Wait for URL to change to event canvas view
+    await page.waitForURL(/\/#\/events\/[^/]+\/canvas/);
     // Wait for canvas to load (indicates we're inside an event)
     await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
   }

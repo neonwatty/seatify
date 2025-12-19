@@ -11,8 +11,8 @@ type FieldPatterns = Record<GuestField | 'fullName', RegExp[]>;
 export type SourcePlatform =
   | 'rsvpify'      // Verified: official documentation
   | 'zola'         // Verified: official FAQ
+  | 'joy'          // Verified: official help center
   // Coming soon - need further verification:
-  // | 'joy'       // Partially verified: help center
   // | 'theknot'   // Unverified: based on user reports
   // | 'eventbrite'// Generic: uses customizable exports
   | 'generic';     // Unknown source
@@ -174,22 +174,22 @@ const ZOLA_PATTERNS: Partial<FieldPatterns> = {
 // =============================================================================
 
 /**
- * Joy (WithJoy) patterns - COMING SOON
- * Status: Partially verified from help center
+ * Joy (WithJoy) patterns (VERIFIED from official help center)
  * Source: https://withjoy.com/help/articles/8309207
- * Note: Joy has additional columns in their Google Sheets template that need verification
+ * Distinctive columns: "Party", "Tags", "Name on Envelope"
  */
-// const JOY_PATTERNS: Partial<FieldPatterns> = {
-//   firstName: [/^first[_\s-]?name$/i],
-//   lastName: [/^last[_\s-]?name$/i],
-//   group: [
-//     /^party$/i,                     // Joy uses "Party" for grouping guests
-//     /^tags$/i,                      // Joy "Tags" use pipe separator (|)
-//   ],
-//   notes: [
-//     /^name[_\s-]?on[_\s-]?envelope$/i,  // Joy-specific envelope addressing
-//   ],
-// };
+const JOY_PATTERNS: Partial<FieldPatterns> = {
+  firstName: [/^first[_\s-]?name$/i],
+  lastName: [/^last[_\s-]?name$/i],
+  email: [/^email[_\s-]?address$/i],
+  group: [
+    /^party$/i,                     // Joy uses "Party" for grouping guests
+    /^tags$/i,                      // Joy "Tags" use pipe separator (|)
+  ],
+  notes: [
+    /^name[_\s-]?on[_\s-]?envelope$/i,  // Joy-specific envelope addressing
+  ],
+};
 
 /**
  * The Knot patterns - COMING SOON
@@ -322,6 +322,19 @@ export function detectSourcePlatform(headers: string[]): SourcePlatformInfo {
     };
   }
 
+  // Joy detection (medium confidence - verified from help center)
+  // Distinctive: Has "Party" + "Tags" together, or "Name on Envelope"
+  if (
+    (headerSet.has('party') && headerSet.has('tags')) ||
+    headerArray.some((h) => /^name\s*on\s*envelope$/i.test(h))
+  ) {
+    return {
+      platform: 'joy',
+      confidence: 'medium',
+      note: 'Joy format detected. Some columns may need manual mapping.',
+    };
+  }
+
   // =========================================================================
   // COMING SOON - Detection for platforms pending verification
   // =========================================================================
@@ -333,19 +346,6 @@ export function detectSourcePlatform(headers: string[]): SourcePlatformInfo {
   //     platform: 'theknot',
   //     confidence: 'medium',
   //     note: 'The Knot format detected. Column mappings may need manual adjustment.',
-  //   };
-  // }
-
-  // Joy detection - COMING SOON
-  // Distinctive: Has "Party" + "Tags" together, or "Name on Envelope"
-  // if (
-  //   (headerSet.has('party') && headerSet.has('tags')) ||
-  //   headerArray.some((h) => /^name\s*on\s*envelope$/i.test(h))
-  // ) {
-  //   return {
-  //     platform: 'joy',
-  //     confidence: 'medium',
-  //     note: 'Joy format detected. Some columns may need manual mapping.',
   //   };
   // }
 
@@ -378,9 +378,9 @@ function getPlatformPatterns(platform: SourcePlatform): Partial<FieldPatterns> {
       return RSVPIFY_PATTERNS;
     case 'zola':
       return ZOLA_PATTERNS;
+    case 'joy':
+      return JOY_PATTERNS;
     // Coming soon:
-    // case 'joy':
-    //   return JOY_PATTERNS;
     // case 'theknot':
     //   return THEKNOT_PATTERNS;
     // case 'eventbrite':
@@ -396,8 +396,8 @@ function getPlatformPatterns(platform: SourcePlatform): Partial<FieldPatterns> {
 export const PLATFORM_DISPLAY_NAMES: Record<SourcePlatform, string> = {
   rsvpify: 'RSVPify',
   zola: 'Zola',
+  joy: 'Joy',
   // Coming soon:
-  // joy: 'Joy',
   // theknot: 'The Knot',
   // eventbrite: 'Eventbrite',
   generic: 'Unknown',

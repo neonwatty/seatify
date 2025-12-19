@@ -40,9 +40,10 @@ test.describe('Onboarding Wizard', () => {
     // Wizard should close
     await expect(page.locator('.onboarding-tooltip')).not.toBeVisible();
 
-    // Reload and re-enter
-    await page.reload();
+    // Reload and re-enter - navigate to root first to clear hash route
+    await page.goto('/');
     await page.click('button:has-text("Start Planning Free")');
+    await page.waitForURL(/\/#\/events/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
     // Wait a moment to ensure wizard doesn't appear

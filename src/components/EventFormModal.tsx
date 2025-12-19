@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { Event } from '../types';
 import './EventFormModal.css';
@@ -18,7 +19,8 @@ const eventTypes: { value: Event['eventType']; label: string }[] = [
 ];
 
 export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
-  const { createEvent, updateEventMetadata, switchEvent, setActiveView } = useStore();
+  const navigate = useNavigate();
+  const { createEvent, updateEventMetadata, switchEvent } = useStore();
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -53,7 +55,7 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
     if (mode === 'create') {
       const newEventId = createEvent(eventData);
       switchEvent(newEventId);
-      setActiveView('canvas');
+      navigate(`/events/${newEventId}/canvas`);
     } else if (event) {
       updateEventMetadata(event.id, eventData);
     }

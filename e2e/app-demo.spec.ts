@@ -164,22 +164,27 @@ test.describe('TableCraft App Demo', () => {
 
 test.describe('Optimization Feature', () => {
   test('clicking optimize changes button to reset', async ({ page }) => {
-    await enterApp(page);
-    const isMobile = await isMobileViewport(page);
-
-    // Clear localStorage to ensure fresh state, but preserve onboarding completion
-    await page.evaluate(() => {
-      localStorage.clear();
-      // Re-set onboarding completion to skip wizard (zustand-persist v4 format)
-      const data = { state: { hasCompletedOnboarding: true }, version: 10 };
+    // Set onboarding completion before navigating
+    await page.addInitScript(() => {
+      const data = { state: { hasCompletedOnboarding: true }, version: 11 };
       localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
     });
-    await page.reload();
 
-    // Re-enter the app after reload
-    await page.click('button:has-text("Start Planning")');
+    // Navigate to landing page and enter app fresh
+    await page.goto('/');
+    await page.click('button:has-text("Start Planning Free")');
+    await page.waitForURL(/\/#\/events/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
+    // Click on first event to enter it
+    const eventCard = page.locator('.event-card').first();
+    if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await eventCard.click();
+      await page.waitForURL(/\/#\/events\/[^/]+\/canvas/);
+      await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
+    }
+
+    const isMobile = await isMobileViewport(page);
     await page.waitForTimeout(1000);
 
     if (isMobile) {

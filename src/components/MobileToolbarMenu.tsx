@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore';
 import type { TableShape } from '../types';
 import './MobileToolbarMenu.css';
 
-type ActiveView = 'dashboard' | 'canvas' | 'guests';
+type ActiveView = 'event-list' | 'dashboard' | 'canvas' | 'guests';
 
 interface MobileToolbarMenuProps {
   onAddGuest: () => void;
@@ -159,6 +159,14 @@ export function MobileToolbarMenu({
             <div className="menu-section">
               <div className="menu-section-label">View</div>
               <div className="menu-view-buttons">
+                <button
+                  className={`menu-view-btn ${activeView === 'dashboard' ? 'active' : ''}`}
+                  onClick={() => handleViewChange('dashboard')}
+                  role="menuitem"
+                >
+                  <span className="menu-icon">📊</span>
+                  <span>Dashboard</span>
+                </button>
                 <button
                   className={`menu-view-btn ${activeView === 'canvas' ? 'active' : ''}`}
                   onClick={() => handleViewChange('canvas')}

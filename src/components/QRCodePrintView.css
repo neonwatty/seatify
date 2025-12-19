@@ -1,0 +1,256 @@
+/* QR Code Print View */
+
+.qr-print-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.qr-print-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.qr-print-header-content h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.qr-print-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.qr-print-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.qr-print-actions .btn-primary,
+.qr-print-actions .btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.qr-print-actions .btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+}
+
+.qr-print-actions .btn-primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.qr-print-actions .btn-secondary {
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.qr-print-actions .btn-secondary:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* Content */
+.qr-print-content {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem;
+  background: var(--color-bg-secondary);
+}
+
+/* Print title - only shown when printing */
+.print-title {
+  display: none;
+}
+
+/* QR Grid */
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* QR Card */
+.qr-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-code-wrapper {
+  padding: 0.5rem;
+  background: white;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.qr-code-wrapper svg {
+  display: block;
+}
+
+.qr-card-info {
+  margin-bottom: 0.75rem;
+}
+
+.qr-card .table-name {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.qr-card .table-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.scan-hint {
+  margin: 0;
+  font-size: 0.625rem;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Print footer */
+.print-footer {
+  display: none;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .qr-print-view {
+    position: static;
+    background: white;
+  }
+
+  .qr-print-content {
+    padding: 0;
+    background: white;
+    overflow: visible;
+  }
+
+  .print-title {
+    display: block;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #333;
+  }
+
+  .print-title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .print-title .event-date {
+    margin: 0.25rem 0 0;
+    font-size: 1rem;
+    color: #666;
+  }
+
+  .print-title .subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: #888;
+  }
+
+  .qr-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    page-break-inside: auto;
+  }
+
+  .qr-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    page-break-inside: avoid;
+  }
+
+  .qr-code-wrapper {
+    margin-bottom: 0.75rem;
+  }
+
+  .qr-card .table-name {
+    font-size: 1rem;
+  }
+
+  .print-footer {
+    display: block;
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  @page {
+    margin: 0.75in;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .qr-print-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .qr-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .qr-card {
+    padding: 1rem;
+  }
+
+  .qr-code-wrapper svg {
+    width: 120px;
+    height: 120px;
+  }
+}

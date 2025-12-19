@@ -1,0 +1,155 @@
+/* QR Code Modal */
+
+.qr-modal-overlay {
+  z-index: 10000;
+}
+
+.qr-modal {
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  width: 400px;
+  max-width: 95vw;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideUp var(--duration-slow) var(--ease-spring);
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.qr-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.qr-modal-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.qr-modal-header .close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.qr-modal-header .close-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.qr-modal-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* QR Code */
+.qr-code-container {
+  background: white;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-code-container svg {
+  display: block;
+}
+
+/* Table Info */
+.qr-table-info {
+  text-align: center;
+}
+
+.qr-table-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.25rem;
+}
+
+.qr-table-meta {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Actions */
+.qr-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.qr-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.qr-action-btn:hover {
+  background: var(--color-bg-tertiary, var(--color-border));
+  border-color: var(--color-text-tertiary);
+}
+
+.qr-action-btn svg {
+  color: var(--color-text-secondary);
+}
+
+/* Hint */
+.qr-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 0;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .qr-modal {
+    width: 100%;
+    margin: 1rem;
+  }
+
+  .qr-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .qr-action-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}

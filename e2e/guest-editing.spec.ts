@@ -1,24 +1,23 @@
 import { test, expect } from '@playwright/test';
-import { enterApp, addTable, clickAddGuest } from './test-utils';
+import { addTable, clickAddGuest } from './test-utils';
 
 test.describe('Guest Editing', () => {
   test.beforeEach(async ({ page }) => {
-    await enterApp(page);
-    // Clear any persisted state and set up fresh, but preserve onboarding completion
-    await page.evaluate(() => {
-      localStorage.clear();
-      // Re-set onboarding completion to skip wizard (zustand-persist v4 format)
+    // Set onboarding completion before navigating
+    await page.addInitScript(() => {
       const data = { state: { hasCompletedOnboarding: true }, version: 11 };
       localStorage.setItem('seating-arrangement-storage', JSON.stringify(data));
     });
-    await page.reload();
-    // Re-enter app after reload
+    // Navigate to landing page and enter app
+    await page.goto('/');
     await page.click('button:has-text("Start Planning Free")');
+    await page.waitForURL(/\/#\/events/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
-    // Click on first event to enter it (event list view is shown after reload)
+    // Click on first event to enter it (event list view is shown)
     const eventCard = page.locator('.event-card').first();
     if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
       await eventCard.click();
+      await page.waitForURL(/\/#\/events\/[^/]+\/canvas/);
       await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
     }
 

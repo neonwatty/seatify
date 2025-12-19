@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { EventFormModal } from './EventFormModal';
 import { DeleteEventDialog } from './DeleteEventDialog';
@@ -35,10 +36,10 @@ const ListIcon = () => (
 );
 
 export function EventListView() {
+  const navigate = useNavigate();
   const {
     events,
     switchEvent,
-    setActiveView,
     canCreateEvent,
     eventListViewMode,
     setEventListViewMode,
@@ -50,7 +51,7 @@ export function EventListView() {
 
   const handleEventClick = (eventId: string) => {
     switchEvent(eventId);
-    setActiveView('canvas');
+    navigate(`/events/${eventId}/canvas`);
   };
 
   const handleEditClick = (e: React.MouseEvent, event: Event) => {
