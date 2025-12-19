@@ -338,6 +338,31 @@
   border-radius: var(--radius-full);
 }
 
+/* Tablet responsive - collapse button text earlier */
+@media (max-width: 1024px) {
+  .main-toolbar {
+    gap: 0.625rem;
+  }
+
+  .toolbar-section {
+    gap: 0.375rem;
+  }
+
+  /* Hide button text at tablet sizes to save space */
+  .toolbar-btn .btn-text {
+    display: none;
+  }
+
+  .toolbar-btn {
+    padding: 0.5rem 0.625rem;
+  }
+
+  .zoom-display {
+    min-width: 40px;
+    padding: 0 0.25rem;
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .main-toolbar {

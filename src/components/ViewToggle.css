@@ -45,8 +45,8 @@
   color: white;
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
+/* Tablet responsive - more compact */
+@media (max-width: 1024px) {
   .toggle-option {
     padding: 0.5rem 0.75rem;
     font-size: var(--font-size-xs);
@@ -54,6 +54,18 @@
 
   .toggle-option.relationships {
     padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .toggle-option {
+    padding: 0.5rem 0.625rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .toggle-option.relationships {
+    padding: 0.5rem 0.625rem;
   }
 }
 
