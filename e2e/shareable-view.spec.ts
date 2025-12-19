@@ -253,7 +253,7 @@ test.describe('Share Flow', () => {
 // =============================================================================
 
 test.describe('Read-Only Canvas', () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page }) => {
     // Generate and navigate to a share URL
     await enterApp(page);
     await switchToDashboard(page);
