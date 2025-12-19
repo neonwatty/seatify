@@ -205,6 +205,8 @@
   flex: 1;
   display: flex;
   overflow: hidden;
+  min-height: 0; /* Required for flex item with overflow children */
+  height: 0; /* Allow flex-grow to determine actual height */
 }
 
 /* Mobile styles */
