@@ -30,13 +30,63 @@ const PLACE_CARD = {
   margin: 5,
 };
 
-// Colors
+// Default colors (used when no theme is specified)
 const COLORS = {
   primary: '#F97066',
   text: '#1a1a1a',
   textLight: '#666666',
   border: '#e5e5e5',
 };
+
+// Color theme presets
+export type ColorTheme = 'classic' | 'elegant' | 'modern' | 'nature' | 'romantic';
+
+export interface ThemeColors {
+  primary: string;
+  text: string;
+  textLight: string;
+  border: string;
+}
+
+export const THEME_PRESETS: Record<ColorTheme, ThemeColors> = {
+  classic: {
+    primary: '#F97066', // Coral (app default)
+    text: '#1a1a1a',
+    textLight: '#666666',
+    border: '#e5e5e5',
+  },
+  elegant: {
+    primary: '#B8860B', // Dark goldenrod
+    text: '#2c2c2c',
+    textLight: '#5a5a5a',
+    border: '#d4d4d4',
+  },
+  modern: {
+    primary: '#3B82F6', // Blue
+    text: '#1f2937',
+    textLight: '#6b7280',
+    border: '#e5e7eb',
+  },
+  nature: {
+    primary: '#059669', // Emerald green
+    text: '#1a1a1a',
+    textLight: '#4b5563',
+    border: '#d1d5db',
+  },
+  romantic: {
+    primary: '#EC4899', // Pink
+    text: '#1f1f1f',
+    textLight: '#6b6b6b',
+    border: '#f3e8ec',
+  },
+};
+
+/**
+ * Get theme colors by name, with fallback to classic
+ */
+function getThemeColors(theme?: ColorTheme): ThemeColors {
+  return theme ? THEME_PRESETS[theme] : COLORS;
+}
 
 /**
  * Generate PDF with table tent cards
@@ -47,8 +97,9 @@ export async function generateTableCardsPDF(
   tables: Table[],
   options: TableCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true } = options;
+  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme } = options;
   const fontSizes = TABLE_CARD_FONT_SIZES[fontSize];
+  const themeColors = getThemeColors(colorTheme);
   const { jsPDF } = await loadJsPDF();
 
   const doc = new jsPDF({
@@ -84,7 +135,7 @@ export async function generateTableCardsPDF(
     const x = xOffset + col * TABLE_CARD.width;
     const y = yOffset + row * TABLE_CARD.height;
 
-    drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName });
+    drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName, themeColors });
   });
 
   return doc;
@@ -104,13 +155,14 @@ function drawTableCard(
     fontFamily: FontFamily;
     showGuestCount: boolean;
     showEventName: boolean;
+    themeColors: ThemeColors;
   }
 ): void {
   const { width, height, margin } = TABLE_CARD;
-  const { fontSizes, fontFamily, showGuestCount, showEventName } = options;
+  const { fontSizes, fontFamily, showGuestCount, showEventName, themeColors } = options;
 
   // Draw card border (dashed for cutting guide)
-  doc.setDrawColor(COLORS.border);
+  doc.setDrawColor(themeColors.border);
   doc.setLineDashPattern([2, 2], 0);
   doc.rect(x, y, width, height);
 
@@ -130,7 +182,7 @@ function drawTableCard(
   // Draw table name (large, centered) - TOP HALF
   doc.setFontSize(fontSizes.tableName);
   doc.setFont(fontFamily, 'bold');
-  doc.setTextColor(COLORS.text);
+  doc.setTextColor(themeColors.text);
 
   const topCenterY = y + height / 4;
   doc.text(table.name, x + width / 2, topCenterY, {
@@ -142,7 +194,7 @@ function drawTableCard(
   if (showGuestCount) {
     doc.setFontSize(fontSizes.guestCount);
     doc.setFont(fontFamily, 'normal');
-    doc.setTextColor(COLORS.textLight);
+    doc.setTextColor(themeColors.textLight);
     doc.text(
       `${guestCount} / ${table.capacity} guests`,
       x + width / 2,
@@ -159,7 +211,7 @@ function drawTableCard(
   // Draw table name (large, centered)
   doc.setFontSize(fontSizes.tableName);
   doc.setFont(fontFamily, 'bold');
-  doc.setTextColor(COLORS.text);
+  doc.setTextColor(themeColors.text);
   doc.text(table.name, x + width / 2, bottomCenterY, {
     align: 'center',
     baseline: 'middle'
@@ -169,7 +221,7 @@ function drawTableCard(
   if (showEventName) {
     doc.setFontSize(fontSizes.eventName);
     doc.setFont(fontFamily, 'italic');
-    doc.setTextColor(COLORS.textLight);
+    doc.setTextColor(themeColors.textLight);
     doc.text(event.name, x + width / 2, y + height - margin, {
       align: 'center'
     });
@@ -225,6 +277,7 @@ export interface TableCardPDFOptions {
   fontFamily?: FontFamily;
   showGuestCount?: boolean;
   showEventName?: boolean;
+  colorTheme?: ColorTheme;
 }
 
 export interface PlaceCardPDFOptions {
@@ -232,6 +285,7 @@ export interface PlaceCardPDFOptions {
   includeDietary?: boolean;
   fontSize?: FontSize;
   fontFamily?: FontFamily;
+  colorTheme?: ColorTheme;
 }
 
 /**
@@ -242,9 +296,10 @@ export async function generatePlaceCardsPDF(
   guests: Guest[],
   options: PlaceCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica' } = options;
+  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme } = options;
 
   const fontSizes = PLACE_CARD_FONT_SIZES[fontSize];
+  const themeColors = getThemeColors(colorTheme);
   const { jsPDF } = await loadJsPDF();
 
   const doc = new jsPDF({
@@ -291,7 +346,7 @@ export async function generatePlaceCardsPDF(
     const y = yOffset + row * (PLACE_CARD.height + gapY);
 
     const table = event.tables.find(t => t.id === guest.tableId);
-    drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily });
+    drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily, themeColors });
   });
 
   return doc;
@@ -307,19 +362,19 @@ function drawPlaceCard(
   event: Event,
   x: number,
   y: number,
-  options: { includeTableName: boolean; includeDietary: boolean; fontSizes: typeof PLACE_CARD_FONT_SIZES['medium']; fontFamily: FontFamily }
+  options: { includeTableName: boolean; includeDietary: boolean; fontSizes: typeof PLACE_CARD_FONT_SIZES['medium']; fontFamily: FontFamily; themeColors: ThemeColors }
 ): void {
   const { width, height, margin } = PLACE_CARD;
-  const { fontSizes, fontFamily } = options;
+  const { fontSizes, fontFamily, themeColors } = options;
 
   // Draw card border
-  doc.setDrawColor(COLORS.border);
+  doc.setDrawColor(themeColors.border);
   doc.setLineDashPattern([2, 2], 0);
   doc.rect(x, y, width, height);
   doc.setLineDashPattern([], 0);
 
   // Draw decorative line at top
-  doc.setDrawColor(COLORS.primary);
+  doc.setDrawColor(themeColors.primary);
   doc.setLineWidth(1);
   doc.line(x + margin, y + margin, x + width - margin, y + margin);
   doc.setLineWidth(0.2);
@@ -328,7 +383,7 @@ function drawPlaceCard(
   const guestName = `${guest.firstName} ${guest.lastName}`.trim();
   doc.setFontSize(fontSizes.guestName);
   doc.setFont(fontFamily, 'bold');
-  doc.setTextColor(COLORS.text);
+  doc.setTextColor(themeColors.text);
 
   const nameY = y + height / 2 - (options.includeTableName ? 4 : 0);
   doc.text(guestName, x + width / 2, nameY, {
@@ -340,7 +395,7 @@ function drawPlaceCard(
   if (options.includeTableName && table) {
     doc.setFontSize(fontSizes.tableName);
     doc.setFont(fontFamily, 'normal');
-    doc.setTextColor(COLORS.textLight);
+    doc.setTextColor(themeColors.textLight);
     doc.text(table.name, x + width / 2, nameY + 8, { align: 'center' });
   }
 
@@ -359,7 +414,7 @@ function drawPlaceCard(
 
     if (indicators.length > 0) {
       doc.setFontSize(fontSizes.dietary);
-      doc.setTextColor(COLORS.textLight);
+      doc.setTextColor(themeColors.textLight);
       doc.text(
         indicators.join(' '),
         x + width - margin,
@@ -372,7 +427,7 @@ function drawPlaceCard(
   // Event name (small, bottom left)
   doc.setFontSize(fontSizes.eventName);
   doc.setFont(fontFamily, 'italic');
-  doc.setTextColor(COLORS.textLight);
+  doc.setTextColor(themeColors.textLight);
   doc.text(event.name, x + margin, y + height - margin);
 }
 

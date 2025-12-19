@@ -2,12 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import './PDFPreviewModal.css';
 
 export type FontFamily = 'helvetica' | 'times' | 'courier';
+export type ColorTheme = 'classic' | 'elegant' | 'modern' | 'nature' | 'romantic';
+
+// Theme labels and accent colors for UI display
+const THEME_OPTIONS: { value: ColorTheme; label: string; color: string }[] = [
+  { value: 'classic', label: 'Classic', color: '#F97066' },
+  { value: 'elegant', label: 'Elegant', color: '#B8860B' },
+  { value: 'modern', label: 'Modern', color: '#3B82F6' },
+  { value: 'nature', label: 'Nature', color: '#059669' },
+  { value: 'romantic', label: 'Romantic', color: '#EC4899' },
+];
 
 export interface PlaceCardOptions {
   includeTableName: boolean;
   includeDietary: boolean;
   fontSize: 'small' | 'medium' | 'large';
   fontFamily: FontFamily;
+  colorTheme: ColorTheme;
 }
 
 export interface TableCardOptions {
@@ -15,6 +26,7 @@ export interface TableCardOptions {
   fontFamily: FontFamily;
   showGuestCount: boolean;
   showEventName: boolean;
+  colorTheme: ColorTheme;
 }
 
 interface PDFPreviewModalProps {
@@ -33,6 +45,7 @@ const defaultPlaceOptions: PlaceCardOptions = {
   includeDietary: true,
   fontSize: 'medium',
   fontFamily: 'helvetica',
+  colorTheme: 'classic',
 };
 
 const defaultTableOptions: TableCardOptions = {
@@ -40,6 +53,7 @@ const defaultTableOptions: TableCardOptions = {
   fontFamily: 'helvetica',
   showGuestCount: true,
   showEventName: true,
+  colorTheme: 'classic',
 };
 
 export function PDFPreviewModal({
@@ -252,6 +266,28 @@ export function PDFPreviewModal({
                     <span className={`pdf-font-label pdf-font-family-${font.value}`}>
                       {font.label}
                     </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            {/* Color theme - shared between both types */}
+            <div className="pdf-option-group">
+              <span className="pdf-option-title">Color Theme</span>
+              <div className="pdf-theme-options">
+                {THEME_OPTIONS.map((theme) => (
+                  <label key={theme.value} className="pdf-theme-option">
+                    <input
+                      type="radio"
+                      name="colorTheme"
+                      value={theme.value}
+                      checked={type === 'place' ? placeOptions.colorTheme === theme.value : tableOptions.colorTheme === theme.value}
+                      onChange={() => type === 'place'
+                        ? handlePlaceOptionChange('colorTheme', theme.value)
+                        : handleTableOptionChange('colorTheme', theme.value)
+                      }
+                    />
+                    <span className="pdf-theme-swatch" style={{ backgroundColor: theme.color }} />
+                    <span className="pdf-theme-label">{theme.label}</span>
                   </label>
                 ))}
               </div>

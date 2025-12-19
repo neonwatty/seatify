@@ -564,4 +564,81 @@ test.describe('PDF Customization Options', () => {
     await expect(page.getByText('Serif', { exact: true })).toBeVisible();
     await expect(page.getByText('Monospace', { exact: true })).toBeVisible();
   });
+
+  test('options panel has color theme options', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check for color theme options
+    await expect(page.locator('.pdf-option-title').filter({ hasText: 'Color Theme' })).toBeVisible();
+    await expect(page.getByText('Classic', { exact: true })).toBeVisible();
+    await expect(page.getByText('Elegant', { exact: true })).toBeVisible();
+    await expect(page.getByText('Modern', { exact: true })).toBeVisible();
+    await expect(page.getByText('Nature', { exact: true })).toBeVisible();
+    await expect(page.getByText('Romantic', { exact: true })).toBeVisible();
+  });
+
+  test('classic color theme is selected by default', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check that classic is selected by default
+    const classicRadio = page.locator('input[name="colorTheme"][value="classic"]');
+    await expect(classicRadio).toBeChecked();
+  });
+
+  test('can select different color themes', async ({ page }) => {
+    // Open place cards preview
+    const placeCardsRow = page.locator('.print-material-row').last();
+    await placeCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Select Elegant theme
+    const elegantLabel = page.getByText('Elegant', { exact: true });
+    await elegantLabel.click();
+    const elegantRadio = page.locator('input[name="colorTheme"][value="elegant"]');
+    await expect(elegantRadio).toBeChecked();
+
+    // Select Nature theme
+    const natureLabel = page.getByText('Nature', { exact: true });
+    await natureLabel.click();
+    const natureRadio = page.locator('input[name="colorTheme"][value="nature"]');
+    await expect(natureRadio).toBeChecked();
+
+    // Classic should no longer be checked
+    const classicRadio = page.locator('input[name="colorTheme"][value="classic"]');
+    await expect(classicRadio).not.toBeChecked();
+  });
+
+  test('table cards preview has color theme options', async ({ page }) => {
+    // Open table cards preview
+    const tableCardsRow = page.locator('.print-material-row').first();
+    await tableCardsRow.locator('.print-material-preview-btn').click();
+    await expect(page.locator('.pdf-preview-modal')).toBeVisible({ timeout: 15000 });
+
+    // Open options panel
+    await page.locator('.pdf-preview-btn.options').click();
+    await expect(page.locator('.pdf-options-panel')).toBeVisible();
+
+    // Check for color theme options
+    await expect(page.locator('.pdf-option-title').filter({ hasText: 'Color Theme' })).toBeVisible();
+    await expect(page.getByText('Classic', { exact: true })).toBeVisible();
+    await expect(page.getByText('Elegant', { exact: true })).toBeVisible();
+  });
 });
