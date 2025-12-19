@@ -124,11 +124,11 @@ export async function switchView(page: Page, view: 'canvas' | 'guests'): Promise
       await page.locator('.bottom-nav-item:has-text("Guests")').click();
     }
   } else {
-    // Desktop: use toolbar buttons
+    // Desktop: use toolbar buttons (button text is now "Canvas" and "Guests")
     if (view === 'canvas') {
-      await page.click('button:has-text("Canvas")');
+      await page.click('button.toggle-option:has-text("Canvas")');
     } else {
-      await page.click('button:has-text("Guest List")');
+      await page.click('button.toggle-option:has-text("Guests")');
     }
   }
   await page.waitForTimeout(300);

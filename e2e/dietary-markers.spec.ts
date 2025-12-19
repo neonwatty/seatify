@@ -188,8 +188,8 @@ test.describe('Dietary & Accessibility Markers', () => {
       // Switch to Guest List view
       await switchView(page, 'guests');
 
-      // Wait for the view to load and find the guest in the guest list
-      await expect(page.locator('.guest-list .guest-name:has-text("Halal Guest")')).toBeVisible({ timeout: 5000 });
+      // Wait for the view to load and find the guest in the guest list table
+      await expect(page.locator('.guest-table .guest-name:has-text("Halal Guest")')).toBeVisible({ timeout: 5000 });
     });
   });
 

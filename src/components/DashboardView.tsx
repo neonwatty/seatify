@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { AnimatedCounter } from './AnimatedCounter';
 import { EmptyState } from './EmptyState';
+import { QRCodePrintView } from './QRCodePrintView';
 import './DashboardView.css';
 
 export function DashboardView() {
+  const [showQRPrint, setShowQRPrint] = useState(false);
   const {
     event,
     setActiveView,
@@ -166,7 +169,17 @@ export function DashboardView() {
 
         {/* Table Summary */}
         <div className="dashboard-card tables-summary">
-          <h3>Tables</h3>
+          <div className="tables-header">
+            <h3>Tables</h3>
+            {event.tables.length > 0 && (
+              <button
+                className="qr-print-btn"
+                onClick={() => setShowQRPrint(true)}
+              >
+                🖨️ Print QR Codes
+              </button>
+            )}
+          </div>
           {event.tables.length === 0 ? (
             <EmptyState
               variant="tables"
@@ -201,6 +214,11 @@ export function DashboardView() {
           )}
         </div>
       </div>
+
+      {/* QR Code Print View Modal */}
+      {showQRPrint && (
+        <QRCodePrintView onClose={() => setShowQRPrint(false)} />
+      )}
     </div>
   );
 }
