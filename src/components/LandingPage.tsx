@@ -11,53 +11,47 @@ export function LandingPage() {
   };
   return (
     <div className="landing-page">
-      {/* Floating Decorative Shapes - Top-down floor plan perspective */}
+      {/* Floating Decorative Shapes - Matching actual app visuals */}
       <div className="floating-shapes" aria-hidden="true">
-        {/* Round Table with Guests - Top Right */}
-        <svg className="floating-shape shape-table-1" viewBox="0 0 80 80">
+        {/* Round Table with Seated Guests - Top Right (matches app's round table) */}
+        <svg className="floating-shape shape-table-round" viewBox="0 0 120 120">
+          {/* Table surface with border */}
+          <circle cx="60" cy="60" r="32" fill="var(--color-bg)" stroke="currentColor" strokeWidth="3" opacity="0.8" />
+          {/* Table label */}
+          <text x="60" y="56" textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.9" fontWeight="600">Table 1</text>
+          <text x="60" y="70" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.7">4/6</text>
+          {/* Seated guests around table (circles with initials) */}
+          <circle cx="60" cy="18" r="12" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="60" y="22" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.8" fontWeight="500">JD</text>
+          <circle cx="102" cy="60" r="12" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="102" y="64" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.8" fontWeight="500">AS</text>
+          <circle cx="60" cy="102" r="12" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="60" y="106" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.8" fontWeight="500">MK</text>
+          <circle cx="18" cy="60" r="12" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="18" y="64" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.8" fontWeight="500">RW</text>
+        </svg>
+
+        {/* Guest Circle with Initials - Left Side (matches unassigned guest) */}
+        <svg className="floating-shape shape-guest-1" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="20" fill="var(--color-bg)" stroke="currentColor" strokeWidth="3" opacity="0.9" />
+          <text x="25" y="30" textAnchor="middle" fontSize="14" fill="currentColor" opacity="0.8" fontWeight="600">EB</text>
+        </svg>
+
+        {/* Rectangle Table with Guests - Bottom Left */}
+        <svg className="floating-shape shape-table-rect" viewBox="0 0 140 80">
           {/* Table surface */}
-          <circle cx="40" cy="40" r="22" fill="currentColor" opacity="0.5" />
-          {/* Guests/seats around the table */}
-          <circle cx="40" cy="12" r="7" fill="currentColor" opacity="0.7" />
-          <circle cx="40" cy="68" r="7" fill="currentColor" opacity="0.7" />
-          <circle cx="12" cy="40" r="7" fill="currentColor" opacity="0.7" />
-          <circle cx="68" cy="40" r="7" fill="currentColor" opacity="0.7" />
-          <circle cx="20" cy="20" r="6" fill="currentColor" opacity="0.6" />
-          <circle cx="60" cy="60" r="6" fill="currentColor" opacity="0.6" />
-        </svg>
-
-        {/* Top-view Chair - Left Side */}
-        <svg className="floating-shape shape-chair-1" viewBox="0 0 40 44">
-          {/* Seat (rounded square) */}
-          <rect x="6" y="14" width="28" height="26" rx="4" fill="currentColor" opacity="0.5" />
-          {/* Backrest (curved arc at top) */}
-          <path d="M8 14 Q8 4 20 4 Q32 4 32 14" fill="currentColor" opacity="0.7" />
-        </svg>
-
-        {/* Place Setting - Center Right */}
-        <svg className="floating-shape shape-place-setting" viewBox="0 0 50 50">
-          {/* Plate */}
-          <circle cx="25" cy="25" r="16" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.5" />
-          <circle cx="25" cy="25" r="10" fill="currentColor" opacity="0.3" />
-          {/* Fork (left) */}
-          <rect x="4" y="12" width="2" height="26" rx="1" fill="currentColor" opacity="0.6" />
-          <rect x="2" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
-          <rect x="4" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
-          <rect x="6" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
-          {/* Knife (right) */}
-          <rect x="44" y="12" width="2" height="26" rx="1" fill="currentColor" opacity="0.6" />
-        </svg>
-
-        {/* Rectangular Table with Chairs - Bottom Left */}
-        <svg className="floating-shape shape-table-2" viewBox="0 0 90 60">
-          {/* Table surface */}
-          <rect x="15" y="18" width="60" height="24" rx="3" fill="currentColor" opacity="0.5" />
-          {/* Chairs on top */}
-          <rect x="22" y="4" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
-          <rect x="54" y="4" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
-          {/* Chairs on bottom */}
-          <rect x="22" y="44" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
-          <rect x="54" y="44" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
+          <rect x="20" y="25" width="100" height="30" rx="8" fill="var(--color-bg)" stroke="currentColor" strokeWidth="3" opacity="0.8" />
+          <text x="70" y="44" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.8" fontWeight="600">Table 2</text>
+          {/* Guests on top */}
+          <circle cx="45" cy="12" r="10" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="45" y="16" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8" fontWeight="500">TL</text>
+          <circle cx="95" cy="12" r="10" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="95" y="16" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8" fontWeight="500">KP</text>
+          {/* Guests on bottom */}
+          <circle cx="45" cy="68" r="10" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="45" y="72" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8" fontWeight="500">NJ</text>
+          <circle cx="95" cy="68" r="10" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.9" />
+          <text x="95" y="72" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8" fontWeight="500">CP</text>
         </svg>
 
         {/* Heart (relationships/wedding theme) - Upper Left */}
@@ -65,16 +59,21 @@ export function LandingPage() {
           <path
             d="M20 35 C10 25 2 18 2 12 C2 6 7 2 12 2 C15 2 18 4 20 7 C22 4 25 2 28 2 C33 2 38 6 38 12 C38 18 30 25 20 35Z"
             fill="currentColor"
-            opacity="0.5"
+            opacity="0.6"
           />
         </svg>
 
-        {/* Top-view Chair 2 - Right Side */}
-        <svg className="floating-shape shape-chair-2" viewBox="0 0 40 44">
-          {/* Seat */}
-          <rect x="6" y="14" width="28" height="26" rx="4" fill="currentColor" opacity="0.4" />
-          {/* Backrest */}
-          <path d="M8 14 Q8 4 20 4 Q32 4 32 14" fill="currentColor" opacity="0.6" />
+        {/* Second Guest Circle - Right Side */}
+        <svg className="floating-shape shape-guest-2" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="20" fill="var(--color-bg)" stroke="currentColor" strokeWidth="3" opacity="0.85" />
+          <text x="25" y="30" textAnchor="middle" fontSize="14" fill="currentColor" opacity="0.75" fontWeight="600">LM</text>
+        </svg>
+
+        {/* Name Card / Place Card - Center Right */}
+        <svg className="floating-shape shape-namecard" viewBox="0 0 80 50">
+          <rect x="5" y="10" width="70" height="30" rx="4" fill="var(--color-bg)" stroke="currentColor" strokeWidth="2" opacity="0.85" />
+          <line x1="15" y1="28" x2="65" y2="28" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+          <text x="40" y="24" textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.7" fontWeight="500">Guest Name</text>
         </svg>
       </div>
 

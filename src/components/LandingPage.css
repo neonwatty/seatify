@@ -959,47 +959,37 @@
 
 .floating-shape {
   position: absolute;
-  opacity: 0.12;
+  opacity: 0.18;
   animation: floatShape 8s ease-in-out infinite;
 }
 
-/* Round Table with Guests - Top Right */
-.shape-table-1 {
-  top: 8%;
-  right: 4%;
-  width: 100px;
-  height: 100px;
+/* Round Table with Seated Guests - Top Right */
+.shape-table-round {
+  top: 6%;
+  right: 3%;
+  width: 140px;
+  height: 140px;
   color: var(--color-primary);
   animation-delay: 0s;
 }
 
-/* Top-view Chair - Left Side */
-.shape-chair-1 {
-  top: 30%;
+/* Guest Circle - Left Side */
+.shape-guest-1 {
+  top: 28%;
   left: 4%;
-  width: 55px;
+  width: 60px;
   height: 60px;
   color: var(--color-secondary);
   animation: floatShapeSlow 10s ease-in-out infinite;
   animation-delay: -3s;
 }
 
-/* Place Setting - Center Right */
-.shape-place-setting {
-  top: 45%;
-  right: 6%;
-  width: 65px;
-  height: 65px;
-  color: var(--color-primary);
-  animation-delay: -2s;
-}
-
-/* Rectangular Table with Chairs - Bottom Left */
-.shape-table-2 {
-  bottom: 12%;
-  left: 5%;
-  width: 110px;
-  height: 75px;
+/* Rectangle Table with Guests - Bottom Left */
+.shape-table-rect {
+  bottom: 8%;
+  left: 3%;
+  width: 160px;
+  height: 95px;
   color: var(--color-secondary);
   animation: floatShapeSlow 12s ease-in-out infinite;
   animation-delay: -4s;
@@ -1007,22 +997,33 @@
 
 /* Heart - Upper Left */
 .shape-heart {
-  top: 15%;
-  left: 10%;
-  width: 45px;
-  height: 45px;
+  top: 12%;
+  left: 12%;
+  width: 50px;
+  height: 50px;
   color: var(--color-primary);
   animation-delay: -1s;
 }
 
-/* Top-view Chair 2 - Right Side */
-.shape-chair-2 {
-  top: 70%;
-  right: 4%;
-  width: 50px;
+/* Guest Circle 2 - Right Side */
+.shape-guest-2 {
+  top: 65%;
+  right: 5%;
+  width: 55px;
   height: 55px;
   color: var(--color-primary);
   animation-delay: -5s;
+}
+
+/* Name Card - Center Right */
+.shape-namecard {
+  top: 42%;
+  right: 4%;
+  width: 90px;
+  height: 55px;
+  color: var(--color-primary);
+  animation: floatShapeSlow 11s ease-in-out infinite;
+  animation-delay: -2s;
 }
 
 /* Hide on mobile to reduce visual clutter */
