@@ -10,6 +10,7 @@ import {
 import type { DragEndEvent, DragStartEvent, DragMoveEvent } from '@dnd-kit/core';
 import { useGesture } from '@use-gesture/react';
 import { useStore } from '../store/useStore';
+import { useLongPress } from '../hooks/useLongPress';
 import { TableComponent } from './Table';
 import { GuestChip } from './GuestChip';
 import { CanvasGuest } from './CanvasGuest';
@@ -1061,6 +1062,21 @@ export function Canvas() {
     }
   };
 
+  // Long press for mobile canvas context menu
+  const canvasLongPressHandlers = useLongPress({
+    onLongPress: (e: React.TouchEvent) => {
+      // Only open if touching empty canvas space
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('canvas-viewport') || target.classList.contains('canvas-content')) {
+        e.preventDefault();
+        const touch = e.touches[0] || e.changedTouches[0];
+        if (touch) {
+          openContextMenu(touch.clientX, touch.clientY, 'canvas', null);
+        }
+      }
+    },
+  });
+
   const draggedGuest = draggedGuestId
     ? event.guests.find((g) => g.id === draggedGuestId)
     : null;
@@ -1133,6 +1149,7 @@ export function Canvas() {
           onMouseLeave={handleMouseUp}
           onClick={handleCanvasClick}
           onContextMenu={handleCanvasContextMenu}
+          {...canvasLongPressHandlers}
           style={{ cursor: isPanning ? 'grabbing' : isMarqueeSelecting ? 'crosshair' : 'default', touchAction: 'none' }}
         >
           <div

@@ -235,28 +235,28 @@
 }
 
 .badge-wedding {
-  background: #fce7f3;
-  color: #be185d;
+  background: var(--badge-wedding-bg);
+  color: var(--badge-wedding-text);
 }
 
 .badge-corporate {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--badge-corporate-bg);
+  color: var(--badge-corporate-text);
 }
 
 .badge-gala {
-  background: #fef3c7;
-  color: #b45309;
+  background: var(--badge-gala-bg);
+  color: var(--badge-gala-text);
 }
 
 .badge-party {
-  background: #d1fae5;
-  color: #047857;
+  background: var(--badge-party-bg);
+  color: var(--badge-party-text);
 }
 
 .badge-social {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: var(--badge-social-bg);
+  color: var(--badge-social-text);
 }
 
 .badge-other {

@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { useStore } from '../store/useStore';
 import { getGroupColor } from './groupColors';
 import { getDietaryIcons, ACCESSIBILITY_ICON } from '../constants/dietaryIcons';
+import { useLongPress } from '../hooks/useLongPress';
 import type { Guest } from '../types';
 import { getFullName, getInitials } from '../types';
 import './CanvasGuest.css';
@@ -57,6 +58,17 @@ export function CanvasGuest({ guest, isSelected, isNearTable, isNewlyAdded }: Ca
     }
   };
 
+  // Long press for mobile context menu
+  const longPressHandlers = useLongPress({
+    onLongPress: (e: React.TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (touch) {
+        openContextMenu(touch.clientX, touch.clientY, 'guest', guest.id);
+      }
+    },
+  });
+
   return (
     <div
       ref={setNodeRef}
@@ -88,6 +100,7 @@ export function CanvasGuest({ guest, isSelected, isNearTable, isNewlyAdded }: Ca
         e.stopPropagation();
         openContextMenu(e.clientX, e.clientY, 'guest', guest.id);
       }}
+      {...longPressHandlers}
       {...attributes}
       {...listeners}
     >

@@ -17,6 +17,12 @@ function App() {
     nudgeSelectedTables,
     pushHistory,
     recenterCanvas,
+    setZoom,
+    selectAllTables,
+    duplicateTable,
+    toggleGrid,
+    toggleSidebar,
+    event,
   } = useStore();
 
   // Global keyboard shortcuts
@@ -100,10 +106,60 @@ function App() {
         recenterCanvas(window.innerWidth - 300, window.innerHeight - 150); // Approximate canvas size
         return;
       }
+
+      // Zoom in (+/=)
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setZoom(Math.min(2, canvas.zoom + 0.1));
+        return;
+      }
+
+      // Zoom out (-)
+      if (e.key === '-') {
+        e.preventDefault();
+        setZoom(Math.max(0.25, canvas.zoom - 0.1));
+        return;
+      }
+
+      // Select all tables (Cmd/Ctrl+A)
+      if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        selectAllTables();
+        const tableCount = event.tables.length;
+        if (tableCount > 0) {
+          showToast(`Selected ${tableCount} table${tableCount > 1 ? 's' : ''}`, 'info');
+        }
+        return;
+      }
+
+      // Duplicate selected table (Cmd/Ctrl+D)
+      if (e.key === 'd' && (e.metaKey || e.ctrlKey)) {
+        if (canvas.selectedTableIds.length === 1) {
+          e.preventDefault();
+          pushHistory('Duplicate table');
+          duplicateTable(canvas.selectedTableIds[0]);
+          showToast('Table duplicated', 'success');
+        }
+        return;
+      }
+
+      // Toggle grid (G)
+      if (e.key === 'g') {
+        e.preventDefault();
+        toggleGrid();
+        return;
+      }
+
+      // Toggle sidebar (S)
+      if (e.key === 's' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        toggleSidebar();
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, canUndo, canRedo, canvas.selectedTableIds, canvas.selectedGuestIds, batchRemoveTables, batchRemoveGuests, nudgeSelectedTables, pushHistory, recenterCanvas]);
+  }, [undo, redo, canUndo, canRedo, canvas.selectedTableIds, canvas.selectedGuestIds, canvas.zoom, batchRemoveTables, batchRemoveGuests, nudgeSelectedTables, pushHistory, recenterCanvas, setZoom, selectAllTables, duplicateTable, toggleGrid, toggleSidebar, event.tables.length]);
 
   return (
     <>

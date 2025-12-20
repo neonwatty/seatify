@@ -351,3 +351,60 @@
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
   }
 }
+
+/* Zoom Controls in Mobile Menu */
+.menu-zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  margin: 0.5rem 1rem 0.75rem;
+}
+
+.menu-zoom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.menu-zoom-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.menu-zoom-btn:active {
+  transform: scale(0.95);
+}
+
+.menu-zoom-btn.reset {
+  width: 36px;
+  height: 36px;
+  margin-left: 0.5rem;
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.menu-zoom-btn.reset:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.menu-zoom-value {
+  min-width: 50px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}

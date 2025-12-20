@@ -56,13 +56,17 @@
   /* Status Colors */
   --color-success: #4ade80;
   --color-success-light: #dcfce7;
+  --color-success-text: #166534;
   --color-warning: #fbbf24;
   --color-warning-light: #fef3c7;
+  --color-warning-text: #78350f;
   --color-error: #f87171;
   --color-error-light: #fee2e2;
   --color-error-dark: #dc2626;
+  --color-error-text: #991b1b;
   --color-info: #60a5fa;
   --color-info-light: #dbeafe;
+  --color-info-text: #1e40af;
 
   /* Relationship Badge Colors */
   --rel-family: #7dd3fc;
@@ -78,6 +82,18 @@
   --rel-avoid: #fca5a5;
   --rel-avoid-bg: #fee2e2;
 
+  /* Event Type Badge Colors */
+  --badge-wedding-bg: #fce7f3;
+  --badge-wedding-text: #be185d;
+  --badge-corporate-bg: #dbeafe;
+  --badge-corporate-text: #1d4ed8;
+  --badge-gala-bg: #fef3c7;
+  --badge-gala-text: #b45309;
+  --badge-party-bg: #d1fae5;
+  --badge-party-text: #047857;
+  --badge-social-bg: #e0e7ff;
+  --badge-social-text: #4338ca;
+
   /* Spacing & Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -91,6 +107,10 @@
   --shadow-lg: 0 8px 24px rgba(61, 44, 36, 0.12);
   --shadow-xl: 0 16px 48px rgba(61, 44, 36, 0.16);
   --shadow-glow: 0 0 20px rgba(249, 112, 102, 0.3);
+
+  /* Focus Ring Colors */
+  --focus-ring-color: rgba(249, 112, 102, 0.15);
+  --focus-ring-strong: rgba(249, 112, 102, 0.3);
 
   /* Animation Timing - Optimized for snappy feel */
   --duration-micro: 0.08s;
@@ -176,11 +196,37 @@
   /* Darker error for gradients in dark mode */
   --color-error-dark: #b91c1c;
 
+  /* Status colors for dark mode - lighter backgrounds, readable text */
+  --color-success-light: #14532d;
+  --color-success-text: #86efac;
+  --color-warning-light: #451a03;
+  --color-warning-text: #fcd34d;
+  --color-error-light: #450a0a;
+  --color-error-text: #fca5a5;
+  --color-info-light: #1e3a5f;
+  --color-info-text: #93c5fd;
+
+  /* Event Type Badge Colors - Dark Mode */
+  --badge-wedding-bg: #4a1d35;
+  --badge-wedding-text: #f9a8d4;
+  --badge-corporate-bg: #1e3a5f;
+  --badge-corporate-text: #93c5fd;
+  --badge-gala-bg: #451a03;
+  --badge-gala-text: #fcd34d;
+  --badge-party-bg: #14532d;
+  --badge-party-text: #86efac;
+  --badge-social-bg: #312e81;
+  --badge-social-text: #c7d2fe;
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 20px rgba(255, 138, 125, 0.25);
+
+  /* Focus Ring Colors - Dark Mode (more visible) */
+  --focus-ring-color: rgba(255, 138, 125, 0.25);
+  --focus-ring-strong: rgba(255, 138, 125, 0.4);
 }
 
 /* System Dark Mode - only applies when data-theme is not explicitly set */
@@ -220,11 +266,37 @@
     /* Darker error for gradients in dark mode */
     --color-error-dark: #b91c1c;
 
+    /* Status colors for dark mode - lighter backgrounds, readable text */
+    --color-success-light: #14532d;
+    --color-success-text: #86efac;
+    --color-warning-light: #451a03;
+    --color-warning-text: #fcd34d;
+    --color-error-light: #450a0a;
+    --color-error-text: #fca5a5;
+    --color-info-light: #1e3a5f;
+    --color-info-text: #93c5fd;
+
+    /* Event Type Badge Colors - Dark Mode */
+    --badge-wedding-bg: #4a1d35;
+    --badge-wedding-text: #f9a8d4;
+    --badge-corporate-bg: #1e3a5f;
+    --badge-corporate-text: #93c5fd;
+    --badge-gala-bg: #451a03;
+    --badge-gala-text: #fcd34d;
+    --badge-party-bg: #14532d;
+    --badge-party-text: #86efac;
+    --badge-social-bg: #312e81;
+    --badge-social-text: #c7d2fe;
+
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
     --shadow-glow: 0 0 20px rgba(255, 138, 125, 0.25);
+
+    /* Focus Ring Colors - Dark Mode (more visible) */
+    --focus-ring-color: rgba(255, 138, 125, 0.25);
+    --focus-ring-strong: rgba(255, 138, 125, 0.4);
   }
 }
 
@@ -420,7 +492,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.15);
+  box-shadow: 0 0 0 3px var(--focus-ring-color);
 }
 
 /* Custom scrollbar */

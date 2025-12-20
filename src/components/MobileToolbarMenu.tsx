@@ -23,7 +23,7 @@ export function MobileToolbarMenu({
   showGridControls,
   onToggleGridControls,
 }: MobileToolbarMenuProps) {
-  const { event, addTable, activeView, setActiveView, optimizeSeating, resetSeating, hasOptimizationSnapshot } = useStore();
+  const { event, addTable, activeView, setActiveView, optimizeSeating, resetSeating, hasOptimizationSnapshot, canvas, setZoom, recenterCanvas } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [showTableSubmenu, setShowTableSubmenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -281,6 +281,38 @@ export function MobileToolbarMenu({
             {activeView === 'canvas' && (
               <div className="menu-section">
                 <div className="menu-section-label">Canvas Tools</div>
+
+                {/* Zoom Controls */}
+                <div className="menu-zoom-controls">
+                  <button
+                    className="menu-zoom-btn"
+                    onClick={() => setZoom(Math.max(0.25, canvas.zoom - 0.25))}
+                    aria-label="Zoom out"
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="currentColor" d="M19 13H5v-2h14v2z"/>
+                    </svg>
+                  </button>
+                  <span className="menu-zoom-value">{Math.round(canvas.zoom * 100)}%</span>
+                  <button
+                    className="menu-zoom-btn"
+                    onClick={() => setZoom(Math.min(2, canvas.zoom + 0.25))}
+                    aria-label="Zoom in"
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                  </button>
+                  <button
+                    className="menu-zoom-btn reset"
+                    onClick={() => recenterCanvas(window.innerWidth, window.innerHeight)}
+                    aria-label="Reset view"
+                  >
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                      <path fill="currentColor" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                    </svg>
+                  </button>
+                </div>
 
                 {onToggleGridControls && (
                   <button

@@ -84,7 +84,7 @@
 .identify-form input[type='email']:focus {
   border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 4px rgba(249, 112, 102, 0.1);
+  box-shadow: 0 0 0 4px var(--focus-ring-color);
 }
 
 .error-message {
@@ -175,7 +175,7 @@
 .question-textarea:focus {
   border-color: var(--color-primary);
   outline: none;
-  box-shadow: 0 0 0 4px rgba(249, 112, 102, 0.1);
+  box-shadow: 0 0 0 4px var(--focus-ring-color);
 }
 
 .question-textarea::placeholder {

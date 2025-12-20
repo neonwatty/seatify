@@ -3,6 +3,7 @@ import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { useStore } from '../store/useStore';
 import { getGroupColor } from './groupColors';
 import { DIETARY_ICONS, getDietaryIcon, ACCESSIBILITY_ICON } from '../constants/dietaryIcons';
+import { useLongPress } from '../hooks/useLongPress';
 import type { Table, Guest } from '../types';
 import { getFullName, getInitials } from '../types';
 import './Table.css';
@@ -95,6 +96,17 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGue
     openContextMenu(e.clientX, e.clientY, 'guest', guest.id);
   };
 
+  // Long press for mobile context menu
+  const longPressHandlers = useLongPress({
+    onLongPress: (e: React.TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (touch) {
+        openContextMenu(touch.clientX, touch.clientY, 'guest', guest.id);
+      }
+    },
+  });
+
   return (
     <div
       ref={setNodeRef}
@@ -102,6 +114,7 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGue
       title={tooltipParts.join('\n')}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
+      {...longPressHandlers}
       {...attributes}
       {...listeners}
     >
@@ -255,6 +268,17 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
     openContextMenu(e.clientX, e.clientY, 'table', table.id);
   };
 
+  // Long press for mobile context menu
+  const longPressHandlers = useLongPress({
+    onLongPress: (e: React.TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0] || e.changedTouches[0];
+      if (touch) {
+        openContextMenu(touch.clientX, touch.clientY, 'table', table.id);
+      }
+    },
+  });
+
   // Build violation tooltip
   const violationTooltip = hasViolations
     ? violations.map(v => `⚠️ ${v.description}`).join('\n')
@@ -276,6 +300,7 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
       }}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
+      {...longPressHandlers}
       {...attributes}
       {...listeners}
     >

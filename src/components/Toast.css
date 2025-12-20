@@ -28,25 +28,25 @@
 .toast-success {
   border-color: var(--color-success);
   background: var(--color-success-light);
-  color: #166534;
+  color: var(--color-success-text);
 }
 
 .toast-info {
   border-color: var(--color-info);
   background: var(--color-info-light);
-  color: #1e40af;
+  color: var(--color-info-text);
 }
 
 .toast-warning {
   border-color: var(--color-warning);
   background: var(--color-warning-light);
-  color: #78350f;
+  color: var(--color-warning-text);
 }
 
 .toast-error {
   border-color: var(--color-error);
   background: var(--color-error-light);
-  color: #991b1b;
+  color: var(--color-error-text);
 }
 
 .toast-message {
