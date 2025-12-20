@@ -11,35 +11,70 @@ export function LandingPage() {
   };
   return (
     <div className="landing-page">
-      {/* Floating Decorative Shapes */}
+      {/* Floating Decorative Shapes - Top-down floor plan perspective */}
       <div className="floating-shapes" aria-hidden="true">
-        {/* Round Table - Top Right */}
-        <svg className="floating-shape shape-table-1" viewBox="0 0 60 60">
-          <circle cx="30" cy="30" r="25" fill="currentColor" opacity="0.6" />
-          <circle cx="30" cy="30" r="18" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.3" />
+        {/* Round Table with Guests - Top Right */}
+        <svg className="floating-shape shape-table-1" viewBox="0 0 80 80">
+          {/* Table surface */}
+          <circle cx="40" cy="40" r="22" fill="currentColor" opacity="0.5" />
+          {/* Guests/seats around the table */}
+          <circle cx="40" cy="12" r="7" fill="currentColor" opacity="0.7" />
+          <circle cx="40" cy="68" r="7" fill="currentColor" opacity="0.7" />
+          <circle cx="12" cy="40" r="7" fill="currentColor" opacity="0.7" />
+          <circle cx="68" cy="40" r="7" fill="currentColor" opacity="0.7" />
+          <circle cx="20" cy="20" r="6" fill="currentColor" opacity="0.6" />
+          <circle cx="60" cy="60" r="6" fill="currentColor" opacity="0.6" />
         </svg>
 
-        {/* Chair - Left Side */}
-        <svg className="floating-shape shape-chair-1" viewBox="0 0 40 50">
-          <rect x="8" y="20" width="24" height="25" rx="4" fill="currentColor" opacity="0.5" />
-          <rect x="10" y="5" width="20" height="15" rx="3" fill="currentColor" opacity="0.4" />
+        {/* Top-view Chair - Left Side */}
+        <svg className="floating-shape shape-chair-1" viewBox="0 0 40 44">
+          {/* Seat (rounded square) */}
+          <rect x="6" y="14" width="28" height="26" rx="4" fill="currentColor" opacity="0.5" />
+          {/* Backrest (curved arc at top) */}
+          <path d="M8 14 Q8 4 20 4 Q32 4 32 14" fill="currentColor" opacity="0.7" />
         </svg>
 
-        {/* Guest Circle - Bottom Right */}
-        <svg className="floating-shape shape-guest-1" viewBox="0 0 30 30">
-          <circle cx="15" cy="15" r="12" fill="currentColor" opacity="0.5" />
+        {/* Place Setting - Center Right */}
+        <svg className="floating-shape shape-place-setting" viewBox="0 0 50 50">
+          {/* Plate */}
+          <circle cx="25" cy="25" r="16" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+          <circle cx="25" cy="25" r="10" fill="currentColor" opacity="0.3" />
+          {/* Fork (left) */}
+          <rect x="4" y="12" width="2" height="26" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="2" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
+          <rect x="4" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
+          <rect x="6" y="12" width="1" height="8" rx="0.5" fill="currentColor" opacity="0.5" />
+          {/* Knife (right) */}
+          <rect x="44" y="12" width="2" height="26" rx="1" fill="currentColor" opacity="0.6" />
         </svg>
 
-        {/* Small Table - Bottom Left */}
-        <svg className="floating-shape shape-table-2" viewBox="0 0 60 60">
-          <circle cx="30" cy="30" r="25" fill="currentColor" opacity="0.5" />
-          <circle cx="30" cy="30" r="18" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+        {/* Rectangular Table with Chairs - Bottom Left */}
+        <svg className="floating-shape shape-table-2" viewBox="0 0 90 60">
+          {/* Table surface */}
+          <rect x="15" y="18" width="60" height="24" rx="3" fill="currentColor" opacity="0.5" />
+          {/* Chairs on top */}
+          <rect x="22" y="4" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
+          <rect x="54" y="4" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
+          {/* Chairs on bottom */}
+          <rect x="22" y="44" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
+          <rect x="54" y="44" width="14" height="12" rx="2" fill="currentColor" opacity="0.6" />
         </svg>
 
-        {/* Chair - Right Side */}
-        <svg className="floating-shape shape-chair-2" viewBox="0 0 40 50">
-          <rect x="8" y="20" width="24" height="25" rx="4" fill="currentColor" opacity="0.4" />
-          <rect x="10" y="5" width="20" height="15" rx="3" fill="currentColor" opacity="0.3" />
+        {/* Heart (relationships/wedding theme) - Upper Left */}
+        <svg className="floating-shape shape-heart" viewBox="0 0 40 40">
+          <path
+            d="M20 35 C10 25 2 18 2 12 C2 6 7 2 12 2 C15 2 18 4 20 7 C22 4 25 2 28 2 C33 2 38 6 38 12 C38 18 30 25 20 35Z"
+            fill="currentColor"
+            opacity="0.5"
+          />
+        </svg>
+
+        {/* Top-view Chair 2 - Right Side */}
+        <svg className="floating-shape shape-chair-2" viewBox="0 0 40 44">
+          {/* Seat */}
+          <rect x="6" y="14" width="28" height="26" rx="4" fill="currentColor" opacity="0.4" />
+          {/* Backrest */}
+          <path d="M8 14 Q8 4 20 4 Q32 4 32 14" fill="currentColor" opacity="0.6" />
         </svg>
       </div>
 
