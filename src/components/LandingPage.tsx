@@ -84,12 +84,13 @@ export function LandingPage() {
             <h1 className="landing-logo">
               <span className="logo-table">Table</span>
               <span className="logo-craft">Craft</span>
+              <span className="sr-only"> - Free Seating Chart Maker & Wedding Seating Plan Generator</span>
             </h1>
           </div>
-          <p className="landing-tagline">Event Seating Made Simple</p>
+          <p className="landing-tagline">Free Seating Chart Maker for Weddings & Events</p>
           <p className="landing-description">
-            Design floor plans, manage guest lists, and let smart optimization
-            handle the tricky seating decisions.
+            Create beautiful seating plans with drag-and-drop simplicity. Our smart
+            seating plan generator handles guest relationships automatically.
           </p>
           <button className="cta-button" onClick={handleEnterApp}>
             Start Planning Free
