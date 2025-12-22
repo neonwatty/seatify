@@ -15,7 +15,7 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 'welcome',
     target: null,
-    title: 'Welcome to TableCraft!',
+    title: 'Welcome to Seatify!',
     description: "Let's take a quick tour of the key features. This will only take about a minute.",
     placement: 'center',
   },

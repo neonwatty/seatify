@@ -30,11 +30,11 @@
   margin: 0;
 }
 
-.shareable-brand .logo-table {
+.shareable-brand .logo-seat {
   color: var(--color-text);
 }
 
-.shareable-brand .logo-craft {
+.shareable-brand .logo-ify {
   color: var(--color-primary);
   font-family: 'Caveat', cursive;
   font-size: 1.15em;
@@ -163,11 +163,11 @@
   margin: 0;
 }
 
-.shareable-brand-small .logo-table {
+.shareable-brand-small .logo-seat {
   color: var(--color-text);
 }
 
-.shareable-brand-small .logo-craft {
+.shareable-brand-small .logo-ify {
   color: var(--color-primary);
   font-family: 'Caveat', cursive;
   font-size: 1.15em;

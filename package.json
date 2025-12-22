@@ -1,5 +1,5 @@
 {
-  "name": "tablecraft",
+  "name": "seatify",
   "private": true,
   "version": "0.9.0",
   "type": "module",
@@ -15,7 +15,7 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug"
   },
-  "homepage": "https://yourusername.github.io/seating-arrangement",
+  "homepage": "https://seatify.app",
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

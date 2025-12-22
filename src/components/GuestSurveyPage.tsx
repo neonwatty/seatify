@@ -228,7 +228,7 @@ export function GuestSurveyPage() {
 
       <footer className="survey-footer">
         <p>
-          Powered by <strong>TableCraft</strong>
+          Powered by <strong>Seatify</strong>
         </p>
       </footer>
     </div>

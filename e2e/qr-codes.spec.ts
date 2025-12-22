@@ -233,10 +233,10 @@ test.describe('QR Landing Page', () => {
 
     // Should have a button to go to main app
     await expect(page.locator('.cta-button')).toBeVisible();
-    await expect(page.locator('.cta-button')).toContainText('Go to TableCraft');
+    await expect(page.locator('.cta-button')).toContainText('Go to Seatify');
   });
 
-  test('clicking Go to TableCraft navigates to app', async ({ page }) => {
+  test('clicking Go to Seatify navigates to app', async ({ page }) => {
     // Navigate to QR URL
     await page.goto('/seating-arrangement/#/table/invalid-data');
     await expect(page.locator('.qr-info-error')).toBeVisible();

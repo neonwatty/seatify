@@ -206,7 +206,7 @@ test.describe('Shareable View Page', () => {
   test('error page has go to app button', async ({ page }) => {
     await page.goto('/#/share/invaliddata123');
     await expect(page.locator('.secondary-btn')).toBeVisible();
-    await expect(page.locator('.secondary-btn')).toContainText('Go to TableCraft');
+    await expect(page.locator('.secondary-btn')).toContainText('Go to Seatify');
   });
 });
 

@@ -6,17 +6,17 @@ test.describe('Landing Page', () => {
   });
 
   test.describe('Hero Section', () => {
-    test('displays TableCraft logo with correct branding', async ({ page }) => {
+    test('displays Seatify logo with correct branding', async ({ page }) => {
       const logo = page.locator('.landing-logo');
       await expect(logo).toBeVisible();
-      await expect(logo.locator('.logo-table')).toHaveText('Table');
-      await expect(logo.locator('.logo-craft')).toHaveText('Craft');
+      await expect(logo.locator('.logo-seat')).toHaveText('Seat');
+      await expect(logo.locator('.logo-ify')).toHaveText('ify');
     });
 
     test('displays tagline and description', async ({ page }) => {
-      await expect(page.locator('.landing-tagline')).toHaveText('Event Seating Made Simple');
-      await expect(page.locator('.landing-description')).toContainText('Design floor plans');
-      await expect(page.locator('.landing-description')).toContainText('smart optimization');
+      await expect(page.locator('.landing-tagline')).toHaveText('Free Seating Chart Maker for Weddings & Events');
+      await expect(page.locator('.landing-description')).toContainText('drag-and-drop');
+      await expect(page.locator('.landing-description')).toContainText('seating plan generator');
     });
 
     test('CTA button is visible and clickable', async ({ page }) => {

@@ -103,11 +103,11 @@
   opacity: 1;
 }
 
-.header .logo-table {
+.header .logo-seat {
   color: var(--color-text);
 }
 
-.header .logo-craft {
+.header .logo-ify {
   color: var(--color-primary);
   font-family: 'Caveat', cursive;
   font-size: 1.15em;

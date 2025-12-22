@@ -67,8 +67,8 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
           style={{ cursor: onLogoClick ? 'pointer' : 'default' }}
           title="Back to home"
         >
-          <span className="logo-table">Table</span>
-          <span className="logo-craft">Craft</span>
+          <span className="logo-seat">Seat</span>
+          <span className="logo-ify">ify</span>
         </h1>
         <span className="version-badge">v{version}</span>
         <UpdatesButton variant="header" />
@@ -76,7 +76,7 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
           <button
             className="tour-btn"
             onClick={onStartTour}
-            title="Take a tour of TableCraft"
+            title="Take a tour of Seatify"
           >
             Tour
           </button>

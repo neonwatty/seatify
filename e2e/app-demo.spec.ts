@@ -9,15 +9,15 @@ import {
   openMobileMenu,
 } from './test-utils';
 
-test.describe('TableCraft App Demo', () => {
+test.describe('Seatify App Demo', () => {
   test('landing page shows correct branding', async ({ page }) => {
     await page.goto('/');
 
-    // Check page title contains TableCraft
-    await expect(page).toHaveTitle(/TableCraft/);
+    // Check page title contains Seatify
+    await expect(page).toHaveTitle(/Seatify/);
 
     // Check landing page logo
-    await expect(page.locator('.landing-logo')).toContainText('TableCraft');
+    await expect(page.locator('.landing-logo')).toContainText('Seatify');
 
     // Check CTA button exists
     await expect(page.locator('button:has-text("Start Planning")')).toBeVisible();

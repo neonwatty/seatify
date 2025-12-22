@@ -45,7 +45,7 @@ export function QRTableInfoPage() {
             <h2>Unable to load table information</h2>
             <p>The QR code may be outdated or damaged.</p>
             <button className="cta-button" onClick={handleNavigateToApp}>
-              Go to TableCraft
+              Go to Seatify
             </button>
           </div>
         </div>
@@ -58,8 +58,8 @@ export function QRTableInfoPage() {
       <div className="qr-info-container">
         <div className="qr-info-header">
           <h1 className="qr-brand">
-            <span className="logo-table">Table</span>
-            <span className="logo-craft">Craft</span>
+            <span className="logo-seat">Seat</span>
+            <span className="logo-ify">ify</span>
           </h1>
           {tableData.e && <p className="event-name">{tableData.e}</p>}
           {tableData.d && <p className="event-date">{tableData.d}</p>}
@@ -102,7 +102,7 @@ export function QRTableInfoPage() {
 
         <div className="qr-info-footer">
           <button className="cta-button-secondary" onClick={handleNavigateToApp}>
-            Plan your own event with TableCraft
+            Plan your own event with Seatify
           </button>
         </div>
       </div>

@@ -1233,7 +1233,7 @@ export function Canvas() {
 
           {event.tables.length === 0 && event.guests.filter((g) => !g.tableId).length === 0 && (
             <div className="canvas-empty">
-              <h2>Welcome to TableCraft!</h2>
+              <h2>Welcome to Seatify!</h2>
               <p>Click "Add Table" above to create tables, then drag guests from the sidebar to assign seats.</p>
             </div>
           )}

@@ -47,7 +47,7 @@ export function ShareableViewPage() {
       if (data) {
         setImportedEvent(data);
       } else {
-        alert('Unable to read the seating file. Make sure it\'s a valid TableCraft export.');
+        alert('Unable to read the seating file. Make sure it\'s a valid Seatify export.');
       }
     } catch {
       alert('Error reading file.');
@@ -67,8 +67,8 @@ export function ShareableViewPage() {
         <div className="shareable-container">
           <div className="shareable-header">
             <h1 className="shareable-brand">
-              <span className="logo-table">Table</span>
-              <span className="logo-craft">Craft</span>
+              <span className="logo-seat">Seat</span>
+              <span className="logo-ify">ify</span>
             </h1>
           </div>
 
@@ -81,7 +81,7 @@ export function ShareableViewPage() {
               </svg>
             </div>
             <h2>View Shared Seating Chart</h2>
-            <p>Upload a TableCraft seating file to view the arrangement.</p>
+            <p>Upload a Seatify seating file to view the arrangement.</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -112,8 +112,8 @@ export function ShareableViewPage() {
         <div className="shareable-container">
           <div className="shareable-header">
             <h1 className="shareable-brand">
-              <span className="logo-table">Table</span>
-              <span className="logo-craft">Craft</span>
+              <span className="logo-seat">Seat</span>
+              <span className="logo-ify">ify</span>
             </h1>
           </div>
 
@@ -139,7 +139,7 @@ export function ShareableViewPage() {
                 Upload a file instead
               </button>
               <button className="secondary-btn" onClick={handleNavigateToApp}>
-                Go to TableCraft
+                Go to Seatify
               </button>
             </div>
           </div>

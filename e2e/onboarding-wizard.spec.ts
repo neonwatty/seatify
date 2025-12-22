@@ -25,7 +25,7 @@ test.describe('Onboarding Wizard', () => {
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
     // First step should be the welcome message
-    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Welcome to TableCraft');
+    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Welcome to Seatify');
   });
 
   test('wizard does not auto-show for returning users who completed it', async ({ page }) => {
@@ -145,7 +145,7 @@ test.describe('Onboarding Wizard', () => {
 
     // Tour button should be visible
     await expect(page.locator('.tour-btn')).toBeVisible();
-    await expect(page.locator('.tour-btn')).toHaveAttribute('title', 'Take a tour of TableCraft');
+    await expect(page.locator('.tour-btn')).toHaveAttribute('title', 'Take a tour of Seatify');
   });
 
   test('Escape key closes wizard', async ({ page }) => {
