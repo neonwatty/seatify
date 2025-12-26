@@ -183,9 +183,13 @@ test.describe('Landing Page', () => {
       const emailInput = page.locator('.email-capture-modal input[type="email"]');
       await emailInput.fill('test@example.com');
 
-      // Intercept the Formspree request to delay it
+      // Use a promise to control when the route completes
+      let resolveRoute: () => void;
+      const routePromise = new Promise<void>(resolve => { resolveRoute = resolve; });
+
+      // Intercept the Formspree request - hold it until we verify loading state
       await page.route('**/formspree.io/**', async (route) => {
-        await page.waitForTimeout(500);
+        await routePromise;
         await route.fulfill({ status: 200, body: JSON.stringify({ ok: true }) });
       });
 
@@ -195,6 +199,10 @@ test.describe('Landing Page', () => {
       // Should show loading state
       await expect(submitBtn).toContainText('Subscribing...');
       await expect(page.locator('.email-capture-modal .spinner')).toBeVisible();
+
+      // Release the route and cleanup
+      resolveRoute!();
+      await page.unrouteAll({ behavior: 'ignoreErrors' });
     });
 
     test('shows success state after submission', async ({ page }) => {
