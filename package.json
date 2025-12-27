@@ -14,7 +14,8 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
-    "validate:sitemap": "node scripts/validate-sitemap.js"
+    "validate:sitemap": "node scripts/validate-sitemap.js",
+    "analyze": "npm run build && echo 'Bundle analysis saved to dist/stats.html'"
   },
   "homepage": "https://seatify.app",
   "dependencies": {
@@ -30,6 +31,7 @@
     "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.11.0",
     "uuid": "^13.0.0",
+    "web-vitals": "^5.1.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.8"
   },
@@ -49,6 +51,7 @@
     "gh-pages": "^6.3.0",
     "globals": "^16.5.0",
     "playwright": "^1.57.0",
+    "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"
