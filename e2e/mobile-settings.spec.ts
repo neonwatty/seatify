@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { enterApp, openMobileMenu, closeMobileMenu, isMobileViewport, switchView } from './test-utils';
+import { openMobileMenu, closeMobileMenu } from './test-utils';
 
 // Mobile viewport size (iPhone 14 Pro)
 const MOBILE_VIEWPORT = { width: 393, height: 852 };
@@ -36,7 +36,7 @@ async function enterAppMobile(page: import('@playwright/test').Page) {
 }
 
 // Skip on chromium in CI (mobile tests need mobile viewport)
-test.beforeEach(async ({}, testInfo) => {
+test.beforeEach(async (_fixtures, testInfo) => {
   if (testInfo.project.name === 'chromium' && process.env.CI) {
     test.skip(true, 'Mobile settings tests require mobile viewport - skipped on chromium in CI');
   }

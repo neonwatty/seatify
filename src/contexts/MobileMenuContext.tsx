@@ -59,6 +59,7 @@ export function MobileMenuProvider({ children, onShowHelp, onStartTour }: Mobile
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMobileMenu() {
   const context = useContext(MobileMenuContext);
   if (!context) {
