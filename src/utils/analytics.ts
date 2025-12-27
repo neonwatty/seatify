@@ -143,3 +143,46 @@ export function trackShareAction(shareType: 'link' | 'qr' | 'clipboard'): void {
     share_type: shareType,
   });
 }
+
+// ============================================
+// Core Web Vitals tracking
+// ============================================
+
+/**
+ * Track Core Web Vitals metrics (CLS, FID, FCP, LCP, TTFB, INP)
+ * These are sent as GA4 events with the metric name and value
+ */
+export function trackWebVital(
+  name: string,
+  value: number,
+  rating: 'good' | 'needs-improvement' | 'poor',
+  id: string
+): void {
+  trackEvent('web_vitals', {
+    event_category: 'performance',
+    metric_name: name,
+    metric_value: Math.round(name === 'CLS' ? value * 1000 : value), // CLS is unitless, others are ms
+    metric_rating: rating,
+    metric_id: id,
+  });
+}
+
+/**
+ * Initialize Web Vitals tracking
+ * Call this once when the app loads
+ */
+export async function initWebVitals(): Promise<void> {
+  try {
+    const { onCLS, onFCP, onLCP, onTTFB, onINP } = await import('web-vitals');
+
+    // Track all Core Web Vitals
+    onCLS((metric) => trackWebVital('CLS', metric.value, metric.rating, metric.id));
+    onFCP((metric) => trackWebVital('FCP', metric.value, metric.rating, metric.id));
+    onLCP((metric) => trackWebVital('LCP', metric.value, metric.rating, metric.id));
+    onTTFB((metric) => trackWebVital('TTFB', metric.value, metric.rating, metric.id));
+    onINP((metric) => trackWebVital('INP', metric.value, metric.rating, metric.id));
+  } catch {
+    // Web vitals import failed - likely in a test environment
+    console.debug('Web Vitals tracking not available');
+  }
+}
