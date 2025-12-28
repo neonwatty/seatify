@@ -279,7 +279,8 @@
   }
 
   /* Show lighter backdrop so target is more visible */
-  .onboarding-overlay::before {
+  /* Only show pseudo-element backdrop if no explicit backdrop element */
+  .onboarding-overlay:not(:has(.onboarding-backdrop))::before {
     content: '';
     position: absolute;
     top: 0;

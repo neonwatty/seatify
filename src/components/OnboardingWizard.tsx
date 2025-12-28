@@ -359,8 +359,8 @@ export function OnboardingWizard({ isOpen, onClose, onComplete, customSteps }: O
         />
       )}
 
-      {/* Welcome modal (no spotlight) */}
-      {!targetRect && currentStep.placement === 'center' && (
+      {/* Backdrop for any step without a target (centered or when target element not found) */}
+      {!targetRect && (
         <div className="onboarding-backdrop" />
       )}
 

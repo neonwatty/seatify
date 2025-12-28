@@ -126,7 +126,11 @@ test.describe('Onboarding Wizard', () => {
     await expect(dots.nth(1)).toHaveClass(/active/);
   });
 
-  test('Learn menu in header can restart tours', async ({ page }) => {
+  test('Learn menu in header can restart tours', async ({ page }, testInfo) => {
+    // Skip on mobile - Learn menu is in hamburger menu, not header
+    if (testInfo.project.name.includes('Mobile')) {
+      test.skip(true, 'Learn menu is in hamburger menu on mobile, not in header');
+    }
     // First complete the wizard
     await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
@@ -145,7 +149,11 @@ test.describe('Onboarding Wizard', () => {
     await expect(page.locator('.onboarding-tooltip h3')).toContainText('Welcome');
   });
 
-  test('Learn menu is visible in header', async ({ page }) => {
+  test('Learn menu is visible in header', async ({ page }, testInfo) => {
+    // Skip on mobile - Learn menu is in hamburger menu, not header
+    if (testInfo.project.name.includes('Mobile')) {
+      test.skip(true, 'Learn menu is in hamburger menu on mobile, not in header');
+    }
     await enterApp(page);
 
     // Close wizard if it shows
