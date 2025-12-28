@@ -61,8 +61,8 @@ test.describe('Onboarding Wizard', () => {
     // Click Next
     await page.click('.onboarding-btn--next');
 
-    // Step 2: Events Dashboard (new step after multi-event support)
-    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Events Dashboard');
+    // Step 2: Your Floor Plan (quick-start tour)
+    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Your Floor Plan');
   });
 
   test('can go back to previous steps', async ({ page }) => {
@@ -90,10 +90,16 @@ test.describe('Onboarding Wizard', () => {
     await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
-    // Click through all steps to the end
-    while (await page.locator('.onboarding-btn--next:has-text("Next")').isVisible()) {
+    // Click through all steps to the end (QUICK_START_STEPS has 6 steps)
+    // Need to click Next 5 times to get to the last step
+    for (let i = 0; i < 5; i++) {
       await page.click('.onboarding-btn--next');
+      // Wait for step transition
+      await page.waitForTimeout(200);
     }
+
+    // Last step should show "Get Started" button
+    await expect(page.locator('.onboarding-btn--next:has-text("Get Started")')).toBeVisible({ timeout: 3000 });
 
     // Click "Get Started" on the last step
     await page.click('.onboarding-btn--next:has-text("Get Started")');
@@ -101,8 +107,8 @@ test.describe('Onboarding Wizard', () => {
     // Wizard should close
     await expect(page.locator('.onboarding-tooltip')).not.toBeVisible();
 
-    // Toast should show
-    await expect(page.locator('.toast')).toContainText('Tour complete');
+    // Toast should show (Quick Start tour shows specific completion message)
+    await expect(page.locator('.toast')).toContainText('Quick Start complete');
   });
 
   test('progress dots show current step', async ({ page }) => {
@@ -120,22 +126,26 @@ test.describe('Onboarding Wizard', () => {
     await expect(dots.nth(1)).toHaveClass(/active/);
   });
 
-  test('Take Tour button in header restarts wizard', async ({ page }) => {
+  test('Learn menu in header can restart tours', async ({ page }) => {
     // First complete the wizard
     await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
     await page.click('.onboarding-btn--skip');
     await expect(page.locator('.onboarding-tooltip')).not.toBeVisible();
 
-    // Click the tour button in header
-    await page.click('.tour-btn');
+    // Open the Learn menu dropdown
+    await page.click('.learn-btn');
+    await expect(page.locator('.learn-dropdown')).toBeVisible();
+
+    // Click Quick Start tour
+    await page.click('.learn-dropdown >> text=Quick Start');
 
     // Wizard should reopen
-    await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 1000 });
+    await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
     await expect(page.locator('.onboarding-tooltip h3')).toContainText('Welcome');
   });
 
-  test('tour button is visible in header', async ({ page }) => {
+  test('Learn menu is visible in header', async ({ page }) => {
     await enterApp(page);
 
     // Close wizard if it shows
@@ -143,9 +153,9 @@ test.describe('Onboarding Wizard', () => {
       await page.click('.onboarding-btn--skip');
     }
 
-    // Tour button should be visible
-    await expect(page.locator('.tour-btn')).toBeVisible();
-    await expect(page.locator('.tour-btn')).toHaveAttribute('title', 'Take a tour of Seatify');
+    // Learn menu trigger should be visible with correct title
+    await expect(page.locator('.learn-btn')).toBeVisible();
+    await expect(page.locator('.learn-btn')).toHaveAttribute('title', 'Take tours to learn Seatify');
   });
 
   test('Escape key closes wizard', async ({ page }) => {
@@ -187,10 +197,19 @@ test.describe('Onboarding Wizard - Spotlight', () => {
     await page.click('button:has-text("Start Planning Free")');
     await expect(page.locator('.onboarding-tooltip')).toBeVisible({ timeout: 3000 });
 
-    // Go to step with spotlight (step 2: Events Dashboard targets event-cards-grid)
+    // Go to step with spotlight (step 3: Add Tables has placement 'bottom')
+    // Step 1: Welcome (center, no spotlight)
+    // Step 2: Your Floor Plan (center, no spotlight)
+    // Step 3: Add Tables (bottom, HAS spotlight)
     await page.click('.onboarding-btn--next');
+    await page.waitForTimeout(200);
+    await page.click('.onboarding-btn--next');
+    await page.waitForTimeout(200);
 
-    // Spotlight ring should be visible (targets event-cards-grid)
+    // Verify we're on step 3 (Add Tables)
+    await expect(page.locator('.onboarding-tooltip h3')).toContainText('Add Tables');
+
+    // Spotlight ring should be visible (targets .add-dropdown)
     await expect(page.locator('.onboarding-spotlight-ring')).toBeVisible({ timeout: 2000 });
   });
 
