@@ -378,6 +378,7 @@ export function Canvas() {
     clearNewlyAddedGuest,
     newlyAddedTableId,
     clearNewlyAddedTable,
+    activeTourId,
   } = useStore();
 
   // Mobile menu context for settings
@@ -1273,7 +1274,10 @@ export function Canvas() {
 
   // Desktop: Show MainToolbar + canvas content
   // Mobile: Wrap in immersive mode with gesture-based UI access
-  if (isMobile) {
+  // EXCEPTION: When a tour is active, show the desktop layout so tour targets are visible
+  const shouldUseImmersiveMode = isMobile && !activeTourId;
+
+  if (shouldUseImmersiveMode) {
     return (
       <div className="canvas-container mobile-immersive">
         <MobileImmersiveCanvas

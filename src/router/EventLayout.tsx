@@ -223,8 +223,10 @@ function EventLayoutContent({
   const isMobile = useIsMobile();
 
   // Hide header on mobile canvas view (immersive mode)
+  // BUT keep it visible during tours so tour targets are accessible
   const isCanvasView = location.pathname.endsWith('/canvas');
-  const shouldHideHeader = isMobile && isCanvasView;
+  const isTourActive = showOnboarding && activeTourId !== null;
+  const shouldHideHeader = isMobile && isCanvasView && !isTourActive;
 
   return (
     <div className="app">
