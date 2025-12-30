@@ -6,19 +6,33 @@ const MOBILE_VIEWPORT = { width: 375, height: 667 };
 const TABLET_VIEWPORT = { width: 768, height: 1024 };
 
 test.describe('Mobile Responsive Layout', () => {
+  // Helper to navigate to guests view (where traditional sidebar is visible)
+  // Canvas view uses immersive mode with MobileGuestPanel instead
+  async function navigateToGuestsViewForSidebar(page: import('@playwright/test').Page) {
+    const currentUrl = page.url();
+    if (currentUrl.includes('/canvas')) {
+      const guestsUrl = currentUrl.replace('/canvas', '/guests');
+      await page.goto(guestsUrl);
+      await page.waitForTimeout(300);
+    }
+  }
+
   test.describe('Mobile Sidebar', () => {
-    test('sidebar toggle is visible on mobile when sidebar is closed', async ({ page }) => {
+    test('sidebar toggle is visible on mobile in guests view', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
+      // Navigate to guests view where sidebar toggle exists
+      await navigateToGuestsViewForSidebar(page);
 
-      // On mobile, when sidebar is closed, the collapsed toggle should be visible
+      // On mobile guests view, when sidebar is closed, the collapsed toggle should be visible
       const collapsedToggle = page.locator('.sidebar-toggle-collapsed');
       await expect(collapsedToggle).toBeVisible();
     });
 
-    test('clicking toggle opens sidebar on mobile', async ({ page }) => {
+    test('clicking toggle opens sidebar on mobile in guests view', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
+      await navigateToGuestsViewForSidebar(page);
 
       // Click the collapsed toggle to open sidebar
       await page.click('.sidebar-toggle-collapsed');
@@ -28,9 +42,10 @@ test.describe('Mobile Responsive Layout', () => {
       await expect(sidebar).toBeVisible({ timeout: 2000 });
     });
 
-    test('backdrop appears when sidebar is open on mobile', async ({ page }) => {
+    test('backdrop appears when sidebar is open on mobile in guests view', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
+      await navigateToGuestsViewForSidebar(page);
 
       // Open sidebar
       await page.click('.sidebar-toggle-collapsed');
@@ -41,9 +56,10 @@ test.describe('Mobile Responsive Layout', () => {
       await expect(backdrop).toBeVisible();
     });
 
-    test('sidebar can be closed with close button', async ({ page }) => {
+    test('sidebar can be closed with close button in guests view', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
+      await navigateToGuestsViewForSidebar(page);
 
       // Open sidebar
       await page.click('.sidebar-toggle-collapsed');
@@ -132,6 +148,14 @@ test.describe('Mobile Responsive Layout', () => {
     test('guest chips have adequate touch target on mobile', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
+
+      // Navigate to guests view where sidebar is available
+      const currentUrl = page.url();
+      if (currentUrl.includes('/canvas')) {
+        const guestsUrl = currentUrl.replace('/canvas', '/guests');
+        await page.goto(guestsUrl);
+        await page.waitForTimeout(300);
+      }
 
       // Open sidebar to see guest chips
       await page.click('.sidebar-toggle-collapsed');
@@ -264,10 +288,18 @@ test.describe('Viewport Breakpoints', () => {
     await expect(page.locator('.canvas')).toBeVisible();
   });
 
-  test('sidebar opens at mobile width', async ({ page }) => {
+  test('sidebar opens at mobile width in guests view', async ({ page }) => {
     // Mobile width
     await page.setViewportSize(MOBILE_VIEWPORT);
     await enterApp(page);
+
+    // Navigate to guests view where sidebar is available (canvas uses immersive mode)
+    const currentUrl = page.url();
+    if (currentUrl.includes('/canvas')) {
+      const guestsUrl = currentUrl.replace('/canvas', '/guests');
+      await page.goto(guestsUrl);
+      await page.waitForTimeout(300);
+    }
 
     // Open sidebar on mobile
     await page.click('.sidebar-toggle-collapsed');
@@ -314,9 +346,17 @@ test.describe('Accessibility on Mobile', () => {
     }
   });
 
-  test('sidebar can be navigated with keyboard on mobile', async ({ page }) => {
+  test('sidebar can be navigated with keyboard on mobile in guests view', async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await enterApp(page);
+
+    // Navigate to guests view where sidebar is available (canvas uses immersive mode)
+    const currentUrl = page.url();
+    if (currentUrl.includes('/canvas')) {
+      const guestsUrl = currentUrl.replace('/canvas', '/guests');
+      await page.goto(guestsUrl);
+      await page.waitForTimeout(300);
+    }
 
     // Open sidebar
     await page.click('.sidebar-toggle-collapsed');
