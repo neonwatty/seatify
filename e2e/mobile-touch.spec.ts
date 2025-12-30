@@ -21,10 +21,18 @@ test.describe('Mobile Responsive Layout', () => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
 
-      // Click corner indicator
+      // Wait for app to stabilize after initial load
+      await page.waitForTimeout(500);
+
+      // Click corner indicator using tap for mobile emulation
       const cornerIndicator = page.locator('.corner-indicator');
       await expect(cornerIndicator).toBeVisible();
-      await cornerIndicator.click();
+
+      // Use dispatchEvent tap for more reliable mobile interaction
+      await cornerIndicator.tap();
+
+      // Wait for state update
+      await page.waitForTimeout(200);
 
       // Should open the transient top bar
       await expect(page.locator('.transient-top-bar.visible')).toBeVisible({ timeout: 3000 });
