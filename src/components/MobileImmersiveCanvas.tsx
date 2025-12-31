@@ -89,32 +89,36 @@ export function MobileImmersiveCanvas({
 
   // Show landscape hint for users who haven't seen it (only in portrait)
   useEffect(() => {
-    if (!isLandscape && !hasSeenLandscapeHint && hasSeenImmersiveHint && !showHint) {
-      const timer = setTimeout(() => {
-        setShowLandscapeHint(true);
-      }, 2000);
-      return () => clearTimeout(timer);
+    // Don't show if already in landscape, already seen, or immersive hint is active
+    if (isLandscape || hasSeenLandscapeHint || !hasSeenImmersiveHint || showHint) {
+      return;
     }
+
+    const timer = setTimeout(() => {
+      setShowLandscapeHint(true);
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [isLandscape, hasSeenLandscapeHint, hasSeenImmersiveHint, showHint]);
 
-  // Auto-hide landscape hint after a few seconds
+  // Auto-hide landscape hint after a few seconds, or when rotating to landscape
   useEffect(() => {
-    if (showLandscapeHint) {
-      const timer = setTimeout(() => {
-        setShowLandscapeHint(false);
-        setHasSeenLandscapeHint();
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showLandscapeHint, setHasSeenLandscapeHint]);
+    if (!showLandscapeHint) return;
 
-  // Hide landscape hint when rotating to landscape
-  useEffect(() => {
-    if (isLandscape && showLandscapeHint) {
+    // If user rotated to landscape, dismiss immediately and mark as seen
+    if (isLandscape) {
+      setHasSeenLandscapeHint();
+      // Use requestAnimationFrame to avoid synchronous setState in effect
+      requestAnimationFrame(() => setShowLandscapeHint(false));
+      return;
+    }
+
+    // Auto-dismiss after 5 seconds
+    const timer = setTimeout(() => {
       setShowLandscapeHint(false);
       setHasSeenLandscapeHint();
-    }
-  }, [isLandscape, showLandscapeHint, setHasSeenLandscapeHint]);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [showLandscapeHint, isLandscape, setHasSeenLandscapeHint]);
 
   // Velocity-aware gesture detection using @use-gesture
   // Uses velocity OR distance threshold (iOS-like feel)
