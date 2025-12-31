@@ -271,6 +271,59 @@
   }
 }
 
+/* Landscape Orientation Hint */
+.landscape-hint {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  animation: landscapeHintFadeIn 0.4s ease-out;
+  cursor: pointer;
+}
+
+.landscape-hint-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.landscape-hint .rotate-icon {
+  animation: rotateIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes landscapeHintFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes rotateIconPulse {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  75% {
+    transform: rotate(15deg);
+  }
+}
+
 /* Transient Top Bar */
 .transient-top-bar {
   position: fixed;
