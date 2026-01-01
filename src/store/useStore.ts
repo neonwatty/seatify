@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { Guest, Table, Constraint, Event, CanvasState, TableShape, SurveyQuestion, SurveyResponse, CanvasPreferences, AlignmentGuide, ConstraintViolation, VenueElement, VenueElementType } from '../types';
 import { demoTables, demoGuests, demoConstraints, demoSurveyQuestions, demoEventMetadata } from '../data/demoData';
-import { trackEventCreated, trackTableAdded, trackGuestAdded, trackOptimizerRun, trackGuestsImported, trackFunnelStep, trackMilestone } from '../utils/analytics';
+import { trackTableAdded, trackGuestAdded, trackOptimizerRun, trackGuestsImported, trackFunnelStep, trackMilestone } from '../utils/analytics';
 import type { TourId } from '../data/tourRegistry';
 
 // Helper function to detect constraint violations
@@ -708,8 +708,7 @@ export const useStore = create<AppState>()(
           history: [],
           historyIndex: -1,
         });
-        // Track event creation
-        trackEventCreated(newEvent.eventType || 'other');
+        // Note: Event creation tracking is done in EventFormModal with conversion tracking
         return newEvent.id;
       },
 

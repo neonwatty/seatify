@@ -4,7 +4,7 @@ import './LandingPage.css';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { Footer } from './Footer';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
-import { trackCTAClick, trackAppEntry, trackFunnelStep } from '../utils/analytics';
+import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../utils/analytics';
 import { captureUtmParams } from '../utils/utm';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
 import type { TourId } from '../data/tourRegistry';
@@ -50,7 +50,7 @@ export function LandingPage() {
 
   const handleEnterApp = () => {
     trackCTAClick('hero');
-    trackAppEntry();
+    trackAppEntryConversion();
     trackFunnelStep('cta_click');
     trackFunnelStep('app_entry');
     navigate('/events');
@@ -60,7 +60,7 @@ export function LandingPage() {
   const handleFeatureTourClick = (tourId: TourId) => {
     sessionStorage.setItem('pendingTour', tourId);
     trackCTAClick(`feature_tour_${tourId}`);
-    trackAppEntry();
+    trackAppEntryConversion();
     trackFunnelStep('cta_click');
     trackFunnelStep('app_entry');
     navigate('/events');
@@ -69,7 +69,7 @@ export function LandingPage() {
   // Secondary CTA handler
   const handleSecondaryCTA = () => {
     trackCTAClick('secondary');
-    trackAppEntry();
+    trackAppEntryConversion();
     trackFunnelStep('cta_click');
     trackFunnelStep('app_entry');
     navigate('/events');

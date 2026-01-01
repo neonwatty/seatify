@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { Event } from '../types';
-import { trackEventCreated, trackFunnelStep, trackMilestone } from '../utils/analytics';
+import { trackEventCreatedConversion, trackFunnelStep, trackMilestone } from '../utils/analytics';
 import './EventFormModal.css';
 
 interface EventFormModalProps {
@@ -56,8 +56,8 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
     if (mode === 'create') {
       const newEventId = createEvent(eventData);
       switchEvent(newEventId);
-      // Track event creation
-      trackEventCreated(eventData.eventType);
+      // Track event creation (GA4 + Google Ads conversion)
+      trackEventCreatedConversion(eventData.eventType);
       trackFunnelStep('event_created', { event_type: eventData.eventType });
       trackMilestone('first_event', { event_type: eventData.eventType });
       navigate(`/events/${newEventId}/canvas`);
