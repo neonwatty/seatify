@@ -1,32 +1,49 @@
 // Google Ads Configuration
-// Replace these placeholder IDs with your actual Google Ads conversion IDs
+// Conversions are tracked via GA4-linked events (not manual conversion labels)
 
 /**
- * Google Ads Conversion Tag ID
- * Format: AW-XXXXXXXXX
- * Find this in Google Ads > Tools & Settings > Conversions
+ * Google Ads Conversion Tracking
+ *
+ * Seatify uses GA4-linked conversions, which means:
+ * - GA4 events (app_entry, cta_click, etc.) are automatically imported as conversions
+ * - No manual conversion labels are needed
+ * - Conversions track automatically when GA4 events fire
+ *
+ * Setup:
+ * - GA4 Property: Seatify (517628576)
+ * - Google Ads Account: YTgify (658-278-5390)
+ * - Linked conversions: app_entry, cta_click
+ *
+ * To add more conversions:
+ * 1. Fire GA4 events in the app (they appear in GA4 after ~24h)
+ * 2. Import them as conversions in Google Ads > Goals > Conversions
  */
-export const GOOGLE_ADS_ID = 'AW-PLACEHOLDER';
 
 /**
- * Conversion Labels for different actions
- * Format: XXXXXXXXXXX (the part after the slash in AW-XXXXXXXXX/XXXXXXXXXXX)
- * Create these in Google Ads > Tools & Settings > Conversions > New Conversion
+ * GA4 events that are linked as Google Ads conversions
  */
-export const CONVERSION_LABELS = {
-  // Primary conversion: User clicks CTA and enters app
-  appEntry: 'PLACEHOLDER_APP_ENTRY',
+export const GA4_CONVERSION_EVENTS = {
+  // User enters the app from landing page CTA
+  appEntry: 'app_entry',
 
-  // Secondary conversion: User signs up for email updates
-  emailSignup: 'PLACEHOLDER_EMAIL_SIGNUP',
+  // User clicks a CTA button
+  ctaClick: 'cta_click',
 
-  // High-value conversion: User creates their first event
-  eventCreated: 'PLACEHOLDER_EVENT_CREATED',
+  // User signs up for email updates (import when available in GA4)
+  emailSignup: 'email_signup',
+
+  // User creates their first event (import when available in GA4)
+  eventCreated: 'event_created',
 } as const;
 
 /**
- * Check if Google Ads is configured (not using placeholder values)
+ * Check if conversion tracking is active
+ * GA4-linked conversions are always active when GA4 is configured
  */
-export function isGoogleAdsConfigured(): boolean {
-  return !GOOGLE_ADS_ID.includes('PLACEHOLDER');
+export function isConversionTrackingActive(): boolean {
+  // Check if gtag is available (GA4 is configured in index.html)
+  return typeof window !== 'undefined' && typeof window.gtag === 'function';
 }
+
+// Legacy export for backward compatibility
+export const isGoogleAdsConfigured = isConversionTrackingActive;
