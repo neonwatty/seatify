@@ -274,27 +274,27 @@ test.describe('Landing Page', () => {
 
   test.describe('Footer Section', () => {
     test('displays trust line about data privacy', async ({ page }) => {
-      const trustLine = page.locator('.trust-line');
+      const trustLine = page.locator('.footer-privacy-note');
       await expect(trustLine).toBeVisible();
       await expect(trustLine).toContainText('data stays private');
       await expect(trustLine).toContainText('locally in your browser');
     });
 
     test('displays version tag', async ({ page }) => {
-      const versionTag = page.locator('.version-tag');
+      const versionTag = page.locator('.footer-version');
       await expect(versionTag).toBeVisible();
       await expect(versionTag).toContainText('v');
     });
 
     test('displays updates button', async ({ page }) => {
-      await expect(page.locator('.footer-meta .updates-btn')).toBeVisible();
+      await expect(page.locator('.site-footer .updates-btn')).toBeVisible();
     });
   });
 
   test.describe('Updates Popup', () => {
     test.beforeEach(async ({ page }) => {
       // Click the updates button to open the popup
-      await page.locator('.footer-meta .updates-btn').click();
+      await page.locator('.site-footer .updates-btn').click();
       await expect(page.locator('.updates-popup')).toBeVisible();
     });
 
@@ -339,7 +339,7 @@ test.describe('Landing Page', () => {
 
       // Reload page to pick up new localStorage state
       await page.reload();
-      await page.locator('.footer-meta .updates-btn').click();
+      await page.locator('.site-footer .updates-btn').click();
       await expect(page.locator('.updates-popup')).toBeVisible();
 
       // Subscribe link should not be visible
