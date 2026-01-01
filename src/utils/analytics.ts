@@ -1,7 +1,6 @@
-// Google Analytics 4 & Google Ads tracking utilities
+// Google Analytics 4 tracking utilities
+// Conversions are tracked via GA4-linked events (automatically imported to Google Ads)
 // All events are no-ops if gtag is not loaded (e.g., in development without GA4)
-
-import { GOOGLE_ADS_ID, CONVERSION_LABELS, isGoogleAdsConfigured } from '../config/ads';
 
 /**
  * Check if gtag is available
@@ -147,54 +146,34 @@ export function trackShareAction(shareType: 'link' | 'qr' | 'clipboard'): void {
 }
 
 // ============================================
-// Google Ads Conversion Tracking
+// Conversion Tracking (via GA4-linked events)
 // ============================================
+// Google Ads conversions are automatically tracked when GA4 events fire
+// because the GA4 property is linked to the Google Ads account.
+// No manual conversion labels needed.
 
 /**
- * Track a Google Ads conversion
- * Only fires if Google Ads is configured with real IDs
- */
-function trackGoogleAdsConversion(conversionLabel: string): void {
-  if (!isGtagAvailable() || !isGoogleAdsConfigured()) return;
-
-  window.gtag('event', 'conversion', {
-    send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`,
-  });
-}
-
-/**
- * Track app entry as a Google Ads conversion
- * This is the primary conversion for AdWords campaigns
+ * Track app entry as a conversion
+ * Primary conversion for ad campaigns (GA4-linked)
  */
 export function trackAppEntryConversion(): void {
-  // Track in GA4
   trackAppEntry();
-
-  // Track in Google Ads
-  trackGoogleAdsConversion(CONVERSION_LABELS.appEntry);
 }
 
 /**
- * Track email signup as a Google Ads conversion
+ * Track email signup as a conversion
+ * Secondary conversion for measuring lead capture
  */
 export function trackEmailSignupConversion(source: string): void {
-  // Track in GA4
   trackEmailSignup(source);
-
-  // Track in Google Ads
-  trackGoogleAdsConversion(CONVERSION_LABELS.emailSignup);
 }
 
 /**
- * Track event creation as a Google Ads conversion
+ * Track event creation as a conversion
  * High-value conversion indicating deep engagement
  */
 export function trackEventCreatedConversion(eventType: string): void {
-  // Track in GA4
   trackEventCreated(eventType);
-
-  // Track in Google Ads
-  trackGoogleAdsConversion(CONVERSION_LABELS.eventCreated);
 }
 
 // ============================================
