@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
-import { version } from '../../package.json';
-import { UpdatesButton } from './UpdatesPopup';
 import { EmailCaptureModal } from './EmailCaptureModal';
+import { Footer } from './Footer';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
 import { trackCTAClick, trackAppEntry, trackFunnelStep } from '../utils/analytics';
 import { captureUtmParams } from '../utils/utm';
@@ -379,19 +378,10 @@ export function LandingPage() {
             source="landing"
           />
         )}
-
-        {/* Footer */}
-        <footer className="landing-footer">
-          <div className="footer-meta">
-            <UpdatesButton variant="landing" />
-            <span className="version-tag">v{version}</span>
-          </div>
-          <p className="trust-line">
-            Your data stays private — stored locally in your browser, not our
-            servers.
-          </p>
-        </footer>
       </div>
+
+      {/* Footer */}
+      <Footer variant="landing" />
     </div>
   );
 }

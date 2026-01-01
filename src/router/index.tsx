@@ -4,6 +4,8 @@ import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-d
 import { LandingPage } from '../components/LandingPage';
 import { EventListView } from '../components/EventListView';
 import { EventLayout } from './EventLayout';
+import { PrivacyPolicy } from '../components/PrivacyPolicy';
+import { TermsOfService } from '../components/TermsOfService';
 import { trackPageView } from '../utils/analytics';
 
 // Lazy load heavy components for better initial load performance
@@ -48,6 +50,8 @@ function PageViewTracker() {
     // Map routes to human-readable page titles
     const getPageTitle = (pathname: string): string => {
       if (pathname === '/') return 'Free Seating Chart Maker';
+      if (pathname === '/privacy') return 'Privacy Policy';
+      if (pathname === '/terms') return 'Terms of Service';
       if (pathname === '/events') return 'My Events';
       if (pathname.includes('/dashboard')) return 'Dashboard';
       if (pathname.includes('/canvas')) return 'Canvas';
@@ -61,6 +65,12 @@ function PageViewTracker() {
     const getPageDescription = (pathname: string): string => {
       if (pathname === '/') {
         return 'Free seating chart maker for weddings and events. AI-powered seating plan generator with drag-and-drop. Create wedding seating arrangements in minutes. No signup required.';
+      }
+      if (pathname === '/privacy') {
+        return 'Seatify Privacy Policy. Learn how we protect your data and privacy when using our free seating chart maker.';
+      }
+      if (pathname === '/terms') {
+        return 'Seatify Terms of Service. Read the terms and conditions for using our free seating chart maker for weddings and events.';
       }
       if (pathname === '/events') {
         return 'Manage your seating charts for weddings, corporate events, and parties. Create and organize multiple events with Seatify.';
@@ -113,6 +123,10 @@ export function AppRouter() {
       <Routes>
         {/* Landing page */}
         <Route path="/" element={<LandingPage />} />
+
+        {/* Legal pages */}
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
 
         {/* Event list */}
         <Route path="/events" element={<EventLayout />}>
