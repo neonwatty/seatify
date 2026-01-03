@@ -360,8 +360,8 @@ function validateShareableData(data: unknown): data is ShareableEventData {
  */
 export function generateShareUrl(event: Event, includeTracking = true): string {
   const encoded = encodeShareableUrl(event);
-  const baseUrl = window.location.origin + window.location.pathname;
-  const shareUrl = `${baseUrl}#/share/${encoded}`;
+  const baseUrl = window.location.origin;
+  const shareUrl = `${baseUrl}/share/${encoded}`;
 
   // Add tracking param so we can identify user-shared links in GA4
   if (includeTracking) {
@@ -386,11 +386,11 @@ export function getShareUrlLength(event: Event): number {
 }
 
 /**
- * Parse share data from current URL hash
+ * Parse share data from current URL pathname (BrowserRouter)
  */
 export function parseShareDataFromHash(): Partial<Event> | null {
-  const hash = window.location.hash;
-  const match = hash.match(/^#\/share\/(.+)$/);
+  const pathname = window.location.pathname;
+  const match = pathname.match(/^\/share\/(.+)$/);
 
   if (!match) return null;
 
@@ -401,7 +401,7 @@ export function parseShareDataFromHash(): Partial<Event> | null {
  * Check if current URL is a share landing page
  */
 export function isShareLandingPage(): boolean {
-  return window.location.hash.startsWith('#/share/');
+  return window.location.pathname.startsWith('/share/');
 }
 
 /**

@@ -67,7 +67,7 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
   };
 
   // Check if we're inside an event (has eventId in URL)
-  const isInsideEvent = !!eventId || (currentEventId && window.location.hash.includes('/events/'));
+  const isInsideEvent = !!eventId || (currentEventId && window.location.pathname.includes('/events/'));
 
   // Check if event has content worth sharing
   const canShare = isInsideEvent && (event.guests.length > 0 || event.tables.length > 0);

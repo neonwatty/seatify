@@ -16,8 +16,8 @@ async function enterEventList(page: Page): Promise<void> {
   });
   await page.goto('/');
   await page.click('button:has-text("Start Planning Free")');
-  // Wait for URL to change to events page
-  await page.waitForURL(/\/#\/events/);
+  // Wait for URL to change to events page (BrowserRouter uses clean URLs)
+  await page.waitForURL(/\/events$/);
   // Wait for event list view to be visible
   await expect(page.locator('.event-list-view')).toBeVisible({ timeout: 5000 });
 }
@@ -32,7 +32,7 @@ async function createEvent(page: Page, name: string, eventType: string = 'weddin
   await page.selectOption('.event-form-modal select', eventType);
   await page.click('.event-form-modal .btn-submit');
   // Wait for URL to change to event canvas
-  await page.waitForURL(/\/#\/events\/[^/]+\/canvas/);
+  await page.waitForURL(/\/events\/[^/]+\/canvas/);
   // Wait for navigation to canvas view
   await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
 }
@@ -264,7 +264,7 @@ test.describe('Multi-Event Management', () => {
       await page.goto('/');
       // Re-bypass landing page
       await page.click('button:has-text("Start Planning Free")');
-      await page.waitForURL(/\/#\/events/);
+      await page.waitForURL(/\/events$/);
       await expect(page.locator('.event-list-view')).toBeVisible();
       await expect(page.locator('.event-card')).toHaveCount(2);
     });
@@ -467,7 +467,7 @@ test.describe('Multi-Event Management', () => {
       await page.goto('/');
       // Re-bypass landing page
       await page.click('button:has-text("Start Planning Free")');
-      await page.waitForURL(/\/#\/events/);
+      await page.waitForURL(/\/events$/);
       await expect(page.locator('.event-list-view')).toBeVisible();
 
       // List view should still be active

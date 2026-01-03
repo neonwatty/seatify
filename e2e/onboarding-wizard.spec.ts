@@ -43,7 +43,7 @@ test.describe('Onboarding Wizard', () => {
     // Reload and re-enter - navigate to root first to clear hash route
     await page.goto('/');
     await page.click('button:has-text("Start Planning Free")');
-    await page.waitForURL(/\/#\/events/);
+    await page.waitForURL(/\/events$/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
     // Wait a moment to ensure wizard doesn't appear

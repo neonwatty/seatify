@@ -75,16 +75,16 @@ export function validateQRData(data: unknown): data is QRTableData {
  */
 export function generateTableQRUrl(event: Event, table: Table): string {
   const encoded = encodeTableData(event, table);
-  const baseUrl = window.location.origin + window.location.pathname;
-  return `${baseUrl}#/table/${encoded}`;
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/table/${encoded}`;
 }
 
 /**
- * Parse QR data from current URL hash
+ * Parse QR data from current URL pathname (BrowserRouter)
  */
 export function parseQRDataFromHash(): QRTableData | null {
-  const hash = window.location.hash;
-  const match = hash.match(/^#\/table\/(.+)$/);
+  const pathname = window.location.pathname;
+  const match = pathname.match(/^\/table\/(.+)$/);
 
   if (!match) return null;
 
@@ -95,7 +95,7 @@ export function parseQRDataFromHash(): QRTableData | null {
  * Check if current URL is a QR code landing page
  */
 export function isQRLandingPage(): boolean {
-  return window.location.hash.startsWith('#/table/');
+  return window.location.pathname.startsWith('/table/');
 }
 
 /**

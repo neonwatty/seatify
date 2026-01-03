@@ -87,9 +87,9 @@ test.describe('Share Modal', () => {
   test('share modal has url input field', async ({ page }) => {
     const urlInput = page.locator('.share-url-input');
     await expect(urlInput).toBeVisible();
-    // URL should contain #/share/
+    // URL should contain /share/
     const value = await urlInput.inputValue();
-    expect(value).toContain('#/share/');
+    expect(value).toContain('/share/');
   });
 
   test('share modal has copy button', async ({ page }) => {
@@ -166,45 +166,45 @@ test.describe('Share Modal', () => {
 
 test.describe('Shareable View Page', () => {
   test('navigating to /share shows upload prompt', async ({ page }) => {
-    await page.goto('/#/share');
+    await page.goto('/share');
     await expect(page.locator('.shareable-upload-prompt')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.shareable-upload-prompt h2')).toContainText('View Shared Seating Chart');
   });
 
   test('/share page has upload button', async ({ page }) => {
-    await page.goto('/#/share');
+    await page.goto('/share');
     await expect(page.locator('.upload-btn')).toBeVisible();
     await expect(page.locator('.upload-btn')).toContainText('Upload Seating File');
   });
 
   test('/share page has create your own link', async ({ page }) => {
-    await page.goto('/#/share');
+    await page.goto('/share');
     await expect(page.locator('.secondary-btn')).toBeVisible();
     await expect(page.locator('.secondary-btn')).toContainText('create your own event');
   });
 
   test('clicking create your own navigates to events', async ({ page }) => {
-    await page.goto('/#/share');
+    await page.goto('/share');
     await page.locator('.secondary-btn').click();
     // Should navigate to events page
-    await expect(page).toHaveURL(/\/#\/events/);
+    await expect(page).toHaveURL(/\/events$/);
   });
 
   test('invalid share URL shows error state', async ({ page }) => {
     // Navigate to share URL with invalid data
-    await page.goto('/#/share/invaliddata123');
+    await page.goto('/share/invaliddata123');
     await expect(page.locator('.shareable-error')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('.shareable-error h2')).toContainText('Unable to load seating chart');
   });
 
   test('error page has upload fallback option', async ({ page }) => {
-    await page.goto('/#/share/invaliddata123');
+    await page.goto('/share/invaliddata123');
     await expect(page.locator('.upload-btn')).toBeVisible();
     await expect(page.locator('.upload-btn')).toContainText('Upload a file instead');
   });
 
   test('error page has go to app button', async ({ page }) => {
-    await page.goto('/#/share/invaliddata123');
+    await page.goto('/share/invaliddata123');
     await expect(page.locator('.secondary-btn')).toBeVisible();
     await expect(page.locator('.secondary-btn')).toContainText('Go to Seatify');
   });
@@ -234,7 +234,9 @@ test.describe('Share Flow', () => {
 
     // Open new page and navigate to share URL
     const newPage = await context.newPage();
-    await newPage.goto(shareUrl.replace(page.url().split('#')[0], ''));
+    // Extract the path from the share URL (works with BrowserRouter)
+    const shareUrlObj = new URL(shareUrl);
+    await newPage.goto(shareUrlObj.pathname);
 
     // Should show the shared view
     await expect(newPage.locator('.shareable-page-full')).toBeVisible({ timeout: 10000 });
@@ -265,9 +267,9 @@ test.describe('Read-Only Canvas', () => {
     const urlInput = page.locator('.share-url-input');
     const shareUrl = await urlInput.inputValue();
 
-    // Navigate to share URL in same page
-    const hashPart = new URL(shareUrl).hash;
-    await page.goto('/' + hashPart);
+    // Navigate to share URL in same page (extract pathname for BrowserRouter)
+    const shareUrlObj = new URL(shareUrl);
+    await page.goto(shareUrlObj.pathname);
     await expect(page.locator('.readonly-canvas-container')).toBeVisible({ timeout: 10000 });
   });
 
@@ -441,9 +443,9 @@ test.describe('Enhanced Visual Features', () => {
     const urlInput = page.locator('.share-url-input');
     const shareUrl = await urlInput.inputValue();
 
-    // Navigate to share URL in same page
-    const hashPart = new URL(shareUrl).hash;
-    await page.goto('/' + hashPart);
+    // Navigate to share URL in same page (extract pathname for BrowserRouter)
+    const shareUrlObj = new URL(shareUrl);
+    await page.goto(shareUrlObj.pathname);
     await expect(page.locator('.readonly-canvas-container')).toBeVisible({ timeout: 10000 });
   });
 

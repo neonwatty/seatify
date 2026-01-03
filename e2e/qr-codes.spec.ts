@@ -220,7 +220,7 @@ test.describe('QR Code Print View', () => {
 test.describe('QR Landing Page', () => {
   test('visiting QR URL with invalid data shows error state', async ({ page }) => {
     // Navigate to a QR URL with invalid data
-    await page.goto('/seating-arrangement/#/table/invalid-data');
+    await page.goto('/table/invalid-data');
 
     // Should show error state
     await expect(page.locator('.qr-info-error')).toBeVisible();
@@ -229,7 +229,7 @@ test.describe('QR Landing Page', () => {
 
   test('QR landing page has navigation to main app', async ({ page }) => {
     // Navigate to a QR URL with invalid data
-    await page.goto('/seating-arrangement/#/table/invalid-data');
+    await page.goto('/table/invalid-data');
 
     // Should have a button to go to main app
     await expect(page.locator('.cta-button')).toBeVisible();
@@ -238,7 +238,7 @@ test.describe('QR Landing Page', () => {
 
   test('clicking Go to Seatify navigates to app', async ({ page }) => {
     // Navigate to QR URL
-    await page.goto('/seating-arrangement/#/table/invalid-data');
+    await page.goto('/table/invalid-data');
     await expect(page.locator('.qr-info-error')).toBeVisible();
 
     // Click the CTA button

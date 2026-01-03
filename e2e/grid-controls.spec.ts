@@ -269,13 +269,13 @@ test.describe('Grid Controls', () => {
       // Reload page - navigate to root first to clear hash route
       await page.goto('/');
       await page.click('button:has-text("Start Planning Free")');
-      await page.waitForURL(/\/#\/events/);
+      await page.waitForURL(/\/events$/);
       await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
       // Navigate through event list if visible
       const eventCard = page.locator('.event-card').first();
       if (await eventCard.isVisible({ timeout: 3000 }).catch(() => false)) {
         await eventCard.click();
-        await page.waitForURL(/\/#\/events\/[^/]+\/canvas/);
+        await page.waitForURL(/\/events\/[^/]+\/canvas/);
       }
       await expect(page.locator('.grid-controls')).toBeVisible({ timeout: 5000 });
 

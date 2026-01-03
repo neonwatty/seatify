@@ -5,8 +5,8 @@ import type { SurveyQuestion } from '../types';
 import './SurveyBuilderView.css';
 
 const getSurveyLink = () => {
-  const base = window.location.origin + window.location.pathname;
-  return `${base}#/survey`;
+  const base = window.location.origin;
+  return `${base}/survey`;
 };
 
 const questionTypeIcons: Record<string, string> = {
