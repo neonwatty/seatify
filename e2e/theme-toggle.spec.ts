@@ -94,7 +94,7 @@ test.describe('Theme toggle functionality', () => {
     // Reload the page and re-enter the app (navigate to root to clear hash route)
     await page.goto('/');
     await page.click('button:has-text("Start Planning Free")');
-    await page.waitForURL(/\/#\/events/);
+    await page.waitForURL(/\/events$/);
     await expect(page.locator('.header')).toBeVisible({ timeout: 5000 });
 
     // Theme should still be dark (persisted in localStorage)
