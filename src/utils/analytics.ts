@@ -2,11 +2,30 @@
 // Conversions are tracked via GA4-linked events (automatically imported to Google Ads)
 // All events are no-ops if gtag is not loaded (e.g., in development without GA4)
 
+import { getUtmParams } from './utm';
+
 /**
  * Check if gtag is available
  */
 function isGtagAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.gtag === 'function';
+}
+
+/**
+ * Get UTM parameters to include with conversion events
+ * Returns an object with non-null UTM params for attribution tracking
+ */
+function getUtmAttributionParams(): Record<string, string> {
+  const utm = getUtmParams();
+  const params: Record<string, string> = {};
+
+  if (utm.utm_source) params.utm_source = utm.utm_source;
+  if (utm.utm_medium) params.utm_medium = utm.utm_medium;
+  if (utm.utm_campaign) params.utm_campaign = utm.utm_campaign;
+  if (utm.utm_content) params.utm_content = utm.utm_content;
+  if (utm.utm_term) params.utm_term = utm.utm_term;
+
+  return params;
 }
 
 /**
@@ -45,6 +64,7 @@ export function trackEventCreated(eventType: string): void {
     event_type: eventType,
     value: 100,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -99,6 +119,7 @@ export function trackPDFExported(exportType: string): void {
     export_type: exportType,
     value: 60,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -112,6 +133,7 @@ export function trackEmailSignup(source: string): void {
     signup_source: source,
     value: 25,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -134,6 +156,7 @@ export function trackAppEntry(): void {
     event_category: 'conversion',
     value: 50,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -147,6 +170,7 @@ export function trackGuestsImported(count: number): void {
     guest_count: count,
     value: 75,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -181,6 +205,7 @@ export function trackShareLinkCopied(guestCount: number, tableCount: number): vo
     table_count: tableCount,
     value: 40,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 
@@ -195,6 +220,7 @@ export function trackShareFileDownloaded(guestCount: number, tableCount: number)
     table_count: tableCount,
     value: 40,
     currency: 'USD',
+    ...getUtmAttributionParams(),
   });
 }
 

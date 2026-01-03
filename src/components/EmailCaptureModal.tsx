@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { submitEmail } from '../utils/formspree';
 import { showToast } from './toastStore';
-import { trackEmailSignupConversion } from '../utils/analytics';
+import { trackEmailSignupConversion, setUserProperties } from '../utils/analytics';
 import './EmailCaptureModal.css';
 
 interface EmailCaptureModalProps {
@@ -55,6 +55,7 @@ export function EmailCaptureModal({ onClose, onSuccess, source = 'landing' }: Em
 
       // Track successful email signup (GA4 + Google Ads conversion)
       trackEmailSignupConversion(source);
+      setUserProperties({ hasSubscribed: true });
       setModalState('success');
     } catch (error) {
       console.error('Email submission failed:', error);

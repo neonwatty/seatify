@@ -21,7 +21,7 @@ import {
   trackDismissal,
 } from '../utils/emailCaptureManager';
 import { showToast } from './toastStore';
-import { trackPDFExported, trackFunnelStep, trackMilestone } from '../utils/analytics';
+import { trackPDFExported, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import './DashboardView.css';
 
 export function DashboardView() {
@@ -198,6 +198,7 @@ export function DashboardView() {
     trackPDFExported(exportType);
     trackFunnelStep('export_completed', { export_type: exportType });
     trackMilestone('first_export', { export_type: exportType });
+    setUserProperties({ hasExported: true });
     handleClosePreview();
     triggerEmailCaptureOnExport();
   };

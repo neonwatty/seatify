@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { Event } from '../types';
-import { trackEventCreatedConversion, trackFunnelStep, trackMilestone } from '../utils/analytics';
+import { trackEventCreatedConversion, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import './EventFormModal.css';
 
 interface EventFormModalProps {
@@ -60,6 +60,8 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
       trackEventCreatedConversion(eventData.eventType);
       trackFunnelStep('event_created', { event_type: eventData.eventType });
       trackMilestone('first_event', { event_type: eventData.eventType });
+      // Set user property for audience segmentation
+      setUserProperties({ hasCreatedEvent: true });
       navigate(`/events/${newEventId}/canvas`);
     } else if (event) {
       updateEventMetadata(event.id, eventData);

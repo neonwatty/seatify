@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { DIETARY_OPTIONS, ACCESSIBILITY_OPTIONS } from '../constants/dietaryIcons';
 import type { Guest, RelationshipType } from '../types';
 import { getFullName } from '../types';
-import { trackGuestAdded, trackFunnelStep, trackMilestone } from '../utils/analytics';
+import { trackGuestAdded, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import './GuestForm.css';
 
 interface GuestFormProps {
@@ -104,6 +104,7 @@ export function GuestForm({ guestId, onClose }: GuestFormProps) {
       if (newGuestCount === 1) {
         trackFunnelStep('first_guest');
         trackMilestone('first_guest');
+        setUserProperties({ hasAddedGuests: true });
       }
 
       if (addAnother) {
