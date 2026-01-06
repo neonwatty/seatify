@@ -173,6 +173,66 @@
   color: white;
 }
 
+/* Pulse animation for new users */
+.learn-btn--pulse {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: white;
+  animation: learnPulse 2s ease-in-out infinite;
+}
+
+@keyframes learnPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+/* Mobile Floating Take Tour Button */
+.floating-tour-btn {
+  display: none;
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0));
+  right: 16px;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+  z-index: 99;
+  animation: floatingPulse 2s ease-in-out infinite;
+}
+
+.floating-tour-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+@keyframes floatingPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(16, 185, 129, 0.6);
+  }
+}
+
+/* Show floating button only on mobile */
+@media (max-width: 600px) {
+  .floating-tour-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
 .learn-dropdown {
   position: absolute;
   top: calc(100% + 8px);

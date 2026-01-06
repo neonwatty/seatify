@@ -24,7 +24,10 @@ interface HeaderProps {
 export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId?: string }>();
-  const { event, setEventName, theme, cycleTheme, currentEventId, isTourComplete } = useStore();
+  const { event, setEventName, theme, cycleTheme, currentEventId, isTourComplete, completedTours } = useStore();
+
+  // Check if user is new (hasn't completed any tours)
+  const isNewUser = completedTours.size === 0;
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showLearnDropdown, setShowLearnDropdown] = useState(false);
@@ -137,7 +140,7 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
         {onStartTour && (
           <div className="learn-dropdown-container" ref={learnDropdownRef}>
             <button
-              className="learn-btn"
+              className={`learn-btn ${isNewUser ? 'learn-btn--pulse' : ''}`}
               onClick={() => setShowLearnDropdown(!showLearnDropdown)}
               title="Take tours to learn Seatify"
             >
@@ -230,6 +233,17 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
           </div>
         )}
       </div>
+      {/* Mobile floating Take Tour button for new users */}
+      {isNewUser && onStartTour && gettingStartedTours.length > 0 && (
+        <button
+          className="floating-tour-btn"
+          onClick={() => onStartTour(gettingStartedTours[0].id)}
+          title="Take a quick tour to learn Seatify"
+        >
+          <span>📚</span>
+          Take Tour
+        </button>
+      )}
       {showEmailCapture && createPortal(
         <EmailCaptureModal
           onClose={() => handleEmailCaptureClose(false)}
