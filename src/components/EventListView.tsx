@@ -6,7 +6,6 @@ import { DeleteEventDialog } from './DeleteEventDialog';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
-import { trackDemoLoaded } from '../utils/analytics';
 import type { Event } from '../types';
 import './EventListView.css';
 
@@ -47,7 +46,6 @@ export function EventListView() {
     canCreateEvent,
     eventListViewMode,
     setEventListViewMode,
-    createDemoEvent,
   } = useStore();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -87,12 +85,6 @@ export function EventListView() {
     } catch {
       return dateStr;
     }
-  };
-
-  const handleTryDemo = () => {
-    trackDemoLoaded(events.length === 0 ? 'events_empty' : 'events_list');
-    const demoEventId = createDemoEvent();
-    navigate(`/events/${demoEventId}/canvas`);
   };
 
   const sortedEvents = [...events].sort((a, b) => {
@@ -164,10 +156,6 @@ export function EventListView() {
           <button className="create-first-btn" onClick={() => setShowCreateModal(true)}>
             <span className="btn-icon">+</span>
             Create Your First Event
-          </button>
-          <p className="empty-or-divider">or</p>
-          <button className="demo-link-btn" onClick={handleTryDemo}>
-            Try a Demo Event
           </button>
         </div>
       ) : (

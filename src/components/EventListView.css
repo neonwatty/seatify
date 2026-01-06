@@ -186,36 +186,6 @@
   box-shadow: 0 6px 16px rgba(249, 112, 102, 0.4);
 }
 
-/* Demo button in empty state */
-.empty-or-divider {
-  color: var(--color-text-light);
-  font-size: var(--font-size-sm);
-  margin: 1rem 0 0.75rem;
-}
-
-.demo-link-btn {
-  padding: 0.625rem 1.25rem;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
-}
-
-.demo-link-btn:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  border-style: solid;
-  background: rgba(249, 112, 102, 0.05);
-}
-
-.demo-link-btn:active {
-  transform: scale(0.98);
-}
-
 /* Event Cards Grid */
 .event-cards-grid {
   display: grid;

@@ -4,8 +4,7 @@ import './LandingPage.css';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { Footer } from './Footer';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
-import { trackCTAClick, trackAppEntryConversion, trackFunnelStep, trackDemoLoaded } from '../utils/analytics';
-import { useStore } from '../store/useStore';
+import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../utils/analytics';
 import { captureUtmParams } from '../utils/utm';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
 import type { TourId } from '../data/tourRegistry';
@@ -35,7 +34,6 @@ const faqItems = [
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const createDemoEvent = useStore(state => state.createDemoEvent);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
@@ -75,14 +73,6 @@ export function LandingPage() {
     trackFunnelStep('cta_click');
     trackFunnelStep('app_entry');
     navigate('/events');
-  };
-
-  // Demo event handler - creates a fully populated demo event
-  const handleTryDemo = () => {
-    trackCTAClick('demo');
-    trackDemoLoaded('landing');
-    const demoEventId = createDemoEvent();
-    navigate(`/events/${demoEventId}/canvas`);
   };
 
   // Toggle FAQ item
@@ -182,9 +172,6 @@ export function LandingPage() {
           </p>
           <button className="cta-button" onClick={handleEnterApp}>
             Start Planning Free
-          </button>
-          <button className="demo-cta-button" onClick={handleTryDemo}>
-            Try Demo Event
           </button>
 
           {/* Trust Badges */}

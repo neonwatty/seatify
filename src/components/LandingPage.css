@@ -165,33 +165,6 @@
     0 2px 8px rgba(249, 112, 102, 0.2);
 }
 
-/* Demo CTA Button - Secondary style below main CTA */
-.demo-cta-button {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  margin-top: 0.75rem;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s var(--ease-out);
-  animation: fadeIn 0.4s ease backwards;
-  animation-delay: 0.6s;
-}
-
-.demo-cta-button:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  background: rgba(249, 112, 102, 0.08);
-}
-
-.demo-cta-button:active {
-  transform: scale(0.98);
-}
-
 /* ===== WAVE DIVIDER ===== */
 .wave-divider {
   width: 100%;
@@ -1026,11 +999,6 @@
     width: 100%;
     padding: 1rem 1.5rem;
     font-size: var(--font-size-base);
-  }
-
-  .demo-cta-button {
-    width: 100%;
-    max-width: 280px;
   }
 
   .feature-card {
