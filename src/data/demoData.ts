@@ -7,21 +7,29 @@ export const demoTables: Table[] = [
 ];
 
 export const demoGuests: Guest[] = [
-  // Assigned guests (5)
+  // Assigned guests - includes an "avoid" pair at the same table for visible conflict
   { id: 'g1', firstName: 'Alice', lastName: 'Johnson', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g2', type: 'partner', strength: 5 }] },
   { id: 'g2', firstName: 'Bob', lastName: 'Johnson', rsvpStatus: 'confirmed', tableId: 't1', relationships: [{ guestId: 'g1', type: 'partner', strength: 5 }] },
-  { id: 'g3', firstName: 'Carol', lastName: 'Smith', rsvpStatus: 'confirmed', tableId: 't2', relationships: [] },
-  { id: 'g4', firstName: 'David', lastName: 'Brown', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g5', type: 'friend', strength: 3 }] },
-  { id: 'g5', firstName: 'Emma', lastName: 'Davis', rsvpStatus: 'confirmed', tableId: 't3', relationships: [{ guestId: 'g4', type: 'friend', strength: 3 }] },
-  // Unassigned guests (5)
-  { id: 'g6', firstName: 'Frank', lastName: 'Wilson', rsvpStatus: 'confirmed', relationships: [] },
-  { id: 'g7', firstName: 'Grace', lastName: 'Lee', rsvpStatus: 'confirmed', relationships: [] },
-  { id: 'g8', firstName: 'Henry', lastName: 'Taylor', rsvpStatus: 'confirmed', relationships: [] },
+  // Carol and David AVOID each other but are at the same table — optimizer will fix this
+  { id: 'g3', firstName: 'Carol', lastName: 'Smith', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g4', type: 'avoid', strength: 5 }] },
+  { id: 'g4', firstName: 'David', lastName: 'Brown', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g5', type: 'friend', strength: 3 }, { guestId: 'g3', type: 'avoid', strength: 5 }] },
+  // Emma is separated from Henry (her sibling) — constraint violation
+  { id: 'g5', firstName: 'Emma', lastName: 'Davis', rsvpStatus: 'confirmed', tableId: 't3', relationships: [{ guestId: 'g4', type: 'friend', strength: 3 }, { guestId: 'g8', type: 'family', strength: 4 }] },
+  // Unassigned guests
+  { id: 'g6', firstName: 'Frank', lastName: 'Wilson', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g7', type: 'avoid', strength: 5 }] },
+  { id: 'g7', firstName: 'Grace', lastName: 'Lee', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g6', type: 'avoid', strength: 5 }] },
+  // Henry is Emma's sibling — they have a "must sit together" constraint
+  { id: 'g8', firstName: 'Henry', lastName: 'Taylor', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g5', type: 'family', strength: 4 }] },
   { id: 'g9', firstName: 'Ivy', lastName: 'Martinez', rsvpStatus: 'confirmed', relationships: [] },
   { id: 'g10', firstName: 'Jack', lastName: 'Anderson', rsvpStatus: 'confirmed', relationships: [] },
 ];
 
-export const demoConstraints: Constraint[] = [];
+export const demoConstraints: Constraint[] = [
+  // Emma and Henry are siblings — must sit together (currently violated: Emma at t3, Henry unassigned)
+  { id: 'c1', type: 'must_sit_together', guestIds: ['g5', 'g8'], priority: 'required', description: 'Emma and Henry are siblings' },
+  // David and Jack are business partners — should be at same table (currently violated: David at t2, Jack unassigned)
+  { id: 'c2', type: 'same_table', guestIds: ['g4', 'g10'], priority: 'preferred', description: 'David and Jack are business partners' },
+];
 
 export const demoSurveyQuestions: SurveyQuestion[] = [];
 

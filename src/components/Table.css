@@ -446,9 +446,9 @@
   position: absolute;
   top: -12px;
   left: -12px;
-  padding: 0.25rem 0.5rem;
+  padding: 0.375rem 0.625rem;
   border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   display: flex;
   align-items: center;
@@ -470,6 +470,62 @@
 
 .violation-badge:hover {
   transform: scale(1.1);
+}
+
+/* Custom prominent tooltip for violation badge */
+.violation-badge::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: #f59e0b;
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: pre-line;
+  text-align: left;
+  min-width: 200px;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1000;
+  pointer-events: none;
+  line-height: 1.5;
+}
+
+.violation-badge::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #f59e0b;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 1001;
+}
+
+/* Required violation tooltip - red background */
+.violation-badge.required::after {
+  background: #ef4444;
+}
+
+.violation-badge.required::before {
+  border-top-color: #ef4444;
+}
+
+.violation-badge:hover::after,
+.violation-badge:hover::before {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Swap Target Styles */
@@ -507,6 +563,42 @@
   box-shadow: var(--shadow-md);
   animation: popIn var(--duration-normal) var(--ease-spring);
   z-index: 100;
+}
+
+/* ============================================
+   Guest Violation Highlighting
+   ============================================ */
+
+.seat-guest.in-violation {
+  z-index: 50;
+}
+
+.seat-guest.in-violation .seat-guest-circle {
+  box-shadow: 0 0 0 3px var(--color-warning), 0 0 10px rgba(251, 191, 36, 0.5);
+  animation: guestViolationPulse 2s ease-in-out infinite;
+}
+
+.seat-guest.in-violation.violation-required .seat-guest-circle {
+  box-shadow: 0 0 0 3px var(--color-error), 0 0 10px rgba(248, 113, 113, 0.5);
+  animation: guestViolationPulseRequired 2s ease-in-out infinite;
+}
+
+@keyframes guestViolationPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px var(--color-warning), 0 0 8px rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 5px var(--color-warning), 0 0 16px rgba(251, 191, 36, 0.7);
+  }
+}
+
+@keyframes guestViolationPulseRequired {
+  0%, 100% {
+    box-shadow: 0 0 0 3px var(--color-error), 0 0 8px rgba(248, 113, 113, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 5px var(--color-error), 0 0 16px rgba(248, 113, 113, 0.7);
+  }
 }
 
 /* Availability indicator shown during drag */

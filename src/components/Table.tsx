@@ -22,9 +22,11 @@ interface SeatGuestProps {
   seatPosition: { x: number; y: number };
   tablePosition: { x: number; y: number };
   isSwapTarget?: boolean;
+  isInViolation?: boolean;
+  violationPriority?: 'required' | 'preferred';
 }
 
-function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGuestProps) {
+function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViolation, violationPriority }: SeatGuestProps) {
   const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups } = useStore();
   const isAnimating = animatingGuestIds.has(guest.id);
 
@@ -110,7 +112,7 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget }: SeatGue
   return (
     <div
       ref={setNodeRef}
-      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''} ${!isGroupVisible ? 'dimmed' : ''}`}
+      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''} ${!isGroupVisible ? 'dimmed' : ''} ${isInViolation ? 'in-violation' : ''} ${isInViolation && violationPriority === 'required' ? 'violation-required' : ''}`}
       title={tooltipParts.join('\n')}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
@@ -138,6 +140,28 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
   const violations = getViolationsForTable(table.id);
   const hasViolations = violations.length > 0;
   const hasRequiredViolations = violations.some(v => v.priority === 'required');
+
+  // Compute which guests on this table are involved in violations
+  const violationInfo = useMemo(() => {
+    const guestIds = new Set<string>();
+    const guestPriorities = new Map<string, 'required' | 'preferred'>();
+
+    violations.forEach(v => {
+      v.guestIds.forEach(id => {
+        guestIds.add(id);
+        // Track highest priority (required > preferred)
+        const currentPriority = guestPriorities.get(id);
+        if (v.priority === 'required' || !currentPriority) {
+          guestPriorities.set(id, v.priority === 'required' ? 'required' : 'preferred');
+        }
+      });
+    });
+
+    // Get guests on this table that are in violations
+    const violatingGuests = guests.filter(g => guestIds.has(g.id));
+
+    return { guestIds, guestPriorities, violatingGuests };
+  }, [violations, guests]);
 
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
     id: table.id,
@@ -370,6 +394,8 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
                 seatPosition={pos}
                 tablePosition={{ x: table.x, y: table.y }}
                 isSwapTarget={swapTargetGuestId === guest.id}
+                isInViolation={violationInfo.guestIds.has(guest.id)}
+                violationPriority={violationInfo.guestPriorities.get(guest.id)}
               />
             )}
           </div>
@@ -380,9 +406,11 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
       {hasViolations && (
         <div
           className={`violation-badge ${hasRequiredViolations ? 'required' : 'preferred'}`}
-          title={violationTooltip}
+          data-tooltip={violationTooltip}
         >
-          ⚠️ {violations.length}
+          ⚠️ {violationInfo.violatingGuests.length > 0
+            ? violationInfo.violatingGuests.map(g => getInitials(g)).join('+')
+            : violations.length}
         </div>
       )}
 
