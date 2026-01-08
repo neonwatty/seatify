@@ -27,12 +27,15 @@ interface SeatGuestProps {
 }
 
 function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViolation, violationPriority }: SeatGuestProps) {
-  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups } = useStore();
+  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups, flyingGuests } = useStore();
   const isAnimating = animatingGuestIds.has(guest.id);
 
   // Check if this guest's group is visible
   const groupKey = guest.group ?? '';
   const isGroupVisible = visibleGroups === 'all' || visibleGroups.has(groupKey);
+
+  // Check if this guest is currently flying (hide them during animation)
+  const isFlying = flyingGuests.some(fg => fg.guestId === guest.id);
 
   // Clear animation state after animation completes
   useEffect(() => {
@@ -108,6 +111,11 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViola
       }
     },
   });
+
+  // Hide the guest if they're currently flying (placed after all hooks)
+  if (isFlying) {
+    return null;
+  }
 
   return (
     <div
@@ -443,7 +451,9 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
   );
 }
 
-function getSeatPositions(
+// Exported for use by animation helpers - intentionally co-located with TableComponent
+// eslint-disable-next-line react-refresh/only-export-components
+export function getSeatPositions(
   shape: Table['shape'],
   capacity: number,
   width: number,

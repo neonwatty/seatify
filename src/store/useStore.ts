@@ -81,6 +81,18 @@ interface HistoryEntry {
   description: string;
 }
 
+// Flying guest animation state
+export interface FlyingGuest {
+  guestId: string;
+  guest: Guest;
+  fromX: number;  // Screen coordinates
+  fromY: number;
+  toX: number;
+  toY: number;
+  moveType: 'resolve' | 'demote' | 'neutral';  // For color coding
+  delay: number;  // Stagger delay in ms
+}
+
 const MAX_HISTORY_SIZE = 50;
 const MAX_EVENTS = 10;
 
@@ -155,6 +167,10 @@ interface AppState extends OnboardingState {
 
   // Pre-optimization snapshot for reset
   preOptimizationSnapshot: { guestId: string; tableId: string | undefined }[] | null;
+
+  // Flying animation state
+  flyingGuests: FlyingGuest[];
+  optimizeAnimationEnabled: boolean;
 
   // Actions - Event Management (multi-event)
   createEvent: (data?: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => string;
@@ -295,6 +311,11 @@ interface AppState extends OnboardingState {
   hasOptimizationSnapshot: () => boolean;
   clearNewlyAddedGuest: () => void;
   clearNewlyAddedTable: () => void;
+
+  // Actions - Flying Animation
+  setFlyingGuests: (guests: FlyingGuest[]) => void;
+  clearFlyingGuests: () => void;
+  setOptimizeAnimationEnabled: (enabled: boolean) => void;
 }
 
 const createDefaultEvent = (): Event => {
@@ -671,6 +692,8 @@ export const useStore = create<AppState>()(
       newlyAddedGuestId: null,
       newlyAddedTableId: null,
       preOptimizationSnapshot: null,
+      flyingGuests: [],
+      optimizeAnimationEnabled: true,
       hasCompletedOnboarding: false,
       completedTours: new Set<TourId>(),
       activeTourId: null,
@@ -2145,6 +2168,13 @@ export const useStore = create<AppState>()(
       clearNewlyAddedGuest: () => set({ newlyAddedGuestId: null }),
 
       clearNewlyAddedTable: () => set({ newlyAddedTableId: null }),
+
+      // Flying animation actions
+      setFlyingGuests: (guests: FlyingGuest[]) => set({ flyingGuests: guests }),
+
+      clearFlyingGuests: () => set({ flyingGuests: [] }),
+
+      setOptimizeAnimationEnabled: (enabled: boolean) => set({ optimizeAnimationEnabled: enabled }),
     };
     },
     {
@@ -2157,6 +2187,7 @@ export const useStore = create<AppState>()(
         eventListViewMode: state.eventListViewMode,
         hasCompletedOnboarding: state.hasCompletedOnboarding,
         hasUsedOptimizeButton: state.hasUsedOptimizeButton,
+        optimizeAnimationEnabled: state.optimizeAnimationEnabled,
         // Serialize Set as array for persistence
         completedTours: Array.from(state.completedTours),
       }),

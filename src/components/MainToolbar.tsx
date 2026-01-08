@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
 import { getFullName } from '../types';
 import { useIsMobile } from '../hooks/useResponsive';
@@ -6,6 +6,12 @@ import { ViewToggle } from './ViewToggle';
 import { MobileToolbarMenu } from './MobileToolbarMenu';
 import { MobileCanvasToolbar } from './MobileCanvasToolbar';
 import { showToast } from './toastStore';
+import {
+  captureGuestPositions,
+  calculateFlyingPaths,
+  isAnimationViewportValid,
+  prefersReducedMotion
+} from '../utils/animationHelpers';
 import type { TableShape } from '../types';
 import type { TourId } from '../data/tourRegistry';
 import './MainToolbar.css';
@@ -24,11 +30,29 @@ interface MainToolbarProps {
 }
 
 export function MainToolbar({ children, onAddGuest, onImport, showRelationships, onToggleRelationships, onShowHelp, onStartTour, onSubscribe, canShowEmailButton }: MainToolbarProps) {
-  const { event, addTable, addGuest, activeView, optimizeSeating, resetSeating, hasOptimizationSnapshot, hasUsedOptimizeButton } = useStore();
+  const {
+    event,
+    addTable,
+    addGuest,
+    activeView,
+    optimizeSeating,
+    resetSeating,
+    hasOptimizationSnapshot,
+    hasUsedOptimizeButton,
+    canvas,
+    getViolations,
+    setFlyingGuests,
+    optimizeAnimationEnabled,
+    setOptimizeAnimationEnabled,
+    recenterCanvas
+  } = useStore();
   const isMobile = useIsMobile();
+  const canvasRef = useRef<HTMLElement | null>(null);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [showOptimizeDropdown, setShowOptimizeDropdown] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const addDropdownRef = useRef<HTMLDivElement>(null);
+  const optimizeDropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if optimization is possible
   const hasRelationships = event.guests.some(g => g.relationships.length > 0);
@@ -49,36 +73,147 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
     guestsWithRelationships: event.guests.filter(g => g.relationships.length > 0).map(g => ({ name: getFullName(g), relCount: g.relationships.length }))
   });
 
+  // Get canvas element ref on mount
+  useEffect(() => {
+    canvasRef.current = document.querySelector('.canvas-area');
+  }, [activeView]);
+
   // Handle optimize seating
-  const handleOptimize = () => {
+  const handleOptimize = useCallback(() => {
     setIsOptimizing(true);
 
-    // Small delay to show animation starting
-    setTimeout(() => {
-      const result = optimizeSeating();
-      setIsOptimizing(false);
+    // Check if we should use animation
+    const canvasElement = canvasRef.current;
+    const canvasRect = canvasElement?.getBoundingClientRect();
+    const shouldAnimate =
+      optimizeAnimationEnabled &&
+      !isMobile &&
+      !prefersReducedMotion() &&
+      canvasRect &&
+      isAnimationViewportValid(canvasRect);
 
-      // Show toast using the global toast system (positioned correctly outside toolbar)
-      const movedText = result.movedGuests.length > 0
-        ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
-        : '';
-      showToast(
-        `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
-        'success'
+    if (!shouldAnimate || !canvasRect) {
+      // Instant optimization (no animation)
+      setTimeout(() => {
+        const result = optimizeSeating();
+        setIsOptimizing(false);
+
+        const movedText = result.movedGuests.length > 0
+          ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
+          : '';
+        showToast(
+          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
+          'success'
+        );
+      }, 300);
+      return;
+    }
+
+    // Get violating guest IDs before optimization
+    const violations = getViolations();
+    const violatingGuestIds = new Set<string>();
+    violations.forEach(v => v.guestIds.forEach(id => violatingGuestIds.add(id)));
+
+    // Capture positions BEFORE optimization
+    const oldSnapshots = captureGuestPositions(
+      event.guests,
+      event.tables,
+      canvas,
+      canvasRect
+    );
+
+    // Recenter canvas and wait
+    recenterCanvas();
+
+    setTimeout(() => {
+      // Run optimization
+      const result = optimizeSeating();
+
+      // Check for no changes
+      if (result.movedGuests.length === 0) {
+        setIsOptimizing(false);
+        showToast('Already optimized! No changes needed.', 'info');
+        return;
+      }
+
+      // Get updated canvas rect after recenter
+      const newCanvasRect = canvasRef.current?.getBoundingClientRect();
+      if (!newCanvasRect) {
+        setIsOptimizing(false);
+        showToast(
+          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}`,
+          'success'
+        );
+        return;
+      }
+
+      // Get updated state
+      const updatedState = useStore.getState();
+
+      // Calculate flying paths
+      const flyingGuests = calculateFlyingPaths(
+        oldSnapshots,
+        updatedState.event.guests,
+        updatedState.event.tables,
+        updatedState.canvas,
+        newCanvasRect,
+        result.movedGuests,
+        violatingGuestIds
       );
-    }, 300);
-  };
+
+      // Limit to ~20 guests max for performance
+      const maxGuests = 20;
+      const limitedFlyingGuests = flyingGuests.slice(0, maxGuests);
+
+      if (limitedFlyingGuests.length > 0) {
+        setFlyingGuests(limitedFlyingGuests);
+      }
+
+      // Calculate when animation will end
+      const maxDelay = limitedFlyingGuests.length > 0
+        ? Math.max(...limitedFlyingGuests.map(fg => fg.delay))
+        : 0;
+      const animationDuration = 600;
+      const totalAnimationTime = maxDelay + animationDuration + 300;
+
+      // Show toast after animation completes
+      setTimeout(() => {
+        setIsOptimizing(false);
+        const movedText = result.movedGuests.length > 0
+          ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
+          : '';
+        showToast(
+          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
+          'success'
+        );
+      }, totalAnimationTime);
+
+    }, 500); // Wait for recenter animation
+  }, [
+    optimizeAnimationEnabled,
+    isMobile,
+    event.guests,
+    event.tables,
+    canvas,
+    getViolations,
+    optimizeSeating,
+    recenterCanvas,
+    setFlyingGuests
+  ]);
 
   // Handle reset seating
   const handleReset = () => {
     resetSeating();
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (addDropdownRef.current && !addDropdownRef.current.contains(e.target as Node)) {
         setShowAddDropdown(false);
+      }
+      if (optimizeDropdownRef.current && !optimizeDropdownRef.current.contains(e.target as Node)) {
+        setShowOptimizeDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -193,16 +328,39 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
               {!isMobile && <span className="btn-text">Reset</span>}
             </button>
           ) : (
-            <button
-              onClick={handleOptimize}
-              className={`toolbar-btn optimize ${isOptimizing ? 'optimizing' : ''} ${showOptimizeAttention ? 'attention' : ''}`}
-              disabled={!canOptimize || isOptimizing}
-              title={!canOptimize ? 'Add guest relationships to enable optimization' : 'Optimize seating based on relationships'}
-            >
-              {showOptimizeAttention && <span className="optimize-badge">Try</span>}
-              <span className="btn-icon">✨</span>
-              {!isMobile && <span className="btn-text">{isOptimizing ? 'Optimizing...' : 'Optimize'}</span>}
-            </button>
+            <div className="optimize-dropdown" ref={optimizeDropdownRef}>
+              <button
+                onClick={handleOptimize}
+                className={`toolbar-btn optimize ${isOptimizing ? 'optimizing' : ''} ${showOptimizeAttention ? 'attention' : ''}`}
+                disabled={!canOptimize || isOptimizing}
+                title={!canOptimize ? 'Add guest relationships to enable optimization' : 'Optimize seating based on relationships'}
+              >
+                {showOptimizeAttention && <span className="optimize-badge">Try</span>}
+                <span className="btn-icon">✨</span>
+                {!isMobile && <span className="btn-text">{isOptimizing ? 'Optimizing...' : 'Optimize'}</span>}
+              </button>
+              {!isMobile && (
+                <button
+                  className="optimize-settings-btn"
+                  onClick={() => setShowOptimizeDropdown(!showOptimizeDropdown)}
+                  title="Optimization settings"
+                >
+                  ⚙️
+                </button>
+              )}
+              {showOptimizeDropdown && (
+                <div className="dropdown-menu optimize-menu">
+                  <label className="dropdown-toggle">
+                    <input
+                      type="checkbox"
+                      checked={optimizeAnimationEnabled}
+                      onChange={(e) => setOptimizeAnimationEnabled(e.target.checked)}
+                    />
+                    <span>Show flying animation</span>
+                  </label>
+                </div>
+              )}
+            </div>
           )
         )}
 
