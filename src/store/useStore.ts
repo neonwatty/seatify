@@ -357,7 +357,7 @@ const createDefaultEvent = (): Event => {
         interests: ['golf', 'wine tasting', 'travel'], email: 'emma@wilson-law.com'
       },
       {
-        id: 'demo-guest-2', firstName: 'James', lastName: 'Wilson', rsvpStatus: 'confirmed', group: 'Family',
+        id: 'demo-guest-2', firstName: 'James', lastName: 'Wilson', tableId: table2Id, rsvpStatus: 'confirmed', group: 'Family',
         relationships: [
           { guestId: 'demo-guest-1', type: 'partner', strength: 5 },
         ],
@@ -474,7 +474,7 @@ const createDefaultEvent = (): Event => {
         interests: ['startups', 'golf', 'wine'], email: 'ben@taylorvc.com'
       },
       {
-        id: 'demo-guest-15', firstName: 'Daniel', lastName: 'Thompson', rsvpStatus: 'confirmed', group: 'Friends',
+        id: 'demo-guest-15', firstName: 'Daniel', lastName: 'Thompson', tableId: table1Id, rsvpStatus: 'confirmed', group: 'Friends',
         relationships: [
           { guestId: 'demo-guest-11', type: 'partner', strength: 5 },
         ],
@@ -507,7 +507,12 @@ const createDefaultEvent = (): Event => {
         interests: ['gaming', 'sci-fi books', 'running'], email: 'harper.r@shopify.com'
       },
     ],
-    constraints: [],
+    constraints: [
+      // Emma & James are partners but separated — creates visible violation badge
+      { id: 'demo-constraint-1', type: 'must_sit_together', guestIds: ['demo-guest-1', 'demo-guest-2'], priority: 'required', description: 'Emma and James Wilson are married' },
+      // Mia & Daniel are partners but separated — another violation
+      { id: 'demo-constraint-2', type: 'same_table', guestIds: ['demo-guest-11', 'demo-guest-15'], priority: 'preferred', description: 'Mia and Daniel Thompson are partners' },
+    ],
     surveyQuestions: [
       {
         id: uuidv4(),
