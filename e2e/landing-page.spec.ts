@@ -347,15 +347,6 @@ test.describe('Landing Page', () => {
     });
   });
 
-  test.describe('Preview Demo Animation', () => {
-    test('demo container is visible', async ({ page }) => {
-      await expect(page.locator('.demo-container')).toBeVisible();
-    });
-
-    test('demo table is displayed', async ({ page }) => {
-      await expect(page.locator('.demo-table')).toBeVisible();
-    });
-  });
 });
 
 test.describe('Landing Page - Mobile Responsive', () => {

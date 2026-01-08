@@ -308,245 +308,6 @@
   color: var(--color-primary);
 }
 
-/* ===== PREVIEW SECTION - ANIMATED DEMO ===== */
-.preview-section {
-  padding: 2rem 0;
-  animation: fadeIn 0.6s var(--ease-out) backwards;
-  animation-delay: 0.8s;
-}
-
-.demo-container {
-  position: relative;
-  width: 100%;
-  max-width: 450px;
-  height: 180px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-/* Guest chip that gets dragged */
-.demo-guest-chip {
-  position: absolute;
-  left: 15%;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 0.5rem 1rem;
-  background: var(--color-bg);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  box-shadow: var(--shadow-md);
-  animation: guestDragDemo 5s ease-in-out infinite;
-  z-index: 10;
-}
-
-@keyframes guestDragDemo {
-  /* Initial state */
-  0%, 10% {
-    left: 15%;
-    transform: translateY(-50%) scale(1);
-    box-shadow: var(--shadow-md);
-    opacity: 1;
-  }
-  /* Pulse/highlight */
-  15%, 20% {
-    left: 15%;
-    transform: translateY(-50%) scale(1.05);
-    box-shadow: 0 0 0 4px rgba(249, 112, 102, 0.3), var(--shadow-lg);
-    border-color: var(--color-primary);
-  }
-  /* Start dragging */
-  25% {
-    left: 15%;
-    transform: translateY(-50%) scale(1.05);
-  }
-  /* Arrive at table edge (right side seat position) */
-  55% {
-    left: calc(85% + 14px);
-    transform: translateY(-50%) scale(1.05);
-    opacity: 1;
-  }
-  /* Drop and fade into seat */
-  60% {
-    left: calc(85% + 14px);
-    transform: translateY(-50%) scale(0.5);
-    opacity: 0;
-  }
-  /* Stay hidden */
-  65%, 95% {
-    left: calc(85% + 14px);
-    opacity: 0;
-  }
-  /* Reset */
-  100% {
-    left: 15%;
-    transform: translateY(-50%) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Drag trail */
-.demo-trail {
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  top: 50%;
-  height: 40px;
-  transform: translateY(-50%);
-  opacity: 0;
-  animation: trailShow 5s ease-in-out infinite;
-}
-
-@keyframes trailShow {
-  0%, 20% { opacity: 0; }
-  30%, 50% { opacity: 0.6; }
-  60%, 100% { opacity: 0; }
-}
-
-/* Table */
-.demo-table {
-  position: absolute;
-  right: 15%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 80px;
-  height: 80px;
-  background: var(--color-secondary);
-  border: 3px solid var(--color-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
-  animation: tableGlow 5s ease-in-out infinite;
-}
-
-@keyframes tableGlow {
-  0%, 50% {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary);
-  }
-  55%, 70% {
-    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.3), var(--shadow-lg);
-    border-color: var(--color-success);
-  }
-  80%, 100% {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary);
-  }
-}
-
-/* Capacity indicator */
-.demo-capacity {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  position: relative;
-}
-
-.capacity-before,
-.capacity-after {
-  display: inline-block;
-}
-
-.capacity-before {
-  animation: showBefore 5s ease-in-out infinite;
-}
-
-.capacity-after {
-  position: absolute;
-  left: 0;
-  animation: showAfter 5s ease-in-out infinite;
-}
-
-@keyframes showBefore {
-  0%, 55% { opacity: 1; }
-  58%, 95% { opacity: 0; }
-  98%, 100% { opacity: 1; }
-}
-
-@keyframes showAfter {
-  0%, 55% { opacity: 0; }
-  58%, 95% { opacity: 1; }
-  98%, 100% { opacity: 0; }
-}
-
-/* Seats around table */
-.demo-seat {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-}
-
-.demo-seated {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: var(--shadow-sm);
-}
-
-.demo-seated.family {
-  background: var(--rel-family);
-}
-
-.demo-seated.friend {
-  background: var(--rel-friend);
-}
-
-.demo-seated.colleague {
-  background: var(--rel-colleague);
-}
-
-.demo-seated.new-guest {
-  background: var(--color-primary);
-  opacity: 0;
-  animation: newGuestAppear 5s ease-in-out infinite;
-}
-
-@keyframes newGuestAppear {
-  0%, 55% { opacity: 0; transform: scale(0.5); }
-  60%, 95% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.5); }
-}
-
-/* Success checkmark */
-.demo-success {
-  position: absolute;
-  right: calc(15% - 60px);
-  top: 25%;
-  width: 32px;
-  height: 32px;
-  background: var(--color-success);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  opacity: 0;
-  transform: scale(0.5);
-  animation: successShow 5s ease-in-out infinite;
-}
-
-.demo-success svg {
-  width: 18px;
-  height: 18px;
-}
-
-@keyframes successShow {
-  0%, 55% { opacity: 0; transform: scale(0.5); }
-  60%, 75% { opacity: 1; transform: scale(1); }
-  80%, 100% { opacity: 0; transform: scale(0.5); }
-}
-
 /* ===== COMING SOON SECTION ===== */
 .coming-soon-section {
   padding: 2rem 0;
@@ -913,21 +674,6 @@
     transform: none;
   }
 
-  .demo-container {
-    height: 160px;
-    max-width: 350px;
-  }
-
-  .demo-table {
-    width: 70px;
-    height: 70px;
-  }
-
-  .demo-seat {
-    width: 20px;
-    height: 20px;
-  }
-
   .email-input {
     width: 100%;
     max-width: 300px;
@@ -1016,36 +762,6 @@
     font-size: var(--font-size-sm);
   }
 
-  .demo-container {
-    height: 140px;
-    max-width: 280px;
-  }
-
-  .demo-guest-chip {
-    padding: 0.375rem 0.75rem;
-    font-size: var(--font-size-xs);
-  }
-
-  .demo-table {
-    width: 60px;
-    height: 60px;
-  }
-
-  .demo-seat {
-    width: 18px;
-    height: 18px;
-  }
-
-  .demo-success {
-    width: 24px;
-    height: 24px;
-  }
-
-  .demo-success svg {
-    width: 14px;
-    height: 14px;
-  }
-
   .email-capture {
     padding: 2rem 1rem;
     margin: 1rem 0;
@@ -1108,14 +824,6 @@
     background: linear-gradient(135deg, transparent 50%, var(--color-bg) 50%);
   }
 
-  .demo-container {
-    background: var(--color-bg-secondary);
-  }
-
-  .demo-guest-chip {
-    background: var(--color-bg-secondary);
-  }
-
   .email-capture {
     background: var(--color-bg-secondary);
   }
@@ -1132,14 +840,6 @@
 
 :root[data-theme="dark"] .feature-card::before {
   background: linear-gradient(135deg, transparent 50%, var(--color-bg) 50%);
-}
-
-:root[data-theme="dark"] .demo-container {
-  background: var(--color-bg-secondary);
-}
-
-:root[data-theme="dark"] .demo-guest-chip {
-  background: var(--color-bg-secondary);
 }
 
 :root[data-theme="dark"] .email-capture {
