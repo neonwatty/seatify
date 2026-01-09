@@ -13,9 +13,8 @@ export const demoGuests: Guest[] = [
   // Carol and David AVOID each other but are at the same table — optimizer will fix this
   { id: 'g3', firstName: 'Carol', lastName: 'Smith', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g4', type: 'avoid', strength: 5 }] },
   { id: 'g4', firstName: 'David', lastName: 'Brown', rsvpStatus: 'confirmed', tableId: 't2', relationships: [{ guestId: 'g5', type: 'friend', strength: 3 }, { guestId: 'g3', type: 'avoid', strength: 5 }] },
-  // Emma is separated from Henry (her sibling) — constraint violation
-  { id: 'g5', firstName: 'Emma', lastName: 'Davis', rsvpStatus: 'confirmed', tableId: 't3', relationships: [{ guestId: 'g4', type: 'friend', strength: 3 }, { guestId: 'g8', type: 'family', strength: 4 }] },
-  // Unassigned guests
+  // Unassigned guests - optimizer will seat these automatically
+  { id: 'g5', firstName: 'Emma', lastName: 'Davis', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g4', type: 'friend', strength: 3 }, { guestId: 'g8', type: 'family', strength: 4 }] },
   { id: 'g6', firstName: 'Frank', lastName: 'Wilson', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g7', type: 'avoid', strength: 5 }] },
   { id: 'g7', firstName: 'Grace', lastName: 'Lee', rsvpStatus: 'confirmed', relationships: [{ guestId: 'g6', type: 'avoid', strength: 5 }] },
   // Henry is Emma's sibling — they have a "must sit together" constraint
@@ -25,9 +24,9 @@ export const demoGuests: Guest[] = [
 ];
 
 export const demoConstraints: Constraint[] = [
-  // Emma and Henry are siblings — must sit together (currently violated: Emma at t3, Henry unassigned)
+  // Emma and Henry are siblings — must sit together (both unassigned, optimizer will seat together)
   { id: 'c1', type: 'must_sit_together', guestIds: ['g5', 'g8'], priority: 'required', description: 'Emma and Henry are siblings' },
-  // David and Jack are business partners — should be at same table (currently violated: David at t2, Jack unassigned)
+  // David and Jack are business partners — should be at same table (David at t2, Jack unassigned)
   { id: 'c2', type: 'same_table', guestIds: ['g4', 'g10'], priority: 'preferred', description: 'David and Jack are business partners' },
 ];
 

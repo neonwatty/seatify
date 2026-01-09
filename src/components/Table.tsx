@@ -26,16 +26,13 @@ interface SeatGuestProps {
   violationPriority?: 'required' | 'preferred';
 }
 
-function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViolation, violationPriority }: SeatGuestProps) {
-  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups, flyingGuests } = useStore();
+function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViolation, violationPriority, isGhost, isFadingIn }: SeatGuestProps & { isGhost?: boolean; isFadingIn?: boolean }) {
+  const { setEditingGuest, openContextMenu, animatingGuestIds, clearAnimatingGuests, visibleGroups } = useStore();
   const isAnimating = animatingGuestIds.has(guest.id);
 
   // Check if this guest's group is visible
   const groupKey = guest.group ?? '';
   const isGroupVisible = visibleGroups === 'all' || visibleGroups.has(groupKey);
-
-  // Check if this guest is currently flying (hide them during animation)
-  const isFlying = flyingGuests.some(fg => fg.guestId === guest.id);
 
   // Clear animation state after animation completes
   useEffect(() => {
@@ -112,21 +109,16 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViola
     },
   });
 
-  // Hide the guest if they're currently flying (placed after all hooks)
-  if (isFlying) {
-    return null;
-  }
-
   return (
     <div
-      ref={setNodeRef}
-      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''} ${!isGroupVisible ? 'dimmed' : ''} ${isInViolation ? 'in-violation' : ''} ${isInViolation && violationPriority === 'required' ? 'violation-required' : ''}`}
-      title={tooltipParts.join('\n')}
-      onDoubleClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
-      {...longPressHandlers}
-      {...attributes}
-      {...listeners}
+      ref={isGhost ? undefined : setNodeRef}
+      className={`seat-guest ${isDragging ? 'dragging' : ''} ${groupColor ? 'has-group' : ''} ${isSwapTarget ? 'swap-target' : ''} ${isAnimating ? 'optimized' : ''} ${!isGroupVisible ? 'dimmed' : ''} ${isInViolation ? 'in-violation' : ''} ${isInViolation && violationPriority === 'required' ? 'violation-required' : ''} ${isGhost ? 'ghost fading-out' : ''} ${isFadingIn ? 'fading-in' : ''}`}
+      title={isGhost ? undefined : tooltipParts.join('\n')}
+      onDoubleClick={isGhost ? undefined : handleDoubleClick}
+      onContextMenu={isGhost ? undefined : handleContextMenu}
+      {...(isGhost ? {} : longPressHandlers)}
+      {...(isGhost ? {} : attributes)}
+      {...(isGhost ? {} : listeners)}
     >
       <div
         className="seat-guest-circle"
@@ -144,7 +136,12 @@ function SeatGuest({ guest, seatPosition, tablePosition, isSwapTarget, isInViola
 }
 
 export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTargetGuestId, isNewlyAdded }: TableComponentProps) {
-  const { selectTable, removeTable, getViolationsForTable, toggleTableSelection, addTableToSelection, openContextMenu } = useStore();
+  const { selectTable, removeTable, getViolationsForTable, toggleTableSelection, addTableToSelection, openContextMenu, fadingOutGuests, animatingGuestIds } = useStore();
+
+  // Get ghost guests that should appear at their OLD positions on THIS table
+  const ghostGuests = useMemo(() => {
+    return fadingOutGuests.filter(fg => fg.tableId === table.id);
+  }, [fadingOutGuests, table.id]);
   const violations = getViolationsForTable(table.id);
   const hasViolations = violations.length > 0;
   const hasRequiredViolations = violations.some(v => v.priority === 'required');
@@ -386,6 +383,8 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
 
       {seatPositions.map((pos, idx) => {
         const guest = guests.find((g) => g.seatIndex === idx) || guests[idx];
+        // Check if there's a ghost guest that should appear at this seat
+        const ghostGuest = ghostGuests.find(fg => fg.seatIndex === idx);
         return (
           <div
             key={idx}
@@ -396,6 +395,16 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
               transform: 'translate(-50%, -50%)',
             }}
           >
+            {/* Render ghost guest (fading out at old position) */}
+            {ghostGuest && (
+              <SeatGuest
+                guest={ghostGuest.guest}
+                seatPosition={pos}
+                tablePosition={{ x: table.x, y: table.y }}
+                isGhost
+              />
+            )}
+            {/* Render actual guest (fading in if they moved here) */}
             {guest && (
               <SeatGuest
                 guest={guest}
@@ -404,6 +413,7 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
                 isSwapTarget={swapTargetGuestId === guest.id}
                 isInViolation={violationInfo.guestIds.has(guest.id)}
                 violationPriority={violationInfo.guestPriorities.get(guest.id)}
+                isFadingIn={animatingGuestIds.has(guest.id)}
               />
             )}
           </div>

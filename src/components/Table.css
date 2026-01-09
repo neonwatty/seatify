@@ -278,6 +278,49 @@
   }
 }
 
+/* Ghost guest (fading out at old position) */
+.seat-guest.ghost {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.seat-guest.ghost.fading-out {
+  animation: ghostFadeOut 0.8s ease-out forwards;
+}
+
+@keyframes ghostFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* Fading in guest (appearing at new position) */
+.seat-guest.fading-in {
+  animation: fadeIn 0.8s ease-out 0.4s forwards;
+  opacity: 0; /* Start invisible, animation will set final opacity */
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .seat-guest-circle {
   width: 44px;
   height: 44px;

@@ -1,17 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
-import { getFullName } from '../types';
 import { useIsMobile } from '../hooks/useResponsive';
 import { ViewToggle } from './ViewToggle';
 import { MobileToolbarMenu } from './MobileToolbarMenu';
 import { MobileCanvasToolbar } from './MobileCanvasToolbar';
 import { showToast } from './toastStore';
-import {
-  captureGuestPositions,
-  calculateFlyingPaths,
-  isAnimationViewportValid,
-  prefersReducedMotion
-} from '../utils/animationHelpers';
+import { prefersReducedMotion } from '../utils/animationHelpers';
 import type { TableShape } from '../types';
 import type { TourId } from '../data/tourRegistry';
 import './MainToolbar.css';
@@ -39,15 +33,12 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
     resetSeating,
     hasOptimizationSnapshot,
     hasUsedOptimizeButton,
-    canvas,
-    getViolations,
-    setFlyingGuests,
+    setFadingOutGuests,
+    clearFadingOutGuests,
     optimizeAnimationEnabled,
     setOptimizeAnimationEnabled,
-    recenterCanvas
   } = useStore();
   const isMobile = useIsMobile();
-  const canvasRef = useRef<HTMLElement | null>(null);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showOptimizeDropdown, setShowOptimizeDropdown] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
@@ -63,142 +54,87 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
   // Show attention animation if user hasn't used optimize button yet and can optimize
   const showOptimizeAttention = canOptimize && !hasUsedOptimizeButton && !hasSnapshot;
 
-  // Debug logging
-  console.log('Optimization state:', {
-    hasRelationships,
-    hasTablesWithCapacity,
-    guestCount: event.guests.length,
-    canOptimize,
-    hasSnapshot,
-    guestsWithRelationships: event.guests.filter(g => g.relationships.length > 0).map(g => ({ name: getFullName(g), relCount: g.relationships.length }))
-  });
-
-  // Get canvas element ref on mount
-  useEffect(() => {
-    canvasRef.current = document.querySelector('.canvas-area');
-  }, [activeView]);
-
-  // Handle optimize seating
+  // Handle optimize seating with fade animation
   const handleOptimize = useCallback(() => {
     setIsOptimizing(true);
 
     // Check if we should use animation
-    const canvasElement = canvasRef.current;
-    const canvasRect = canvasElement?.getBoundingClientRect();
-    const shouldAnimate =
-      optimizeAnimationEnabled &&
-      !isMobile &&
-      !prefersReducedMotion() &&
-      canvasRect &&
-      isAnimationViewportValid(canvasRect);
+    const shouldAnimate = optimizeAnimationEnabled && !isMobile && !prefersReducedMotion();
 
-    if (!shouldAnimate || !canvasRect) {
-      // Instant optimization (no animation)
-      setTimeout(() => {
-        const result = optimizeSeating();
-        setIsOptimizing(false);
+    // Capture old positions BEFORE optimization (for fade-out ghosts)
+    const oldPositions = new Map<string, { tableId: string; seatIndex: number; guest: typeof event.guests[0] }>();
+    event.guests.forEach(guest => {
+      if (guest.tableId && guest.seatIndex !== undefined) {
+        oldPositions.set(guest.id, {
+          tableId: guest.tableId,
+          seatIndex: guest.seatIndex,
+          guest: { ...guest }
+        });
+      }
+    });
 
-        const movedText = result.movedGuests.length > 0
-          ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
-          : '';
-        showToast(
-          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
-          'success'
-        );
-      }, 300);
+    // Run optimization
+    const result = optimizeSeating();
+
+    // Check for no changes
+    if (result.movedGuests.length === 0) {
+      setIsOptimizing(false);
+      showToast('Already optimized! No changes needed.', 'info');
       return;
     }
 
-    // Get violating guest IDs before optimization
-    const violations = getViolations();
-    const violatingGuestIds = new Set<string>();
-    violations.forEach(v => v.guestIds.forEach(id => violatingGuestIds.add(id)));
+    // Create fading-out guests for animation
+    if (shouldAnimate && result.movedGuests.length > 0) {
+      const fadingGuests = result.movedGuests
+        .filter(guestId => oldPositions.has(guestId))
+        .map(guestId => {
+          const old = oldPositions.get(guestId)!;
+          return {
+            guestId,
+            guest: old.guest,
+            tableId: old.tableId,
+            seatIndex: old.seatIndex
+          };
+        });
 
-    // Capture positions BEFORE optimization
-    const oldSnapshots = captureGuestPositions(
-      event.guests,
-      event.tables,
-      canvas,
-      canvasRect
-    );
+      if (fadingGuests.length > 0) {
+        setFadingOutGuests(fadingGuests);
 
-    // Recenter canvas and wait
-    recenterCanvas();
+        // Clear fading guests after animation completes
+        setTimeout(() => {
+          clearFadingOutGuests();
+        }, 1200); // Match CSS animation duration (0.4s delay + 0.8s fade-in)
+      }
+    }
 
+    // Show toast
     setTimeout(() => {
-      // Run optimization
-      const result = optimizeSeating();
-
-      // Check for no changes
-      if (result.movedGuests.length === 0) {
-        setIsOptimizing(false);
-        showToast('Already optimized! No changes needed.', 'info');
-        return;
+      setIsOptimizing(false);
+      const parts: string[] = [];
+      if (result.violationsResolved > 0) {
+        parts.push(`${result.violationsResolved} conflict${result.violationsResolved !== 1 ? 's' : ''} resolved`);
       }
-
-      // Get updated canvas rect after recenter
-      const newCanvasRect = canvasRef.current?.getBoundingClientRect();
-      if (!newCanvasRect) {
-        setIsOptimizing(false);
-        showToast(
-          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}`,
-          'success'
-        );
-        return;
+      // Calculate guests moved between tables (exclude newly seated from count)
+      const movedBetweenTables = result.movedGuests.length - result.newlySeated;
+      if (movedBetweenTables > 0) {
+        parts.push(`${movedBetweenTables} guest${movedBetweenTables !== 1 ? 's' : ''} moved`);
       }
-
-      // Get updated state
-      const updatedState = useStore.getState();
-
-      // Calculate flying paths
-      const flyingGuests = calculateFlyingPaths(
-        oldSnapshots,
-        updatedState.event.guests,
-        updatedState.event.tables,
-        updatedState.canvas,
-        newCanvasRect,
-        result.movedGuests,
-        violatingGuestIds
+      if (result.newlySeated > 0) {
+        parts.push(`${result.newlySeated} guest${result.newlySeated !== 1 ? 's' : ''} seated`);
+      }
+      const actionSummary = parts.length > 0 ? parts.join(' · ') + ' · ' : '';
+      showToast(
+        `Seating Optimized! ${actionSummary}Score: ${result.beforeScore} → ${result.afterScore}`,
+        'success'
       );
-
-      // Limit to ~20 guests max for performance
-      const maxGuests = 20;
-      const limitedFlyingGuests = flyingGuests.slice(0, maxGuests);
-
-      if (limitedFlyingGuests.length > 0) {
-        setFlyingGuests(limitedFlyingGuests);
-      }
-
-      // Calculate when animation will end
-      const maxDelay = limitedFlyingGuests.length > 0
-        ? Math.max(...limitedFlyingGuests.map(fg => fg.delay))
-        : 0;
-      const animationDuration = 600;
-      const totalAnimationTime = maxDelay + animationDuration + 300;
-
-      // Show toast after animation completes
-      setTimeout(() => {
-        setIsOptimizing(false);
-        const movedText = result.movedGuests.length > 0
-          ? ` · ${result.movedGuests.length} guest${result.movedGuests.length !== 1 ? 's' : ''} moved`
-          : '';
-        showToast(
-          `Seating Optimized! Score: ${result.beforeScore} → ${result.afterScore}${movedText}`,
-          'success'
-        );
-      }, totalAnimationTime);
-
-    }, 500); // Wait for recenter animation
+    }, shouldAnimate ? 1200 : 100);
   }, [
     optimizeAnimationEnabled,
     isMobile,
     event.guests,
-    event.tables,
-    canvas,
-    getViolations,
     optimizeSeating,
-    recenterCanvas,
-    setFlyingGuests
+    setFadingOutGuests,
+    clearFadingOutGuests
   ]);
 
   // Handle reset seating
@@ -356,7 +292,7 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
                       checked={optimizeAnimationEnabled}
                       onChange={(e) => setOptimizeAnimationEnabled(e.target.checked)}
                     />
-                    <span>Show flying animation</span>
+                    <span>Show fade animation</span>
                   </label>
                 </div>
               )}

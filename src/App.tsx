@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { ToastContainer } from './components/Toast';
-import { FlyingGuestOverlay } from './components/FlyingGuestOverlay';
 import { showToast } from './components/toastStore';
 import { AppRouter } from './router';
 import { useStore } from './store/useStore';
@@ -217,7 +216,6 @@ function App() {
     <>
       <AppRouter />
       <ToastContainer />
-      <FlyingGuestOverlay />
       {emailCaptureState.show && (
         <EmailCaptureModal
           onClose={() => handleEmailCaptureClose(false)}
