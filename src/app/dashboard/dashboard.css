@@ -256,6 +256,90 @@
   margin-bottom: var(--spacing-lg);
 }
 
+/* Event Card with Actions */
+.event-card-wrapper {
+  position: relative;
+}
+
+.event-card-actions {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.event-card-wrapper:hover .event-card-actions {
+  opacity: 1;
+}
+
+.event-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.event-action-btn.edit-btn {
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+}
+
+.event-action-btn.edit-btn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.event-action-btn.delete-btn {
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+}
+
+.event-action-btn.delete-btn:hover {
+  background: var(--color-error);
+  color: white;
+}
+
+/* Delete Modal */
+.delete-modal p {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.delete-modal p strong {
+  color: var(--color-text);
+}
+
+/* Danger Button */
+.btn-danger {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-error);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .dashboard-main {
     padding: var(--spacing-md);
@@ -272,5 +356,9 @@
 
   .events-grid {
     grid-template-columns: 1fr;
+  }
+
+  .event-card-actions {
+    opacity: 1;
   }
 }
