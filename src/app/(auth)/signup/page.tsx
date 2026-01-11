@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -14,7 +14,12 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+
+  // Lazy initialize Supabase client to avoid pre-rendering issues
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return createClient();
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +38,7 @@ export default function SignupPage() {
       return;
     }
 
+    if (!supabase) return;
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -52,6 +58,7 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
+    if (!supabase) return;
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
