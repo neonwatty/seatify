@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createEvent, updateEvent, deleteEvent } from './events';
-import { createMockSupabaseClient, mockUser, mockEvent } from '@/test/mocks/supabase';
+import { createMockSupabaseClient, mockEvent } from '@/test/mocks/supabase';
 
 // Mock the server Supabase client
 vi.mock('@/lib/supabase/server', () => ({
