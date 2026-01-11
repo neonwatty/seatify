@@ -50,7 +50,7 @@ export const createMockSupabaseClient = (overrides: {
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user }, error: null }),
     },
-    from: vi.fn((table: string) => {
+    from: vi.fn((_table: string) => {
       return {
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({

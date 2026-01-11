@@ -462,7 +462,6 @@ export function TableComponent({ table, guests, isSelected, isSnapTarget, swapTa
 }
 
 // Exported for use by animation helpers - intentionally co-located with TableComponent
-// eslint-disable-next-line react-refresh/only-export-components
 export function getSeatPositions(
   shape: Table['shape'],
   capacity: number,

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from '@/lib/router-compat';
+import { useNavigate, Link } from '@/lib/router-compat';
 import '../LandingPage.css';
 import { Footer } from '../Footer';
 import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../../utils/analytics';
@@ -151,9 +151,9 @@ export function HowItWorksPage() {
 
         {/* Back to Main Site Link */}
         <section className="back-link-section">
-          <a href="/" className="back-link">
+          <Link href="/" className="back-link">
             &larr; Back to Seatify Home
-          </a>
+          </Link>
         </section>
       </div>
 
