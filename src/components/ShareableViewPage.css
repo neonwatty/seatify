@@ -36,7 +36,7 @@
 
 .shareable-brand .logo-ify {
   color: var(--color-primary);
-  font-family: 'Caveat', cursive;
+  font-family: var(--font-caveat), cursive;
   font-size: 1.15em;
   font-weight: 600;
   vertical-align: baseline;
@@ -169,7 +169,7 @@
 
 .shareable-brand-small .logo-ify {
   color: var(--color-primary);
-  font-family: 'Caveat', cursive;
+  font-family: var(--font-caveat), cursive;
   font-size: 1.15em;
   font-weight: 600;
   vertical-align: baseline;

@@ -41,7 +41,7 @@
 
 .footer-logo-ify {
   color: var(--color-primary);
-  font-family: 'Caveat', cursive;
+  font-family: var(--font-caveat), cursive;
   font-weight: 600;
 }
 
