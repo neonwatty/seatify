@@ -22,7 +22,7 @@
 }
 
 .auth-logo {
-  font-family: var(--font-decorative);
+  font-family: var(--font-caveat), cursive;
   font-size: 2rem;
   font-weight: 600;
   color: var(--color-primary);
