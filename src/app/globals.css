@@ -444,6 +444,31 @@
   box-sizing: border-box;
 }
 
+/* Event/Canvas Page Layout */
+.event-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.event-content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.canvas-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
 body {
   margin: 0;
   font-family: var(--font-family);
