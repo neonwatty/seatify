@@ -14,6 +14,7 @@ interface MainToolbarProps {
   children?: React.ReactNode;
   onAddGuest?: () => void;
   onImport?: () => void;
+  onExport?: () => void;
   showRelationships?: boolean;
   onToggleRelationships?: () => void;
   // Mobile settings props
@@ -23,7 +24,7 @@ interface MainToolbarProps {
   canShowEmailButton?: boolean;
 }
 
-export function MainToolbar({ children, onAddGuest, onImport, showRelationships, onToggleRelationships, onShowHelp, onStartTour, onSubscribe, canShowEmailButton }: MainToolbarProps) {
+export function MainToolbar({ children, onAddGuest, onImport, onExport, showRelationships, onToggleRelationships, onShowHelp, onStartTour, onSubscribe, canShowEmailButton }: MainToolbarProps) {
   const {
     event,
     addTable,
@@ -199,6 +200,7 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
         <MobileToolbarMenu
           onAddGuest={handleAddGuest}
           onImport={onImport}
+          onExport={onExport}
           showRelationships={showRelationships}
           onToggleRelationships={onToggleRelationships}
           onShowHelp={onShowHelp}
@@ -250,6 +252,13 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
           <button onClick={onImport} className="toolbar-btn secondary" title="Import guests from CSV or Excel">
             <span className="btn-icon">📥</span>
             {!isMobile && <span className="btn-text">Import</span>}
+          </button>
+        )}
+
+        {onExport && (
+          <button onClick={onExport} className="toolbar-btn secondary" title="Export guests to CSV">
+            <span className="btn-icon">📤</span>
+            {!isMobile && <span className="btn-text">Export</span>}
           </button>
         )}
 

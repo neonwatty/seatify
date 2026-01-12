@@ -19,6 +19,7 @@ import {
   computeFinalTableAssignments,
   calculateTablePositions,
 } from './utils/tableAssignment';
+import { insertGuests, updateGuests, type GuestInput } from '../../actions/guests';
 import type { Guest } from '../../types';
 import './ImportWizard.css';
 
@@ -170,7 +171,7 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
   }, [state.parsedGuests, state.excludedRowIndices, state.duplicates, state.duplicateResolutions]);
 
   // Handle final import
-  const handleImport = useCallback(() => {
+  const handleImport = useCallback(async () => {
     dispatch({ type: 'SET_IMPORTING', payload: true });
 
     try {
@@ -247,7 +248,7 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
         }
       });
 
-      // Import new guests
+      // Import new guests to local store
       if (guestsToAdd.length > 0) {
         importGuests(guestsToAdd);
       }
@@ -285,6 +286,79 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
         });
       }
 
+      // Persist to Supabase if we have an event ID (user is authenticated)
+      const eventId = event.id;
+      if (eventId && eventId !== 'default') {
+        // Get the freshly imported guests from the store with their assigned IDs
+        const currentGuests = useStore.getState().event.guests;
+
+        // Prepare guests for database insertion
+        const guestsForDb: GuestInput[] = guestsToAdd.map((addedGuest) => {
+          // Find the guest in the store to get their generated ID and table assignment
+          const storeGuest = currentGuests.find(
+            (g) =>
+              g.firstName === addedGuest.firstName &&
+              g.lastName === addedGuest.lastName
+          );
+
+          return {
+            id: storeGuest?.id,
+            firstName: addedGuest.firstName || '',
+            lastName: addedGuest.lastName || '',
+            email: addedGuest.email,
+            company: addedGuest.company,
+            jobTitle: addedGuest.jobTitle,
+            industry: addedGuest.industry,
+            profileSummary: addedGuest.profileSummary,
+            group: addedGuest.group,
+            rsvpStatus: addedGuest.rsvpStatus as 'pending' | 'confirmed' | 'declined',
+            notes: addedGuest.notes,
+            tableId: storeGuest?.tableId,
+            seatIndex: storeGuest?.seatIndex,
+            interests: addedGuest.interests,
+            dietaryRestrictions: addedGuest.dietaryRestrictions,
+            accessibilityNeeds: addedGuest.accessibilityNeeds,
+          };
+        });
+
+        // Insert new guests to database
+        if (guestsForDb.length > 0) {
+          const insertResult = await insertGuests(eventId, guestsForDb);
+          if (insertResult.error) {
+            console.error('Failed to persist guests to database:', insertResult.error);
+            // Don't fail the entire import - local store already updated
+            showToast('Guests imported locally but failed to sync to cloud', 'warning');
+          }
+        }
+
+        // Update merged guests in database
+        if (guestsToMerge.length > 0) {
+          const mergeInputs: GuestInput[] = guestsToMerge.map(({ id, data }) => ({
+            id,
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            email: data.email,
+            company: data.company,
+            jobTitle: data.jobTitle,
+            industry: data.industry,
+            profileSummary: data.profileSummary,
+            group: data.group,
+            rsvpStatus: data.rsvpStatus as 'pending' | 'confirmed' | 'declined',
+            notes: data.notes,
+            tableId: data.tableId,
+            seatIndex: data.seatIndex,
+            interests: data.interests,
+            dietaryRestrictions: data.dietaryRestrictions,
+            accessibilityNeeds: data.accessibilityNeeds,
+          }));
+
+          const updateResult = await updateGuests(eventId, mergeInputs);
+          if (updateResult.error) {
+            console.error('Failed to update merged guests in database:', updateResult.error);
+          }
+        }
+      }
+
       // Build success message
       const counts = getImportCounts();
       let message = `Imported ${counts.toAdd} new guest${counts.toAdd !== 1 ? 's' : ''}`;
@@ -312,6 +386,7 @@ export function ImportWizard({ isOpen, onClose }: ImportWizardProps) {
     state.duplicates,
     state.duplicateResolutions,
     state.tableAssignment,
+    event.id,
     importGuests,
     updateGuest,
     addTables,

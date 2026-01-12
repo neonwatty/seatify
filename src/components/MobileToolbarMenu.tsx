@@ -13,6 +13,7 @@ type ActiveView = 'event-list' | 'dashboard' | 'canvas' | 'guests';
 interface MobileToolbarMenuProps {
   onAddGuest: () => void;
   onImport?: () => void;
+  onExport?: () => void;
   showRelationships?: boolean;
   onToggleRelationships?: () => void;
   showGridControls?: boolean;
@@ -27,6 +28,7 @@ interface MobileToolbarMenuProps {
 export function MobileToolbarMenu({
   onAddGuest,
   onImport,
+  onExport,
   showRelationships,
   onToggleRelationships,
   showGridControls,
@@ -120,6 +122,13 @@ export function MobileToolbarMenu({
   const handleImport = () => {
     if (onImport) {
       onImport();
+      setIsOpen(false);
+    }
+  };
+
+  const handleExport = () => {
+    if (onExport) {
+      onExport();
       setIsOpen(false);
     }
   };
@@ -330,6 +339,17 @@ export function MobileToolbarMenu({
                 >
                   <span className="menu-icon">📥</span>
                   <span>Import Guests</span>
+                </button>
+              )}
+
+              {onExport && (
+                <button
+                  className="menu-item"
+                  onClick={handleExport}
+                  role="menuitem"
+                >
+                  <span className="menu-icon">📤</span>
+                  <span>Export Guests</span>
                 </button>
               )}
 

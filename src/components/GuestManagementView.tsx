@@ -6,6 +6,8 @@ import { RelationshipMatrix } from './RelationshipMatrix';
 import { MainToolbar } from './MainToolbar';
 import { EmptyState } from './EmptyState';
 import { ImportWizard } from './ImportWizard/ImportWizard';
+import { downloadGuestsAsCSV } from '../utils/csvExport';
+import { showToast } from './toastStore';
 import type { Guest } from '../types';
 import { getFullName } from '../types';
 import './GuestManagementView.css';
@@ -157,11 +159,21 @@ export function GuestManagementView() {
     ? event.guests.find(g => g.id === selectedGuestDetail)
     : null;
 
+  const handleExport = useCallback(() => {
+    if (event.guests.length === 0) {
+      showToast('No guests to export', 'warning');
+      return;
+    }
+    downloadGuestsAsCSV(event.guests, event.tables, event.name);
+    showToast(`Exported ${event.guests.length} guests to CSV`, 'success');
+  }, [event.guests, event.tables, event.name]);
+
   return (
     <div className="guest-management-view">
       <MainToolbar
         onAddGuest={() => setShowAddGuest(true)}
         onImport={() => setShowImportWizard(true)}
+        onExport={handleExport}
         showRelationships={viewMode === 'relationships'}
         onToggleRelationships={() => setViewMode(viewMode === 'relationships' ? 'list' : 'relationships')}
         onShowHelp={onShowHelp}
