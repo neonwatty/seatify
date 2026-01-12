@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import { useMobileMenu } from '../contexts/MobileMenuContext';
 import { GuestForm } from './GuestForm';
 import { RelationshipMatrix } from './RelationshipMatrix';
@@ -17,12 +18,14 @@ type SortDirection = 'asc' | 'desc';
 type ViewMode = 'list' | 'relationships';
 
 export function GuestManagementView() {
+  const { event } = useStore();
+
+  // Use synced operations for auto-save to Supabase
   const {
-    event,
     removeGuest,
     updateGuest,
     assignGuestToTable,
-  } = useStore();
+  } = useSyncToSupabase();
 
   // Mobile menu context for settings
   const { onShowHelp, onStartTour, onSubscribe, canShowEmailButton } = useMobileMenu();

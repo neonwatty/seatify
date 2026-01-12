@@ -291,3 +291,45 @@ export async function insertRelationships(
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
   return { data, count: data.length };
 }
+
+// Delete a guest relationship
+export async function deleteRelationship(
+  eventId: string,
+  guestId: string,
+  relatedGuestId: string
+) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Not authenticated' };
+  }
+
+  // Verify user owns the event
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!event) {
+    return { error: 'Event not found or access denied' };
+  }
+
+  // Delete the relationship
+  const { error } = await supabase
+    .from('guest_relationships')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('guest_id', guestId)
+    .eq('related_guest_id', relatedGuestId);
+
+  if (error) {
+    console.error('Error deleting relationship:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}/canvas`);
+  return { success: true };
+}

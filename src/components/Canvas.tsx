@@ -10,6 +10,7 @@ import {
 import type { DragEndEvent, DragStartEvent, DragMoveEvent } from '@dnd-kit/core';
 import { useGesture } from '@use-gesture/react';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import { useLongPress } from '../hooks/useLongPress';
 import { useIsMobile } from '../hooks/useResponsive';
 import { useMobileMenu } from '../contexts/MobileMenuContext';
@@ -353,20 +354,12 @@ export function Canvas() {
     contextMenu,
     setZoom,
     setPan,
-    moveTable,
-    assignGuestToTable,
     moveGuestOnCanvas,
-    detachGuestFromTable,
-    addTable,
     selectTable,
     selectGuest,
     setAlignmentGuides,
     clearAlignmentGuides,
     pushHistory,
-    addQuickGuest,
-    swapGuestSeats,
-    removeTable,
-    removeGuest,
     openContextMenu,
     closeContextMenu,
     toggleTableSelection,
@@ -380,6 +373,18 @@ export function Canvas() {
     clearNewlyAddedTable,
     activeTourId,
   } = useStore();
+
+  // Use synced operations for auto-save to Supabase
+  const {
+    addTable,
+    moveTable,
+    removeTable,
+    addQuickGuest,
+    removeGuest,
+    assignGuestToTable,
+    detachGuestFromTable,
+    swapGuestSeats,
+  } = useSyncToSupabase();
 
   // Mobile menu context for settings
   const { onShowHelp, onStartTour, onSubscribe, canShowEmailButton } = useMobileMenu();

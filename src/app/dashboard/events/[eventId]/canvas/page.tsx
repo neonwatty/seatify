@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { loadEvent } from '@/actions/loadEvent';
 import { CanvasPageClient } from './CanvasPageClient';
 
 interface CanvasPageProps {
@@ -23,35 +24,13 @@ export async function generateMetadata({ params }: CanvasPageProps) {
 
 export default async function CanvasPage({ params }: CanvasPageProps) {
   const { eventId } = await params;
-  const supabase = await createClient();
 
-  // Fetch full event data
-  const { data: event, error } = await supabase
-    .from('events')
-    .select(`
-      *,
-      tables (*),
-      guests (*),
-      constraints (*),
-      venue_elements (*)
-    `)
-    .eq('id', eventId)
-    .single();
+  // Use loadEvent action which properly handles all data including guest profiles
+  const result = await loadEvent(eventId);
 
-  if (error || !event) {
+  if (result.error || !result.data) {
     redirect('/dashboard');
   }
 
-  // Also fetch relationships separately (can't be nested in guests query)
-  const { data: relationships } = await supabase
-    .from('guest_relationships')
-    .select('*')
-    .eq('event_id', eventId);
-
-  return (
-    <CanvasPageClient
-      event={event}
-      relationships={relationships || []}
-    />
-  );
+  return <CanvasPageClient event={result.data} />;
 }

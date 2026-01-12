@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import { DIETARY_OPTIONS, ACCESSIBILITY_OPTIONS } from '../constants/dietaryIcons';
 import type { Guest, RelationshipType } from '../types';
 import { getFullName } from '../types';
@@ -21,7 +22,17 @@ const relationshipTypes: { value: RelationshipType; label: string }[] = [
 ];
 
 export function GuestForm({ guestId, onClose }: GuestFormProps) {
-  const { event, addGuest, updateGuest, removeGuest, addRelationship, removeRelationship, assignGuestToTable } = useStore();
+  const { event } = useStore();
+
+  // Use synced operations for auto-save to Supabase
+  const {
+    addGuest,
+    updateGuest,
+    removeGuest,
+    addRelationship,
+    removeRelationship,
+    assignGuestToTable,
+  } = useSyncToSupabase();
   const existingGuest = guestId ? event.guests.find((g) => g.id === guestId) : null;
 
   const firstNameInputRef = useRef<HTMLInputElement>(null);

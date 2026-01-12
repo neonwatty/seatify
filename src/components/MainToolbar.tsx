@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import { useIsMobile } from '../hooks/useResponsive';
 import { ViewToggle } from './ViewToggle';
 import { MobileToolbarMenu } from './MobileToolbarMenu';
@@ -27,8 +28,6 @@ interface MainToolbarProps {
 export function MainToolbar({ children, onAddGuest, onImport, onExport, showRelationships, onToggleRelationships, onShowHelp, onStartTour, onSubscribe, canShowEmailButton }: MainToolbarProps) {
   const {
     event,
-    addTable,
-    addGuest,
     activeView,
     optimizeSeating,
     resetSeating,
@@ -39,6 +38,9 @@ export function MainToolbar({ children, onAddGuest, onImport, onExport, showRela
     optimizeAnimationEnabled,
     setOptimizeAnimationEnabled,
   } = useStore();
+
+  // Use synced operations for auto-save to Supabase
+  const { addTable, addGuest } = useSyncToSupabase();
   const isMobile = useIsMobile();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showOptimizeDropdown, setShowOptimizeDropdown] = useState(false);
