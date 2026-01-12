@@ -24,11 +24,22 @@
 }
 
 .header-logo {
-  font-family: var(--font-decorative);
   font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-primary);
+  font-weight: 700;
   text-decoration: none;
+  display: flex;
+  align-items: baseline;
+}
+
+.header-logo .logo-seat {
+  color: var(--color-text);
+}
+
+.header-logo .logo-ify {
+  color: var(--color-primary);
+  font-family: var(--font-caveat), cursive;
+  font-size: 1.15em;
+  font-weight: 600;
 }
 
 .header-right {

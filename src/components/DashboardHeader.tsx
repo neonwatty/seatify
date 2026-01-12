@@ -25,7 +25,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     <header className="dashboard-header">
       <div className="header-left">
         <Link href="/dashboard" className="header-logo">
-          Seatify
+          <span className="logo-seat">Seat</span>
+          <span className="logo-ify">ify</span>
         </Link>
       </div>
 
