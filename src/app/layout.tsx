@@ -60,6 +60,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Disable iOS Safari data detectors to prevent automatic date/phone/address linking */}
+        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+      </head>
       <body className={`${nunito.variable} ${caveat.variable}`}>
         {children}
       </body>
