@@ -17,7 +17,7 @@ export function ViewToggle({ showRelationships, onToggleRelationships }: ViewTog
 
   const handleViewChange = (view: 'dashboard' | 'canvas' | 'guests') => {
     if (effectiveEventId) {
-      navigate(`/events/${effectiveEventId}/${view}`);
+      navigate(`/dashboard/events/${effectiveEventId}/${view}`);
     }
   };
 
