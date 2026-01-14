@@ -183,7 +183,7 @@ export function BottomControlSheet({
 
   const handleViewChange = (view: 'canvas' | 'guests' | 'dashboard') => {
     setActiveView(view);
-    navigate(`/events/${event.id}/${view}`);
+    navigate(`/dashboard/events/${event.id}/${view}`);
     handleClose();
   };
 
@@ -375,7 +375,7 @@ export function BottomControlSheet({
               <button
                 className="sheet-btn"
                 onClick={() => {
-                  navigate('/events');
+                  navigate('/dashboard');
                   handleClose();
                 }}
               >

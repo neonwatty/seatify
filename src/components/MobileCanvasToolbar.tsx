@@ -60,7 +60,7 @@ export function MobileCanvasToolbar({
   }, []);
 
   const handleBack = () => {
-    navigate('/events');
+    navigate('/dashboard');
   };
 
   const handleNameClick = () => {
@@ -244,7 +244,7 @@ export function MobileCanvasToolbar({
               <button
                 className="settings-item guests-btn"
                 onClick={() => {
-                  navigate(`/events/${event.id}/guests`);
+                  navigate(`/dashboard/events/${event.id}/guests`);
                   setShowSettings(false);
                 }}
               >
