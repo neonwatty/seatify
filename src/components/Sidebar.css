@@ -27,12 +27,68 @@
   align-items: center;
   padding: 1.25rem;
   border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .sidebar-header h2 {
   margin: 0;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
+}
+
+/* Sidebar Tabs */
+.sidebar-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--color-bg-secondary);
+  padding: 0.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.sidebar-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.sidebar-tab:hover {
+  color: var(--color-text);
+  background: var(--color-bg-hover);
+}
+
+.sidebar-tab.active {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
 }
 
 .sidebar-toggle {

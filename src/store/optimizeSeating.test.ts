@@ -291,7 +291,7 @@ describe('optimizeSeating', () => {
 
       // No guests should be seated (pending guests might be seated depending on impl)
       const event = useStore.getState().event;
-      const seatedGuests = event.guests.filter(g => g.tableId !== undefined);
+      const _seatedGuests = event.guests.filter(g => g.tableId !== undefined);
       // At minimum, declined guests should not be seated
       const declinedSeated = event.guests.filter(g => g.rsvpStatus === 'declined' && g.tableId);
       expect(declinedSeated.length).toBe(0);

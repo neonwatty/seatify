@@ -42,7 +42,7 @@ export function UpdatesPopup({ isOpen, onClose }: UpdatesPopupProps) {
       <div className="updates-overlay" onClick={onClose}>
         <div className="updates-popup" onClick={(e) => e.stopPropagation()}>
           <div className="updates-header">
-            <h2>What's New</h2>
+            <h2>What&apos;s New</h2>
             <button className="updates-close" onClick={onClose} aria-label="Close">
               ×
             </button>
@@ -112,7 +112,7 @@ export function UpdatesButton({ variant = 'header', onMenuClick }: UpdatesButton
               <path fill="currentColor" d="M9.5 14.25l-5.5 5.5v-3.5l3.25-3.25L4 9.75v-3.5l5.5 5.5 5.5-5.5v3.5l-3.25 3.25L15 16.75v3.5l-5.5-5.5z M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9z"/>
             </svg>
           </span>
-          <span>What's New</span>
+          <span>What&apos;s New</span>
         </button>
         <UpdatesPopup isOpen={isOpen} onClose={() => setIsOpen(false)} />
       </>

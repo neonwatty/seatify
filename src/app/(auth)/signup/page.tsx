@@ -79,7 +79,7 @@ export default function SignupPage() {
           <div className="auth-brand-content">
             <div className="auth-brand-logo">Seatify</div>
             <h2 className="auth-brand-tagline">
-              You're almost there!
+              You&apos;re almost there!
             </h2>
             <p className="auth-brand-description">
               Just one more step to start creating beautiful seating arrangements
@@ -97,7 +97,7 @@ export default function SignupPage() {
               <div className="auth-success-icon">✓</div>
               <h1>Check your email</h1>
               <p>
-                We've sent a confirmation link to <strong>{email}</strong>.
+                We&apos;ve sent a confirmation link to <strong>{email}</strong>.
                 Click the link to activate your account.
               </p>
             </div>
@@ -216,6 +216,12 @@ export default function SignupPage() {
           <p className="auth-footer">
             Already have an account? <Link href="/login">Sign in</Link>
           </p>
+
+          <div className="auth-demo-link">
+            <Link href="/demo">
+              Or try the demo without signing up
+            </Link>
+          </div>
         </div>
       </div>
     </div>

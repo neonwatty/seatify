@@ -13,7 +13,7 @@ export function PrivacyPolicy() {
         <section>
           <h2>Overview</h2>
           <p>
-            Seatify ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy
+            Seatify (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy
             explains how we handle information when you use our seating chart application.
           </p>
         </section>
@@ -102,7 +102,7 @@ export function PrivacyPolicy() {
           <h2>Your Rights</h2>
           <p>You have the right to:</p>
           <ul>
-            <li>Access your data (it's stored locally on your device)</li>
+            <li>Access your data (it&apos;s stored locally on your device)</li>
             <li>Delete your data (clear browser localStorage)</li>
             <li>Unsubscribe from email updates at any time</li>
             <li>Request information about data we hold</li>
@@ -110,7 +110,7 @@ export function PrivacyPolicy() {
         </section>
 
         <section>
-          <h2>Children's Privacy</h2>
+          <h2>Children&apos;s Privacy</h2>
           <p>
             Seatify is not intended for children under 13. We do not knowingly collect information
             from children under 13.
@@ -121,7 +121,7 @@ export function PrivacyPolicy() {
           <h2>Changes to This Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. We will notify you of any changes
-            by posting the new policy on this page and updating the "Last updated" date.
+            by posting the new policy on this page and updating the &quot;Last updated&quot; date.
           </p>
         </section>
 

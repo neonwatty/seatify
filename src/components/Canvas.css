@@ -5,6 +5,7 @@
   min-width: 0;
   background: var(--color-bg-secondary);
   position: relative;
+  overflow: hidden; /* Prevent toolbar from overflowing into sidebar */
 }
 
 .canvas-toolbar {

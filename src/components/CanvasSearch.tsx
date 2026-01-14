@@ -223,7 +223,7 @@ export function CanvasSearch() {
 
         {query && results.length === 0 && (
           <div className="search-empty">
-            No results found for "{query}"
+            No results found for &quot;{query}&quot;
           </div>
         )}
 

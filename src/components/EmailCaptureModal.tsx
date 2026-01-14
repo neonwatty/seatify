@@ -82,8 +82,8 @@ export function EmailCaptureModal({ onClose, onSuccess, source = 'landing' }: Em
                 <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h2>You're subscribed!</h2>
-            <p>Thanks! We'll keep you updated on new features.</p>
+            <h2>You&apos;re subscribed!</h2>
+            <p>Thanks! We&apos;ll keep you updated on new features.</p>
           </div>
         ) : (
           <>
@@ -101,7 +101,7 @@ export function EmailCaptureModal({ onClose, onSuccess, source = 'landing' }: Em
 
             <form onSubmit={handleSubmit}>
               <p className="modal-description">
-                We'll email you when we ship something new. No spam, unsubscribe anytime.
+                We&apos;ll email you when we ship something new. No spam, unsubscribe anytime.
               </p>
 
               <div className="form-row">

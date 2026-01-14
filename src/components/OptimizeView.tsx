@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import type { Guest, Table, Constraint } from '../types';
 import { getFullName } from '../types';
 import { EmailCaptureModal } from './EmailCaptureModal';
+import { ConstraintForm } from './ConstraintForm';
 import { trackOptimizerRun, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import {
   shouldShowEmailCapture,
@@ -26,7 +28,8 @@ interface OptimizationResult {
 }
 
 export function OptimizeView() {
-  const { event, assignGuestToTable, addConstraint, removeConstraint } = useStore();
+  const { event } = useStore();
+  const { assignGuestToTable, addConstraint, removeConstraint } = useSyncToSupabase();
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [newConstraint, setNewConstraint] = useState({
@@ -35,6 +38,23 @@ export function OptimizeView() {
     priority: 'preferred' as Constraint['priority'],
   });
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [showConstraintForm, setShowConstraintForm] = useState(false);
+  const [editingConstraintId, setEditingConstraintId] = useState<string | null>(null);
+
+  const handleOpenAddConstraint = () => {
+    setEditingConstraintId(null);
+    setShowConstraintForm(true);
+  };
+
+  const handleEditConstraint = (constraintId: string) => {
+    setEditingConstraintId(constraintId);
+    setShowConstraintForm(true);
+  };
+
+  const handleCloseConstraintForm = () => {
+    setShowConstraintForm(false);
+    setEditingConstraintId(null);
+  };
 
   const unassignedGuests = event.guests.filter(g => !g.tableId && g.rsvpStatus !== 'declined');
   const totalCapacity = event.tables.reduce((sum, t) => sum + t.capacity, 0);
@@ -154,7 +174,7 @@ export function OptimizeView() {
           <div className="setting-row">
             <label>
               <input type="checkbox" defaultChecked />
-              Respect "avoid" relationships
+              Respect &quot;avoid&quot; relationships
             </label>
           </div>
           <div className="setting-row">
@@ -352,7 +372,16 @@ export function OptimizeView() {
         </div>
 
         <div className="constraint-list">
-          <h3>Active Constraints</h3>
+          <div className="constraint-list-header">
+            <h3>Active Constraints</h3>
+            <button
+              className="add-constraint-btn"
+              onClick={handleOpenAddConstraint}
+              title="Add new constraint"
+            >
+              + Add
+            </button>
+          </div>
           {event.constraints.length === 0 ? (
             <p className="empty">No constraints defined yet.</p>
           ) : (
@@ -370,12 +399,22 @@ export function OptimizeView() {
                     return <span key={id} className="guest-name">{guest ? getFullName(guest) : ''}</span>;
                   })}
                 </div>
-                <button
-                  className="remove-btn"
-                  onClick={() => removeConstraint(constraint.id)}
-                >
-                  ×
-                </button>
+                <div className="constraint-actions">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEditConstraint(constraint.id)}
+                    title="Edit constraint"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeConstraint(constraint.id)}
+                    title="Remove constraint"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -387,6 +426,13 @@ export function OptimizeView() {
           onClose={() => handleEmailCaptureClose(false)}
           onSuccess={() => handleEmailCaptureClose(true)}
           source="value_moment"
+        />
+      )}
+
+      {showConstraintForm && (
+        <ConstraintForm
+          constraintId={editingConstraintId ?? undefined}
+          onClose={handleCloseConstraintForm}
         />
       )}
     </div>

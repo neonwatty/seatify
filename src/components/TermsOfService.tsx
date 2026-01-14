@@ -13,7 +13,7 @@ export function TermsOfService() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using Seatify ("the Service"), you agree to be bound by these Terms of
+            By accessing or using Seatify (&quot;the Service&quot;), you agree to be bound by these Terms of
             Service. If you do not agree to these terms, please do not use the Service.
           </p>
         </section>
@@ -69,7 +69,7 @@ export function TermsOfService() {
         <section>
           <h2>6. Service Availability</h2>
           <p>
-            We strive to maintain the Service's availability but do not guarantee uninterrupted
+            We strive to maintain the Service&apos;s availability but do not guarantee uninterrupted
             access. We may:
           </p>
           <ul>
@@ -82,7 +82,7 @@ export function TermsOfService() {
         <section>
           <h2>7. Disclaimer of Warranties</h2>
           <p>
-            THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND,
+            THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND,
             EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:
           </p>
           <ul>
