@@ -222,7 +222,7 @@ export function GuestSurveyPage() {
           <div className="success-icon">✓</div>
           <h2>Thank You!</h2>
           <p>Your responses have been recorded.</p>
-          <p className="subtext">We'll use your preferences to create the best seating arrangement.</p>
+          <p className="subtext">We&apos;ll use your preferences to create the best seating arrangement.</p>
         </div>
       )}
 

@@ -144,7 +144,7 @@ export function EventListView() {
 
       {!canCreateEvent() && (
         <div className="limit-warning">
-          You've reached the maximum of {MAX_EVENTS} events. Delete an event to create a new one.
+          You&apos;ve reached the maximum of {MAX_EVENTS} events. Delete an event to create a new one.
         </div>
       )}
 

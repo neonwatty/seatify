@@ -228,7 +228,7 @@ export function LandingPage() {
               <div className="feature-content">
                 <h3>Smart Seating</h3>
                 <p>
-                  Keep partners together, separate people who shouldn't sit near
+                  Keep partners together, separate people who shouldn&apos;t sit near
                   each other. The optimizer handles the relationship math.
                 </p>
                 <button
@@ -377,7 +377,7 @@ export function LandingPage() {
         {/* Email Capture */}
         <section className="email-capture">
           <h2>Get Updates</h2>
-          <p className="email-description">We'll email you when we ship something new. No spam.</p>
+          <p className="email-description">We&apos;ll email you when we ship something new. No spam.</p>
           <button
             className="subscribe-button"
             onClick={() => setShowEmailCapture(true)}

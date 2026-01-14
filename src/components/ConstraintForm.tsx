@@ -127,8 +127,8 @@ export function ConstraintForm({ constraintId, onClose }: ConstraintFormProps) {
     .map(id => event.guests.find(g => g.id === id))
     .filter(Boolean);
 
-  const currentConstraintType = constraintTypes.find(t => t.value === formData.type);
-  const currentPriority = priorityOptions.find(p => p.value === formData.priority);
+  const _currentConstraintType = constraintTypes.find(t => t.value === formData.type);
+  const _currentPriority = priorityOptions.find(p => p.value === formData.priority);
 
   return (
     <div className="modal-overlay" onClick={onClose}>

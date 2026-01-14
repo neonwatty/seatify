@@ -136,7 +136,7 @@ export function DuplicateReviewStep({ state, dispatch }: DuplicateReviewStepProp
                     onChange={() => handleResolutionChange(index, 'skip')}
                   />
                   <span className="option-label">Skip</span>
-                  <span className="option-desc">Don't import this guest</span>
+                  <span className="option-desc">Don&apos;t import this guest</span>
                 </label>
 
                 <label className={`resolution-option ${resolution === 'merge' ? 'selected' : ''}`}>

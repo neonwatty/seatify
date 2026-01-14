@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import {
   loadUserPreferences,
@@ -18,12 +18,12 @@ import type { TourId } from '@/types';
  */
 export function usePreferencesSync(isAuthenticated: boolean) {
   const store = useStore();
-  const hasLoadedRef = useRef(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const previousPrefsRef = useRef<Partial<UserPreferences>>({});
 
   // Load preferences from Supabase on mount
   useEffect(() => {
-    if (!isAuthenticated || hasLoadedRef.current) return;
+    if (!isAuthenticated || hasLoaded) return;
 
     const loadPreferences = async () => {
       const result = await loadUserPreferences();
@@ -86,11 +86,11 @@ export function usePreferencesSync(isAuthenticated: boolean) {
         };
       }
 
-      hasLoadedRef.current = true;
+      setHasLoaded(true);
     };
 
     loadPreferences();
-  }, [isAuthenticated, store]);
+  }, [isAuthenticated, hasLoaded, store]);
 
   // Sync individual preference changes to Supabase
   const syncPreference = useCallback(async <K extends keyof UserPreferences>(
@@ -107,7 +107,7 @@ export function usePreferencesSync(isAuthenticated: boolean) {
 
   // Subscribe to store changes and sync to Supabase
   useEffect(() => {
-    if (!isAuthenticated || !hasLoadedRef.current) return;
+    if (!isAuthenticated || !hasLoaded) return;
 
     const unsubscribe = useStore.subscribe((state, prevState) => {
       // Check for theme change
@@ -142,10 +142,10 @@ export function usePreferencesSync(isAuthenticated: boolean) {
     });
 
     return unsubscribe;
-  }, [isAuthenticated, syncPreference]);
+  }, [isAuthenticated, syncPreference, hasLoaded]);
 
   return {
-    hasLoaded: hasLoadedRef.current,
+    hasLoaded,
     syncPreference,
   };
 }

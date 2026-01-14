@@ -60,7 +60,7 @@ export function ColumnMappingStep({ state, dispatch }: ColumnMappingStepProps) {
   return (
     <div className="column-mapping-step">
       <div className="step-description">
-        <p>Map your file columns to guest fields. We've auto-detected some mappings for you.</p>
+        <p>Map your file columns to guest fields. We&apos;ve auto-detected some mappings for you.</p>
         {missingFields.length > 0 && (
           <p className="warning">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -132,7 +132,7 @@ export function ColumnMappingStep({ state, dispatch }: ColumnMappingStepProps) {
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
-          Full names will be automatically split on the first space (e.g., "John Smith" → First: "John", Last: "Smith")
+          Full names will be automatically split on the first space (e.g., &quot;John Smith&quot; → First: &quot;John&quot;, Last: &quot;Smith&quot;)
         </div>
       )}
     </div>

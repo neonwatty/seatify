@@ -174,7 +174,7 @@ export function OptimizeView() {
           <div className="setting-row">
             <label>
               <input type="checkbox" defaultChecked />
-              Respect "avoid" relationships
+              Respect &quot;avoid&quot; relationships
             </label>
           </div>
           <div className="setting-row">

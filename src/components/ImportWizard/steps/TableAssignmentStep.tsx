@@ -272,7 +272,7 @@ export function TableAssignmentStep({ state, dispatch }: TableAssignmentStepProp
                     <line x1="12" y1="9" x2="12" y2="13" />
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
-                  No group data found. Make sure you mapped a "Group" column, or use a
+                  No group data found. Make sure you mapped a &quot;Group&quot; column, or use a
                   different strategy.
                 </div>
               )}

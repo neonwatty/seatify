@@ -144,7 +144,7 @@ export default function LoginPage() {
           </button>
 
           <p className="auth-footer">
-            Don't have an account? <Link href="/signup">Sign up</Link>
+            Don&apos;t have an account? <Link href="/signup">Sign up</Link>
           </p>
 
           <div className="auth-demo-link">

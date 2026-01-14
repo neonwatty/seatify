@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { DEMO_EVENT_ID } from '@/lib/constants'
+import { DEMO_EVENT_ID as _DEMO_EVENT_ID } from '@/lib/constants'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
