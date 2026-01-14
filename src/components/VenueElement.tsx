@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { useStore } from '../store/useStore';
+import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import type { VenueElement } from '../types';
 import './VenueElement.css';
 
@@ -21,7 +22,8 @@ const VENUE_ICONS: Record<VenueElement['type'], string> = {
 };
 
 export function VenueElementComponent({ element, isSelected }: VenueElementComponentProps) {
-  const { selectVenueElement, removeVenueElement } = useStore();
+  const { selectVenueElement } = useStore();
+  const { removeVenueElement } = useSyncToSupabase();
 
   const { attributes, listeners, setNodeRef, isDragging, transform } = useDraggable({
     id: element.id,

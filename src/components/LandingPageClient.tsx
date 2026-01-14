@@ -10,6 +10,7 @@ import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../util
 import { captureUtmParams } from '../utils/utm';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
 import type { TourId } from '../data/tourRegistry';
+import { DEMO_EVENT_ID } from '../lib/constants';
 
 // SVG Icons
 const HeartIcon = () => (
@@ -177,6 +178,12 @@ export function LandingPageClient() {
     router.push('/dashboard');
   };
 
+  const handleViewDemo = () => {
+    trackCTAClick('demo');
+    trackFunnelStep('demo_view');
+    router.push(`/dashboard/events/${DEMO_EVENT_ID}/canvas`);
+  };
+
   // Handle "See how it works" clicks - navigates to app with pending tour
   const handleFeatureTourClick = (tourId: TourId) => {
     if (typeof window !== 'undefined') {
@@ -239,9 +246,14 @@ export function LandingPageClient() {
             Create beautiful seating plans with drag-and-drop simplicity. Our smart seating plan generator handles guest relationships automatically.
           </p>
 
-          <button className="cta-button" onClick={handleEnterApp}>
-            Start Planning Free
-          </button>
+          <div className="cta-button-group">
+            <button className="cta-button" onClick={handleEnterApp}>
+              Start Planning Free
+            </button>
+            <button className="demo-button" onClick={handleViewDemo}>
+              View Demo Event
+            </button>
+          </div>
 
           <div className="trust-badges">
             <div className="trust-badge">

@@ -279,6 +279,7 @@ export function trackEventCreatedConversion(eventType: string): void {
 export type FunnelStage =
   | 'landing_view'      // User views landing page
   | 'cta_click'         // User clicks CTA
+  | 'demo_view'         // User views demo event
   | 'app_entry'         // User enters app
   | 'event_created'     // User creates first event
   | 'first_guest'       // User adds first guest

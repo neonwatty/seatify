@@ -9,6 +9,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   email VARCHAR NOT NULL,
   display_name VARCHAR,
   avatar_url VARCHAR,
+  -- User preferences (synced across devices)
+  theme VARCHAR DEFAULT 'system',
+  event_list_view_mode VARCHAR DEFAULT 'cards',
+  has_completed_onboarding BOOLEAN DEFAULT false,
+  completed_tours TEXT[] DEFAULT '{}',
+  has_used_optimize_button BOOLEAN DEFAULT false,
+  optimize_animation_enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

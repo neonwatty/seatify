@@ -4,7 +4,17 @@ import { useCallback } from 'react';
 import { useStore } from '@/store/useStore';
 import { insertTable, updateTable, deleteTable, type TableInput } from '@/actions/tables';
 import { insertGuests, updateGuests, deleteGuests, insertRelationships, deleteRelationship, type GuestInput } from '@/actions/guests';
-import type { TableShape, Guest, RelationshipType } from '@/types';
+import {
+  insertConstraint,
+  updateConstraint as updateConstraintAction,
+  deleteConstraint as deleteConstraintAction,
+} from '@/actions/constraints';
+import {
+  insertVenueElement,
+  updateVenueElement as updateVenueElementAction,
+  deleteVenueElement as deleteVenueElementAction,
+} from '@/actions/venueElements';
+import type { TableShape, Guest, RelationshipType, Constraint, VenueElement } from '@/types';
 
 /**
  * Hook that provides store actions with automatic Supabase persistence.
@@ -389,6 +399,164 @@ export function useSyncToSupabase() {
     }
   }, [store, eventId, isAuthenticated]);
 
+  // Constraint operations with persistence
+  const addConstraintWithSync = useCallback(async (constraint: Omit<Constraint, 'id'>) => {
+    // Add to local store first (optimistic update)
+    store.addConstraint(constraint);
+
+    // Get the newly added constraint from the store
+    const constraints = useStore.getState().event.constraints;
+    const newConstraint = constraints[constraints.length - 1];
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated && newConstraint) {
+      const result = await insertConstraint(eventId, {
+        id: newConstraint.id,
+        type: newConstraint.type,
+        priority: newConstraint.priority,
+        guestIds: newConstraint.guestIds,
+        description: newConstraint.description,
+      });
+
+      if (result.error) {
+        console.error('Failed to persist constraint:', result.error);
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  const updateConstraintWithSync = useCallback(async (
+    constraintId: string,
+    updates: Partial<Omit<Constraint, 'id'>>
+  ) => {
+    // Update local store first
+    store.updateConstraint(constraintId, updates);
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated) {
+      const result = await updateConstraintAction(eventId, constraintId, {
+        type: updates.type,
+        priority: updates.priority,
+        guestIds: updates.guestIds,
+        description: updates.description,
+      });
+
+      if (result.error) {
+        console.error('Failed to persist constraint update:', result.error);
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  const removeConstraintWithSync = useCallback(async (constraintId: string) => {
+    // Remove from local store first
+    store.removeConstraint(constraintId);
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated) {
+      const result = await deleteConstraintAction(eventId, constraintId);
+
+      if (result.error) {
+        console.error('Failed to delete constraint:', result.error);
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  // Venue element operations with persistence
+  const addVenueElementWithSync = useCallback(async (type: VenueElement['type'], x: number, y: number) => {
+    // Add to local store first
+    store.addVenueElement(type, x, y);
+
+    // Get the newly added element from the store
+    const elements = useStore.getState().event.venueElements;
+    const newElement = elements[elements.length - 1];
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated && newElement) {
+      const result = await insertVenueElement(eventId, {
+        id: newElement.id,
+        type: newElement.type,
+        label: newElement.label || '',
+        x: newElement.x,
+        y: newElement.y,
+        width: newElement.width,
+        height: newElement.height,
+        rotation: newElement.rotation,
+      });
+
+      if (result.error) {
+        console.error('Failed to persist venue element:', result.error);
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  const updateVenueElementWithSync = useCallback(async (
+    elementId: string,
+    updates: Partial<Omit<VenueElement, 'id'>>
+  ) => {
+    // Update local store first
+    store.updateVenueElement(elementId, updates);
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated) {
+      const element = useStore.getState().event.venueElements.find(e => e.id === elementId);
+      if (element) {
+        const result = await updateVenueElementAction(eventId, {
+          id: element.id,
+          type: element.type,
+          label: element.label || '',
+          x: element.x,
+          y: element.y,
+          width: element.width,
+          height: element.height,
+          rotation: element.rotation,
+        });
+
+        if (result.error) {
+          console.error('Failed to persist venue element update:', result.error);
+        }
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  const removeVenueElementWithSync = useCallback(async (elementId: string) => {
+    // Remove from local store first
+    store.removeVenueElement(elementId);
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated) {
+      const result = await deleteVenueElementAction(eventId, elementId);
+
+      if (result.error) {
+        console.error('Failed to delete venue element:', result.error);
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
+  const moveVenueElementWithSync = useCallback(async (elementId: string, x: number, y: number) => {
+    // Move in local store first
+    store.moveVenueElement(elementId, x, y);
+
+    // Persist to Supabase if authenticated
+    if (isAuthenticated) {
+      const element = useStore.getState().event.venueElements.find(e => e.id === elementId);
+      if (element) {
+        const result = await updateVenueElementAction(eventId, {
+          id: element.id,
+          type: element.type,
+          label: element.label || '',
+          x: element.x,
+          y: element.y,
+          width: element.width,
+          height: element.height,
+          rotation: element.rotation,
+        });
+
+        if (result.error) {
+          console.error('Failed to persist venue element move:', result.error);
+        }
+      }
+    }
+  }, [store, eventId, isAuthenticated]);
+
   return {
     // Synced table operations
     addTable: addTableWithSync,
@@ -407,6 +575,17 @@ export function useSyncToSupabase() {
     swapGuestSeats: swapGuestSeatsWithSync,
     addRelationship: addRelationshipWithSync,
     removeRelationship: removeRelationshipWithSync,
+
+    // Synced constraint operations
+    addConstraint: addConstraintWithSync,
+    updateConstraint: updateConstraintWithSync,
+    removeConstraint: removeConstraintWithSync,
+
+    // Synced venue element operations
+    addVenueElement: addVenueElementWithSync,
+    updateVenueElement: updateVenueElementWithSync,
+    removeVenueElement: removeVenueElementWithSync,
+    moveVenueElement: moveVenueElementWithSync,
 
     // Original store for non-synced operations
     store,

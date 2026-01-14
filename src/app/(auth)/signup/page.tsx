@@ -216,6 +216,12 @@ export default function SignupPage() {
           <p className="auth-footer">
             Already have an account? <Link href="/login">Sign in</Link>
           </p>
+
+          <div className="auth-demo-link">
+            <Link href="/demo">
+              Or try the demo without signing up
+            </Link>
+          </div>
         </div>
       </div>
     </div>

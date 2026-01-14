@@ -4,8 +4,11 @@ import { useIsMobile } from '../hooks/useResponsive';
 import { GuestChip } from './GuestChip';
 import { GuestForm } from './GuestForm';
 import { GroupLegend } from './GroupLegend';
+import { ConstraintsPanel } from './ConstraintsPanel';
 import { getFullName } from '../types';
 import './Sidebar.css';
+
+type SidebarTab = 'guests' | 'constraints';
 
 export function Sidebar() {
   const {
@@ -19,6 +22,7 @@ export function Sidebar() {
     hideAllGroups,
   } = useStore();
   const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState<SidebarTab>('guests');
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGroup, setFilterGroup] = useState<string>('all');
@@ -50,10 +54,10 @@ export function Sidebar() {
     return (
       <button className="sidebar-toggle-collapsed" onClick={toggleSidebar}>
         <span className="toggle-icon">◀</span>
-        <span className="toggle-label">Guests</span>
-        <span className="toggle-count">{stats.total}</span>
+        <span className="toggle-label">{activeTab === 'guests' ? 'Guests' : 'Rules'}</span>
+        <span className="toggle-count">{activeTab === 'guests' ? stats.total : event.constraints.length}</span>
         <span className="toggle-stats">
-          {stats.total - stats.assigned} unassigned
+          {activeTab === 'guests' ? `${stats.total - stats.assigned} unassigned` : `${event.constraints.length} constraints`}
         </span>
       </button>
     );
@@ -67,120 +71,142 @@ export function Sidebar() {
       )}
       <div className={`sidebar ${isMobile && sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-        <h2>Guests</h2>
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
-          ▶
-        </button>
-      </div>
-
-      <div className="sidebar-stats">
-        <div className="stat">
-          <span className="stat-value">{stats.total}</span>
-          <span className="stat-label">Total</span>
-        </div>
-        <div className="stat confirmed">
-          <span className="stat-value">{stats.confirmed}</span>
-          <span className="stat-label">Confirmed</span>
-        </div>
-        <div className="stat pending">
-          <span className="stat-value">{stats.pending}</span>
-          <span className="stat-label">Pending</span>
-        </div>
-        <div className="stat">
-          <span className="stat-value">{stats.assigned}</span>
-          <span className="stat-label">Seated</span>
-        </div>
-      </div>
-
-      <div className="sidebar-controls">
-        <input
-          type="text"
-          placeholder="Search guests..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-
-        <div className="filter-row">
-          <select
-            value={filterGroup}
-            onChange={(e) => setFilterGroup(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Groups</option>
-            {groups.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">All Status</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="pending">Pending</option>
-            <option value="declined">Declined</option>
-          </select>
-        </div>
-
-        <button className="add-guest-btn" onClick={() => setShowAddGuest(true)}>
-          + Add Guest
-        </button>
-      </div>
-
-      <div className="guest-lists">
-        <div className="guest-list-section">
-          <h3>Unassigned ({unassignedGuests.length})</h3>
-          {unassignedGuests.length > 0 && (
-            <p className="drag-hint">Drag guests to tables to assign seats</p>
-          )}
-          <div className="guest-list">
-            {unassignedGuests.map((guest) => (
-              <GuestChip
-                key={guest.id}
-                guest={guest}
-                onClick={() => selectGuest(guest.id)}
-              />
-            ))}
-            {unassignedGuests.length === 0 && (
-              <p className="empty-message">
-                {filteredGuests.length === 0
-                  ? 'No guests match your filters'
-                  : 'All guests are assigned!'}
-              </p>
-            )}
+          <div className="sidebar-tabs">
+            <button
+              className={`sidebar-tab ${activeTab === 'guests' ? 'active' : ''}`}
+              onClick={() => setActiveTab('guests')}
+            >
+              Guests
+            </button>
+            <button
+              className={`sidebar-tab ${activeTab === 'constraints' ? 'active' : ''}`}
+              onClick={() => setActiveTab('constraints')}
+            >
+              Rules
+              {event.constraints.length > 0 && (
+                <span className="tab-badge">{event.constraints.length}</span>
+              )}
+            </button>
           </div>
+          <button className="sidebar-toggle" onClick={toggleSidebar}>
+            ▶
+          </button>
         </div>
 
-        <div className="guest-list-section">
-          <h3>Assigned ({assignedGuests.length})</h3>
-          <div className="guest-list">
-            {assignedGuests.map((guest) => {
-              const table = event.tables.find((t) => t.id === guest.tableId);
-              return (
-                <div key={guest.id} className="assigned-guest-row">
-                  <GuestChip guest={guest} onClick={() => selectGuest(guest.id)} />
-                  <span className="table-badge">{table?.name}</span>
-                </div>
-              );
-            })}
+      {activeTab === 'guests' ? (
+        <>
+          <div className="sidebar-stats">
+            <div className="stat">
+              <span className="stat-value">{stats.total}</span>
+              <span className="stat-label">Total</span>
+            </div>
+            <div className="stat confirmed">
+              <span className="stat-value">{stats.confirmed}</span>
+              <span className="stat-label">Confirmed</span>
+            </div>
+            <div className="stat pending">
+              <span className="stat-value">{stats.pending}</span>
+              <span className="stat-label">Pending</span>
+            </div>
+            <div className="stat">
+              <span className="stat-value">{stats.assigned}</span>
+              <span className="stat-label">Seated</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <GroupLegend
-        guests={event.guests}
-        visibleGroups={visibleGroups}
-        onToggleGroup={toggleGroupVisibility}
-        onShowAll={showAllGroups}
-        onHideAll={hideAllGroups}
-      />
+          <div className="sidebar-controls">
+            <input
+              type="text"
+              placeholder="Search guests..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
 
-      {showAddGuest && <GuestForm onClose={() => setShowAddGuest(false)} />}
+            <div className="filter-row">
+              <select
+                value={filterGroup}
+                onChange={(e) => setFilterGroup(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Groups</option>
+                {groups.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Status</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending</option>
+                <option value="declined">Declined</option>
+              </select>
+            </div>
+
+            <button className="add-guest-btn" onClick={() => setShowAddGuest(true)}>
+              + Add Guest
+            </button>
+          </div>
+
+          <div className="guest-lists">
+            <div className="guest-list-section">
+              <h3>Unassigned ({unassignedGuests.length})</h3>
+              {unassignedGuests.length > 0 && (
+                <p className="drag-hint">Drag guests to tables to assign seats</p>
+              )}
+              <div className="guest-list">
+                {unassignedGuests.map((guest) => (
+                  <GuestChip
+                    key={guest.id}
+                    guest={guest}
+                    onClick={() => selectGuest(guest.id)}
+                  />
+                ))}
+                {unassignedGuests.length === 0 && (
+                  <p className="empty-message">
+                    {filteredGuests.length === 0
+                      ? 'No guests match your filters'
+                      : 'All guests are assigned!'}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="guest-list-section">
+              <h3>Assigned ({assignedGuests.length})</h3>
+              <div className="guest-list">
+                {assignedGuests.map((guest) => {
+                  const table = event.tables.find((t) => t.id === guest.tableId);
+                  return (
+                    <div key={guest.id} className="assigned-guest-row">
+                      <GuestChip guest={guest} onClick={() => selectGuest(guest.id)} />
+                      <span className="table-badge">{table?.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <GroupLegend
+            guests={event.guests}
+            visibleGroups={visibleGroups}
+            onToggleGroup={toggleGroupVisibility}
+            onShowAll={showAllGroups}
+            onHideAll={hideAllGroups}
+          />
+
+          {showAddGuest && <GuestForm onClose={() => setShowAddGuest(false)} />}
+        </>
+      ) : (
+        <ConstraintsPanel />
+      )}
       </div>
     </>
   );

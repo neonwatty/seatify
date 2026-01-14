@@ -125,6 +125,9 @@ interface AppState extends OnboardingState {
   // Theme
   theme: Theme;
 
+  // Demo mode - when true, disables write operations
+  isDemo: boolean;
+
   // Undo/Redo history
   history: HistoryEntry[];
   historyIndex: number;
@@ -167,6 +170,9 @@ interface AppState extends OnboardingState {
   // Fade animation state
   fadingOutGuests: FadingOutGuest[];
   optimizeAnimationEnabled: boolean;
+
+  // Actions - Demo Mode
+  setDemoMode: (isDemo: boolean) => void;
 
   // Actions - Event Management (multi-event)
   createEvent: (data?: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => string;
@@ -211,6 +217,7 @@ interface AppState extends OnboardingState {
 
   // Actions - Constraints
   addConstraint: (constraint: Omit<Constraint, 'id'>) => void;
+  updateConstraint: (id: string, updates: Partial<Omit<Constraint, 'id'>>) => void;
   removeConstraint: (id: string) => void;
 
   // Actions - Survey
@@ -313,6 +320,9 @@ interface AppState extends OnboardingState {
   setFadingOutGuests: (guests: FadingOutGuest[]) => void;
   clearFadingOutGuests: () => void;
   setOptimizeAnimationEnabled: (enabled: boolean) => void;
+
+  // Actions - Preference Sync
+  setHasUsedOptimizeButton: () => void;
 }
 
 const createDefaultEvent = (): Event => {
@@ -676,6 +686,7 @@ export const useStore = create<AppState>()(
       eventListViewMode: 'cards',
       sidebarOpen: false,
       theme: 'system',
+      isDemo: false,
       visibleGroups: 'all',
       contextMenu: {
         isOpen: false,
@@ -1269,6 +1280,14 @@ export const useStore = create<AppState>()(
           constraints: [...event.constraints, { ...constraint, id: uuidv4() }],
         }))),
 
+      updateConstraint: (id, updates) =>
+        set((state) => syncEventUpdate(state, (event) => ({
+          ...event,
+          constraints: event.constraints.map((c) =>
+            c.id === id ? { ...c, ...updates } : c
+          ),
+        }))),
+
       removeConstraint: (id) =>
         set((state) => syncEventUpdate(state, (event) => ({
           ...event,
@@ -1748,6 +1767,7 @@ export const useStore = create<AppState>()(
 
       // Theme actions
       setTheme: (theme) => set({ theme }),
+      setDemoMode: (isDemo) => set({ isDemo }),
       cycleTheme: () =>
         set((state) => {
           const themes: Theme[] = ['light', 'dark', 'system'];
@@ -2212,6 +2232,9 @@ export const useStore = create<AppState>()(
       clearFadingOutGuests: () => set({ fadingOutGuests: [] }),
 
       setOptimizeAnimationEnabled: (enabled: boolean) => set({ optimizeAnimationEnabled: enabled }),
+
+      // Preference sync action
+      setHasUsedOptimizeButton: () => set({ hasUsedOptimizeButton: true }),
     };
     },
     {

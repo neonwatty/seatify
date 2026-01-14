@@ -24,7 +24,7 @@ interface HeaderProps {
 export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId?: string }>();
-  const { event, setEventName, theme, cycleTheme, currentEventId, isTourComplete, completedTours } = useStore();
+  const { event, setEventName, theme, cycleTheme, currentEventId, isTourComplete, completedTours, isDemo } = useStore();
 
   // Check if user is new (hasn't completed any tours)
   const isNewUser = completedTours.size === 0;
@@ -224,12 +224,16 @@ export function Header({ onLogoClick, onShowHelp, onStartTour }: HeaderProps) {
         </button>
         {isInsideEvent && (
           <div className="event-info">
-            <input
-              type="text"
-              value={event.name}
-              onChange={(e) => setEventName(e.target.value)}
-              className="event-name-input"
-            />
+            {isDemo ? (
+              <span className="event-name-display demo-name">{event.name}</span>
+            ) : (
+              <input
+                type="text"
+                value={event.name}
+                onChange={(e) => setEventName(e.target.value)}
+                className="event-name-input"
+              />
+            )}
           </div>
         )}
       </div>

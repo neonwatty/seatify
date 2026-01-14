@@ -311,6 +311,26 @@
   text-decoration: underline;
 }
 
+/* Demo link */
+.auth-demo-link {
+  text-align: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.auth-demo-link a {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.auth-demo-link a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
 /* Success message for signup */
 .auth-success-icon {
   width: 80px;

@@ -159,6 +159,14 @@
   margin: 0 auto;
 }
 
+/* Canvas page needs full width - override dashboard constraints on desktop */
+@media (min-width: 769px) {
+  .dashboard-main:has(.event-layout) {
+    max-width: none;
+    padding: 0;
+  }
+}
+
 /* ========================================
    Events Page - Clean List View
    ======================================== */
