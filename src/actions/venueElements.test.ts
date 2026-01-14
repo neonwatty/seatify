@@ -285,7 +285,7 @@ describe('Venue Element Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertVenueElement('test-event-id', {
-        type: 'dance_floor',
+        type: 'dance-floor',
         label: 'Dance Floor',
         x: 300,
         y: 300,
@@ -339,7 +339,7 @@ describe('Venue Element Server Actions', () => {
 
     it('should handle batch insertion failure', async () => {
       const mockClient = createBatchMockClient({
-        insertBatchResult: { data: null, error: { message: 'Batch insert error' } },
+        insertBatchResult: { data: [] as unknown[], error: { message: 'Batch insert error' } },
       });
       mockedCreateClient.mockResolvedValue(mockClient as never);
 

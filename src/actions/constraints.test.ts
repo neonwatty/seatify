@@ -29,7 +29,7 @@ const mockEvent = {
 const mockConstraint = {
   id: 'test-constraint-id',
   event_id: 'test-event-id',
-  constraint_type: 'seat_together',
+  constraint_type: 'same_table',
   priority: 'required',
   description: null,
 };
@@ -133,14 +133,14 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('test-event-id', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: ['guest-1', 'guest-2'],
       });
 
       expect(result.error).toBeUndefined();
       expect(result.data).toBeDefined();
-      expect(result.data?.type).toBe('seat_together');
+      expect(result.data?.type).toBe('same_table');
       expect(result.data?.guestIds).toEqual(['guest-1', 'guest-2']);
       expect(mockedRevalidatePath).toHaveBeenCalledWith('/dashboard/events/test-event-id/canvas');
     });
@@ -150,7 +150,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('test-event-id', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: [],
       });
@@ -164,7 +164,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('nonexistent-event', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: [],
       });
@@ -179,7 +179,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('test-event-id', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: [],
       });
@@ -194,7 +194,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('test-event-id', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: ['guest-1'],
       });
@@ -221,7 +221,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await insertConstraint('test-event-id', {
-        type: 'seat_together',
+        type: 'same_table',
         priority: 'required',
         guestIds: ['guest-1'],
         description: 'These are the bridesmaids',
@@ -238,7 +238,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateConstraint('test-event-id', 'test-constraint-id', {
-        type: 'keep_apart',
+        type: 'different_table',
         priority: 'preferred',
       });
 
@@ -276,7 +276,7 @@ describe('Constraint Server Actions', () => {
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateConstraint('test-event-id', 'test-constraint-id', {
-        type: 'keep_apart',
+        type: 'different_table',
       });
 
       expect(result.error).toBe('Update failed');

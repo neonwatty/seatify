@@ -231,14 +231,19 @@ describe('CSV Export', () => {
     });
 
     it('should default RSVP status to pending', () => {
+      // Test with missing rsvpStatus (simulating incomplete data)
       const guests = [
         {
           id: 'guest-1',
           firstName: 'John',
           lastName: 'Doe',
+          rsvpStatus: undefined as unknown as Guest['rsvpStatus'],
           relationships: [],
-        } as Guest,
-      ];
+          interests: [],
+          dietaryRestrictions: [],
+          accessibilityNeeds: [],
+        },
+      ] as Guest[];
 
       const csv = guestsToCSV(guests, []);
 
