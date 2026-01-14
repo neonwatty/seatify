@@ -92,7 +92,7 @@ export function MobileToolbarMenu({
 
   const handleViewChange = (view: ActiveView) => {
     if (currentEventId) {
-      navigate(`/events/${currentEventId}/${view}`);
+      navigate(`/dashboard/events/${currentEventId}/${view}`);
     }
     setActiveView(view);
     setIsOpen(false);
@@ -100,7 +100,7 @@ export function MobileToolbarMenu({
 
   const handleBottomNavClick = (view: 'canvas' | 'guests') => {
     if (currentEventId) {
-      navigate(`/events/${currentEventId}/${view}`);
+      navigate(`/dashboard/events/${currentEventId}/${view}`);
     }
     setActiveView(view);
   };

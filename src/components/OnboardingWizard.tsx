@@ -180,7 +180,7 @@ export function OnboardingWizard({ isOpen, onClose, onComplete, customSteps, tou
 
       // Navigate via router if we have an event ID
       if (currentEventId && requiredView !== 'event-list') {
-        navigate(`/events/${currentEventId}/${requiredView}`);
+        navigate(`/dashboard/events/${currentEventId}/${requiredView}`);
       }
       setActiveView(requiredView);
     }

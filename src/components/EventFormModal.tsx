@@ -62,7 +62,7 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
       trackMilestone('first_event', { event_type: eventData.eventType });
       // Set user property for audience segmentation
       setUserProperties({ hasCreatedEvent: true });
-      navigate(`/events/${newEventId}/canvas`);
+      navigate(`/dashboard/events/${newEventId}/canvas`);
     } else if (event) {
       updateEventMetadata(event.id, eventData);
     }

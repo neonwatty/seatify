@@ -60,7 +60,7 @@ export function EventListView() {
 
   const handleEventClick = (eventId: string) => {
     switchEvent(eventId);
-    navigate(`/events/${eventId}/canvas`);
+    navigate(`/dashboard/events/${eventId}/canvas`);
   };
 
   const handleEditClick = (e: React.MouseEvent, event: Event) => {
