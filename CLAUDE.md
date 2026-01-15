@@ -44,3 +44,28 @@ When asked to "make a plan", spawn at least 3 planning agents in parallel, each 
 ## Pull Requests
 
 After creating a PR, repeatedly check GitHub Actions workflows using `gh run list` and `gh run watch` until they succeed. Debug and fix any failures before considering the PR complete.
+
+## CI Debugging
+
+When CI fails due to test selectors or UI changes, take a **proactive comprehensive approach** rather than fixing errors one at a time:
+
+1. **Before making any fixes**, grep for ALL instances of the old selector/pattern across the entire codebase:
+   ```bash
+   grep -r "old-selector" e2e/ src/
+   ```
+
+2. **Identify all affected files upfront** - don't wait for CI to reveal them one by one
+
+3. **Update all instances in a single commit** when possible
+
+4. **Common selector migration patterns**:
+   - When replacing a UI component, search for its CSS class, aria-label, and test-id across all test files
+   - Check both `src/` (component code) and `e2e/` (test code) directories
+   - Look in test utilities (`e2e/test-utils.ts`) which may have helper functions using old selectors
+
+**Example**: If replacing `.hamburger-btn` with `.ios-tab-bar`, run:
+```bash
+grep -rn "hamburger" e2e/
+grep -rn "hamburger" src/
+```
+Then update ALL matches before pushing, rather than discovering them through repeated CI failures.
