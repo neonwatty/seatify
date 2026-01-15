@@ -1290,15 +1290,8 @@ export function Canvas() {
         >
           {canvasContent}
 
-          {/* Mobile FAB for quick add actions */}
-          <MobileFAB
-            onAddGuest={() => {
-              const centerX = (window.innerWidth / 2 - canvas.panX) / canvas.zoom;
-              const centerY = (window.innerHeight / 2 - canvas.panY) / canvas.zoom;
-              addQuickGuest(centerX, centerY);
-            }}
-            isHidden={!!draggedGuestId || isPanning || guestPanel.isOpen}
-          />
+          {/* Mobile FAB removed - Material Design pattern not used on iOS */}
+          {/* Add actions available via Settings tab and MobileCanvasToolbar */}
 
           {/* Mobile Guest Panel (slide-over from right) */}
           <MobileGuestPanel

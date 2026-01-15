@@ -1,0 +1,72 @@
+/* iOS-Style Tab Bar */
+.ios-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: none; /* Hidden by default, shown on mobile */
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(var(--color-bg-rgb, 255, 255, 255), 0.85);
+  border-top: 0.5px solid var(--color-border);
+  padding: 6px 0 2px;
+  padding-bottom: calc(2px + env(safe-area-inset-bottom, 0px));
+  z-index: 1000;
+  /* iOS blur effect */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Show tab bar only on mobile */
+@media (max-width: 768px) {
+  .ios-tab-bar {
+    display: flex;
+  }
+}
+
+/* Dark mode */
+[data-theme="dark"] .ios-tab-bar {
+  background: rgba(28, 28, 30, 0.9);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .ios-tab-bar {
+    background: rgba(28, 28, 30, 0.9);
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.tab-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 0;
+  background: transparent;
+  border: none;
+  color: var(--color-text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+  min-width: 76px;
+  min-height: 49px; /* iOS minimum touch target */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab-bar-item svg {
+  transition: transform 0.1s ease;
+}
+
+.tab-bar-item:active svg {
+  transform: scale(0.92);
+}
+
+.tab-bar-item.active {
+  color: var(--color-primary);
+}
+
+.tab-bar-item span {
+  line-height: 1.2;
+}

@@ -6,6 +6,7 @@ import { Header } from '../components/Header';
 import { GuestForm } from '../components/GuestForm';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { EmailCaptureModal } from '../components/EmailCaptureModal';
+import { IOSTabBar } from '../components/IOSTabBar';
 import { showToast } from '../components/toastStore';
 import { MobileMenuProvider, useMobileMenu } from '../contexts/MobileMenuContext';
 import { TOUR_REGISTRY, type TourId } from '../data/tourRegistry';
@@ -286,6 +287,11 @@ function EventLayoutContent({
       <div className="main-content view-visible">
         <Outlet />
       </div>
+
+      {/* iOS Tab Bar - mobile only */}
+      {isMobile && (
+        <IOSTabBar onSettingsClick={() => setShowShortcutsHelp(true)} />
+      )}
 
       {/* Guest Edit Modal (global - accessible from anywhere) */}
       {editingGuestId && (

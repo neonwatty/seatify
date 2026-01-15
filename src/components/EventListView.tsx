@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { EventFormModal } from './EventFormModal';
 import { DeleteEventDialog } from './DeleteEventDialog';
-import { MobileSettingsHeader } from './MobileSettingsHeader';
+import { IOSTabBar } from './IOSTabBar';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
+import { useIsMobile } from '../hooks/useResponsive';
 import type { Event } from '../types';
 import './EventListView.css';
+
+// Minimum swipe distance to trigger action reveal (in pixels)
+const SWIPE_THRESHOLD = 50;
 
 const MAX_EVENTS = 10;
 
@@ -58,6 +62,54 @@ export function EventListView() {
                              shouldShowEmailCapture('optimizerSuccess') ||
                              shouldShowEmailCapture('exportAttempt');
 
+  const isMobile = useIsMobile();
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
+
+  // iOS swipe-to-reveal state
+  const [swipedCardId, setSwipedCardId] = useState<string | null>(null);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const touchCardId = useRef<string | null>(null);
+
+  // Touch handlers for swipe-to-reveal on mobile
+  const handleTouchStart = useCallback((e: React.TouchEvent, eventId: string) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchCardId.current = eventId;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent, eventId: string) => {
+    if (!isMobile) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchStartX.current - touchEndX;
+    const deltaY = Math.abs(touchStartY.current - touchEndY);
+
+    // Only trigger swipe if horizontal movement is greater than vertical (not a scroll)
+    if (Math.abs(deltaX) > deltaY && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+      if (deltaX > 0) {
+        // Swiped left - reveal actions
+        setSwipedCardId(eventId);
+      } else {
+        // Swiped right - hide actions
+        setSwipedCardId(null);
+      }
+    }
+  }, [isMobile]);
+
+  // Close swiped card when clicking elsewhere
+  const handleCardClick = useCallback((eventId: string) => {
+    if (swipedCardId && swipedCardId !== eventId) {
+      setSwipedCardId(null);
+    }
+    if (swipedCardId === eventId) {
+      // If already swiped, don't navigate - let user tap the card again to navigate
+      return false;
+    }
+    return true;
+  }, [swipedCardId]);
+
   const handleEventClick = (eventId: string) => {
     switchEvent(eventId);
     navigate(`/events/${eventId}/canvas`);
@@ -96,13 +148,10 @@ export function EventListView() {
 
   return (
     <div className="event-list-view">
-      {/* Mobile Settings Header - only visible on mobile */}
-      <div className="mobile-settings-container">
-        <MobileSettingsHeader
-          onSubscribe={() => setShowEmailCapture(true)}
-          canShowEmailButton={canShowEmailButton}
-        />
-      </div>
+      {/* iOS Tab Bar - only visible on mobile */}
+      {isMobile && (
+        <IOSTabBar onSettingsClick={() => setShowSettingsSheet(true)} />
+      )}
 
       <div className="event-list-header">
         <div className="header-content">
@@ -170,8 +219,14 @@ export function EventListView() {
                 return (
                   <div
                     key={event.id}
-                    className="event-card"
-                    onClick={() => handleEventClick(event.id)}
+                    className={`event-card ${swipedCardId === event.id ? 'swiped' : ''}`}
+                    onClick={() => {
+                      if (handleCardClick(event.id)) {
+                        handleEventClick(event.id);
+                      }
+                    }}
+                    onTouchStart={(e) => handleTouchStart(e, event.id)}
+                    onTouchEnd={(e) => handleTouchEnd(e, event.id)}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -252,8 +307,14 @@ export function EventListView() {
                 return (
                   <div
                     key={event.id}
-                    className="event-list-row"
-                    onClick={() => handleEventClick(event.id)}
+                    className={`event-list-row ${swipedCardId === event.id ? 'swiped' : ''}`}
+                    onClick={() => {
+                      if (handleCardClick(event.id)) {
+                        handleEventClick(event.id);
+                      }
+                    }}
+                    onTouchStart={(e) => handleTouchStart(e, event.id)}
+                    onTouchEnd={(e) => handleTouchEnd(e, event.id)}
                     role="listitem"
                     tabIndex={0}
                     onKeyDown={(e) => {

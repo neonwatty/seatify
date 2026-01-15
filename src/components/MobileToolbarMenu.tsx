@@ -189,15 +189,32 @@ export function MobileToolbarMenu({
     }
   };
 
-  // Render fixed-position elements via portal to avoid transform containment issues
+  // Handle navigation to events list
+  const handleEventsClick = () => {
+    navigate('/events');
+    setActiveView('event-list');
+  };
+
+  // Render iOS-style tab bar via portal
   const bottomNavContent = (
-    <nav className="mobile-bottom-nav" ref={menuRef}>
+    <nav className="mobile-bottom-nav ios-tab-bar" ref={menuRef}>
+      <button
+        className={`bottom-nav-item ${activeView === 'event-list' || activeView === 'dashboard' ? 'active' : ''}`}
+        onClick={handleEventsClick}
+      >
+        {/* SF Symbol: calendar */}
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/>
+        </svg>
+        <span>Events</span>
+      </button>
       <button
         className={`bottom-nav-item ${activeView === 'canvas' ? 'active' : ''}`}
         onClick={() => handleBottomNavClick('canvas')}
       >
+        {/* SF Symbol: square.grid.2x2 */}
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/>
+          <path fill="currentColor" d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/>
         </svg>
         <span>Canvas</span>
       </button>
@@ -205,28 +222,21 @@ export function MobileToolbarMenu({
         className={`bottom-nav-item ${activeView === 'guests' ? 'active' : ''}`}
         onClick={() => handleBottomNavClick('guests')}
       >
+        {/* SF Symbol: person.2 */}
         <svg viewBox="0 0 24 24" width="24" height="24">
           <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
         </svg>
         <span>Guests</span>
       </button>
       <button
-        className="bottom-nav-item add-btn"
-        onClick={() => setIsOpen(true)}
-      >
-        <svg viewBox="0 0 24 24" width="28" height="28">
-          <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        <span>Add</span>
-      </button>
-      <button
         className={`bottom-nav-item ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
       >
+        {/* SF Symbol: gearshape */}
         <svg viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
         </svg>
-        <span>More</span>
+        <span>Settings</span>
       </button>
     </nav>
   );
@@ -558,23 +568,8 @@ export function MobileToolbarMenu({
 
   return (
     <div className="mobile-toolbar-menu">
-      {/* Top hamburger button in toolbar */}
-      <button
-        className={`hamburger-btn ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Menu"
-        aria-expanded={isOpen}
-      >
-        <span className="hamburger-icon">
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </span>
-      </button>
-
-      {/* Render bottom nav via portal to escape transform containment */}
-      {/* Hide bottom nav on canvas view for cleaner mobile experience */}
-      {activeView !== 'canvas' && createPortal(bottomNavContent, document.body)}
+      {/* iOS Tab Bar is handled by IOSTabBar component in EventLayout/EventListView */}
+      {/* This component now only provides the menu sheet functionality */}
 
       {/* Render menu sheet via portal */}
       {menuContent && createPortal(menuContent, document.body)}

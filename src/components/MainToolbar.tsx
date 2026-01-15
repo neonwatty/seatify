@@ -179,7 +179,7 @@ export function MainToolbar({ children, onAddGuest, onImport, showRelationships,
 
   // Render mobile toolbar on mobile devices
   if (isMobile) {
-    // Canvas view gets a minimal toolbar
+    // Canvas view gets a minimal toolbar (iOS tab bar is in EventLayout)
     if (activeView === 'canvas') {
       return (
         <MobileCanvasToolbar
