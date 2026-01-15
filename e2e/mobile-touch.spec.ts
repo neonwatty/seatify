@@ -142,12 +142,12 @@ test.describe('Mobile Responsive Layout', () => {
     test('bottom nav buttons have minimum touch target size on mobile', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
-      // Navigate to guests view where bottom nav is visible (canvas uses immersive mode)
+      // Navigate to guests view where iOS Tab Bar is visible (canvas uses immersive mode)
       await navigateToGuestsView(page);
 
-      // Check bottom nav buttons
-      const bottomNavBtn = page.locator('.bottom-nav-item').first();
-      const box = await bottomNavBtn.boundingBox();
+      // Check iOS Tab Bar buttons
+      const tabBarBtn = page.locator('.ios-tab-bar .tab-bar-item').first();
+      const box = await tabBarBtn.boundingBox();
 
       // Should have adequate touch target
       expect(box?.width).toBeGreaterThanOrEqual(40);

@@ -129,18 +129,18 @@ export async function clickAddGuest(page: Page): Promise<void> {
 
 /**
  * Switch to a different view (Canvas or Guest List).
- * On mobile: uses bottom nav or menu
+ * On mobile: uses iOS Tab Bar for navigation
  * On desktop: uses toolbar buttons
  */
 export async function switchView(page: Page, view: 'canvas' | 'guests'): Promise<void> {
   const isMobile = await isMobileViewport(page);
 
   if (isMobile) {
-    // Use bottom nav buttons for quick view switching
+    // Use iOS Tab Bar for view switching
     if (view === 'canvas') {
-      await page.locator('.bottom-nav-item:has-text("Canvas")').click();
+      await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     } else {
-      await page.locator('.bottom-nav-item:has-text("Guests")').click();
+      await page.locator('.ios-tab-bar .tab-bar-item:has-text("Guests")').click();
     }
   } else {
     // Desktop: use toolbar buttons (button text is now "Canvas" and "Guests")

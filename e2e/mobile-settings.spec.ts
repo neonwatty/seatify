@@ -192,14 +192,14 @@ test.describe('Mobile Settings - Subscribe', () => {
 
 test.describe('Bottom Navigation Routing', () => {
   test('Canvas tab navigates to canvas view', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Should start on guests view
     await expect(page).toHaveURL(/\/guests/);
 
     // Click Canvas tab to navigate to canvas (immersive mode)
-    await page.locator('.bottom-nav-item:has-text("Canvas")').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     await page.waitForTimeout(300);
 
     // Verify URL changed to canvas
@@ -210,14 +210,14 @@ test.describe('Bottom Navigation Routing', () => {
   });
 
   test('Guests tab navigates to guests view', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Should start on guests
     await expect(page).toHaveURL(/\/guests/);
 
     // Click Canvas tab first
-    await page.locator('.bottom-nav-item:has-text("Canvas")').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     await page.waitForTimeout(500);
 
     // Now we're on canvas (immersive mode), need to access UI
@@ -236,18 +236,18 @@ test.describe('Bottom Navigation Routing', () => {
   });
 
   test('active tab highlights correctly', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Guests tab should be active when starting on guests view
-    const canvasTab = page.locator('.bottom-nav-item:has-text("Canvas")');
-    const guestsTab = page.locator('.bottom-nav-item:has-text("Guests")');
+    const canvasTab = page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")');
+    const guestsTab = page.locator('.ios-tab-bar .tab-bar-item:has-text("Guests")');
 
     await expect(guestsTab).toHaveClass(/active/);
     await expect(canvasTab).not.toHaveClass(/active/);
 
-    // Click Canvas tab - this will enter immersive mode where bottom nav is hidden
-    // We can't easily test the active state after clicking canvas since bottom nav disappears
+    // Click Canvas tab - this will enter immersive mode where iOS Tab Bar is hidden
+    // We can't easily test the active state after clicking canvas since tab bar disappears
     // But we can verify the navigation works
     await canvasTab.click();
     await page.waitForTimeout(300);
