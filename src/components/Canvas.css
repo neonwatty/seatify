@@ -86,6 +86,7 @@
   position: relative;
   overflow: hidden;
   background-color: var(--color-bg-secondary);
+  touch-action: none; /* Prevent browser gestures, handle pan/zoom in JS */
 }
 
 /* Warm dot pattern - only shown when grid is enabled */

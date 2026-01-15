@@ -13,8 +13,8 @@ test.beforeEach(async ({}, testInfo) => {
 });
 
 // Helper to enter the app from landing page on mobile
-// Note: Canvas view now uses immersive mode without hamburger menu
-// So we navigate to guests view where hamburger menu is available
+// Note: Canvas view uses immersive mode without iOS Tab Bar
+// So we navigate to guests view where iOS Tab Bar is available
 async function enterAppMobile(page: import('@playwright/test').Page) {
   // Set mobile viewport before any navigation
   await page.setViewportSize(MOBILE_VIEWPORT);
@@ -41,16 +41,16 @@ async function enterAppMobile(page: import('@playwright/test').Page) {
     await eventCard.click();
     await expect(page.locator('.canvas')).toBeVisible({ timeout: 5000 });
 
-    // Navigate to guests view where hamburger menu is available
-    // Canvas view uses immersive mode without the hamburger menu
+    // Navigate to guests view where iOS Tab Bar is available
+    // Canvas view uses immersive mode without the iOS Tab Bar
     const currentUrl = page.url();
     const guestsUrl = currentUrl.replace('/canvas', '/guests');
     await page.goto(guestsUrl);
     await page.waitForTimeout(300);
   }
 
-  // Wait for the mobile toolbar (hamburger button) to appear
-  await expect(page.locator('.hamburger-btn')).toBeVisible({ timeout: 5000 });
+  // Wait for the iOS Tab Bar to appear
+  await expect(page.locator('.ios-tab-bar')).toBeVisible({ timeout: 5000 });
 }
 
 // Helper to enter app on desktop
@@ -76,12 +76,12 @@ async function enterAppDesktop(page: import('@playwright/test').Page) {
   }
 }
 
-test.describe('Mobile Toolbar Menu - Visibility', () => {
-  test('hamburger menu is visible on mobile viewport', async ({ page }) => {
+test.describe('Mobile iOS Tab Bar - Visibility', () => {
+  test('iOS Tab Bar is visible on mobile viewport', async ({ page }) => {
     await enterAppMobile(page);
 
-    // Hamburger button should be visible
-    await expect(page.locator('.hamburger-btn')).toBeVisible();
+    // iOS Tab Bar should be visible
+    await expect(page.locator('.ios-tab-bar')).toBeVisible();
 
     // Desktop toolbar buttons should not be visible
     await expect(page.locator('.toolbar-btn:has-text("Add Table")')).not.toBeVisible();
@@ -90,20 +90,20 @@ test.describe('Mobile Toolbar Menu - Visibility', () => {
   test('desktop toolbar is visible on desktop viewport', async ({ page }) => {
     await enterAppDesktop(page);
 
-    // Hamburger button should not be visible
-    await expect(page.locator('.hamburger-btn')).not.toBeVisible();
+    // iOS Tab Bar should not be visible on desktop
+    await expect(page.locator('.ios-tab-bar')).not.toBeVisible();
 
     // Desktop toolbar buttons should be visible
     await expect(page.locator('.toolbar-btn:has-text("Add Table")')).toBeVisible();
   });
 });
 
-test.describe('Mobile Toolbar Menu - Menu Interaction', () => {
-  test('hamburger button opens menu', async ({ page }) => {
+test.describe('Mobile iOS Tab Bar - Menu Interaction', () => {
+  test('Settings tab opens menu', async ({ page }) => {
     await enterAppMobile(page);
 
-    // Click hamburger button
-    await page.locator('.hamburger-btn').click();
+    // Click Settings tab in iOS Tab Bar
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
 
     // Menu sheet should appear
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
@@ -115,7 +115,7 @@ test.describe('Mobile Toolbar Menu - Menu Interaction', () => {
   test('menu closes on backdrop click', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
@@ -129,7 +129,7 @@ test.describe('Mobile Toolbar Menu - Menu Interaction', () => {
   test('menu closes on Escape key', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
 
     // Press Escape
@@ -139,51 +139,53 @@ test.describe('Mobile Toolbar Menu - Menu Interaction', () => {
     await expect(page.locator('.mobile-menu-sheet')).not.toBeVisible();
   });
 
-  test('hamburger button animates to X when menu is open', async ({ page }) => {
+  test('Settings tab opens menu sheet', async ({ page }) => {
     await enterAppMobile(page);
 
-    // Click to open
-    await page.locator('.hamburger-btn').click();
+    const settingsTab = page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")');
 
-    // Hamburger button should have active class
-    await expect(page.locator('.hamburger-btn')).toHaveClass(/active/);
+    // Click Settings tab
+    await settingsTab.click();
+
+    // Menu sheet should open (Settings is an action button, not a nav tab)
+    await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
   });
 });
 
-test.describe('Mobile Toolbar Menu - View Switching', () => {
-  // Note: These tests use 'Mobile Chrome' project which has proper mobile emulation
-  // The custom viewport tests have positioning issues with fixed elements
-
-  test('menu contains view buttons', async ({ page }) => {
+test.describe('Mobile iOS Tab Bar - Navigation', () => {
+  test('iOS Tab Bar contains navigation tabs', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
-    await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
-    await page.waitForTimeout(300);
-
-    // Check that view buttons exist in the DOM
-    await expect(page.locator('.menu-view-btn:has-text("Canvas")')).toBeAttached();
-    await expect(page.locator('.menu-view-btn:has-text("Guest List")')).toBeAttached();
+    // Check that navigation tabs exist
+    await expect(page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")')).toBeVisible();
+    await expect(page.locator('.ios-tab-bar .tab-bar-item:has-text("Guests")')).toBeVisible();
+    await expect(page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")')).toBeVisible();
   });
 
-  test('active view is highlighted in menu', async ({ page }) => {
+  test('active tab is highlighted in iOS Tab Bar', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
-    await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
+    // Guests tab should be active (we're on guests view)
+    await expect(page.locator('.ios-tab-bar .tab-bar-item:has-text("Guests")')).toHaveClass(/active/);
+  });
+
+  test('clicking Canvas tab navigates to canvas view', async ({ page }) => {
+    await enterAppMobile(page);
+
+    // Click Canvas tab
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     await page.waitForTimeout(300);
 
-    // Guest List button should be active (we're on guests view)
-    // Note: Canvas view uses immersive mode without hamburger menu
-    await expect(page.locator('.menu-view-btn:has-text("Guest List")')).toHaveClass(/active/);
+    // Should navigate to canvas view (URL changes)
+    await expect(page).toHaveURL(/\/canvas/);
   });
 });
 
-test.describe('Mobile Toolbar Menu - Actions', () => {
+test.describe('Mobile Menu Sheet - Actions', () => {
   test('menu contains action buttons', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
@@ -191,34 +193,36 @@ test.describe('Mobile Toolbar Menu - Actions', () => {
     // On guests view, Add Guest should be available
     await expect(page.locator('.menu-item:has-text("Add Guest")')).toBeAttached();
     // Note: Add Table is canvas-specific and not available on guests view
-    // Canvas uses immersive mode with BottomControlSheet instead of hamburger menu
+    // Canvas uses immersive mode with BottomControlSheet instead of iOS Tab Bar
   });
 
-  test('menu contains import option', async ({ page }) => {
+  test('menu contains view section', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
-    // Import should be in the menu
-    await expect(page.locator('.menu-item:has-text("Import")')).toBeAttached();
+    // View section should have Dashboard, Canvas, and Guest List options
+    await expect(page.locator('.menu-view-btn:has-text("Dashboard")')).toBeAttached();
+    await expect(page.locator('.menu-view-btn:has-text("Canvas")')).toBeAttached();
+    await expect(page.locator('.menu-view-btn:has-text("Guest List")')).toBeAttached();
   });
 });
 
-test.describe('Mobile Toolbar Menu - Canvas Tools', () => {
+test.describe('Mobile Menu Sheet - Canvas Tools', () => {
   // Note: Canvas view now uses immersive mode with BottomControlSheet
   // Canvas-specific tools like "Show Relationships" are in the BottomControlSheet, not hamburger menu
-  // The hamburger menu is only available on guests view, which doesn't have canvas tools
+  // The iOS Tab Bar is only available on guests view, which doesn't have canvas tools
 
   test.skip('relationships toggle is available in menu', async ({ page }) => {
     // This test is skipped because:
-    // - Canvas view uses immersive mode (no hamburger menu)
-    // - Guests view has hamburger menu but not canvas tools
+    // - Canvas view uses immersive mode (no iOS Tab Bar)
+    // - Guests view has iOS Tab Bar but not canvas tools
     // Canvas tools are now accessed via BottomControlSheet in immersive mode
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
@@ -227,11 +231,11 @@ test.describe('Mobile Toolbar Menu - Canvas Tools', () => {
   });
 });
 
-test.describe('Mobile Toolbar Menu - Event Info', () => {
+test.describe('Mobile Menu Sheet - Event Info', () => {
   test('shows event name in menu footer', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
@@ -242,7 +246,7 @@ test.describe('Mobile Toolbar Menu - Event Info', () => {
   test('shows guest count in menu footer', async ({ page }) => {
     await enterAppMobile(page);
 
-    await page.locator('.hamburger-btn').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 

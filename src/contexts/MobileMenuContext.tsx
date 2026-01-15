@@ -14,6 +14,9 @@ interface MobileMenuContextValue {
   showEmailCapture: boolean;
   setShowEmailCapture: (show: boolean) => void;
   handleEmailCaptureClose: (subscribed?: boolean) => void;
+  // Mobile menu sheet state
+  isMenuOpen: boolean;
+  setIsMenuOpen: (open: boolean) => void;
 }
 
 const MobileMenuContext = createContext<MobileMenuContextValue | null>(null);
@@ -26,6 +29,7 @@ interface MobileMenuProviderProps {
 
 export function MobileMenuProvider({ children, onShowHelp, onStartTour }: MobileMenuProviderProps) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Check if user has already subscribed (don't show button if so)
   const canShowEmailButton = shouldShowEmailCapture('guestMilestone') ||
@@ -54,6 +58,8 @@ export function MobileMenuProvider({ children, onShowHelp, onStartTour }: Mobile
       showEmailCapture,
       setShowEmailCapture,
       handleEmailCaptureClose,
+      isMenuOpen,
+      setIsMenuOpen,
     }}>
       {children}
     </MobileMenuContext.Provider>
@@ -73,6 +79,8 @@ export function useMobileMenu() {
       showEmailCapture: false,
       setShowEmailCapture: () => {},
       handleEmailCaptureClose: () => {},
+      isMenuOpen: false,
+      setIsMenuOpen: () => {},
     };
   }
   return context;

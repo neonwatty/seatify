@@ -170,11 +170,49 @@
   box-shadow: 0 6px 16px rgba(249, 112, 102, 0.4);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
+/* Responsive - iOS Bottom Sheet Style */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+
   .event-form-modal {
     width: 100%;
-    margin: 1rem;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh;
+    animation: iosSheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* iOS Drag Handle */
+  .event-form-modal::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 5px;
+    background: var(--color-border);
+    border-radius: 2.5px;
+    margin: 8px auto 0;
+  }
+
+  .event-form-modal .modal-header {
+    padding: 1rem 1rem 1rem;
+  }
+
+  .event-form-modal .modal-header h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .event-form-modal .close-btn {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-md);
+  }
+
+  .event-form-modal form {
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .event-form-modal .form-row.two-columns {
@@ -183,10 +221,56 @@
 
   .event-form-modal .form-actions {
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .event-form-modal .btn-cancel,
   .event-form-modal .btn-submit {
     width: 100%;
+    min-height: 50px;
   }
+
+  /* iOS-style textarea - hide resize handle */
+  .event-form-modal textarea {
+    resize: none;
+  }
+}
+
+@keyframes iosSheetSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* iOS Select Button (replaces native select on mobile) */
+.ios-select-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  background: var(--color-bg);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-align: left;
+}
+
+.ios-select-button:active {
+  background: var(--color-bg-hover);
+}
+
+.ios-select-chevron {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  transform: rotate(90deg);
 }

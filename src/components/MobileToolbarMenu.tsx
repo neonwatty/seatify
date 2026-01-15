@@ -22,6 +22,9 @@ interface MobileToolbarMenuProps {
   onStartTour?: (tourId: TourId) => void;
   onSubscribe?: () => void;
   canShowEmailButton?: boolean;
+  // External control of menu state (optional - uses internal state if not provided)
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function MobileToolbarMenu({
@@ -35,10 +38,18 @@ export function MobileToolbarMenu({
   onStartTour,
   onSubscribe,
   canShowEmailButton,
+  isOpen: externalIsOpen,
+  onClose: externalOnClose,
 }: MobileToolbarMenuProps) {
   const { event, addTable, activeView, setActiveView, optimizeSeating, resetSeating, hasOptimizationSnapshot, hasUsedOptimizeButton, canvas, setZoom, recenterCanvas, theme, cycleTheme, currentEventId, isTourComplete } = useStore();
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalOnClose !== undefined
+    ? (open: boolean) => { if (!open) externalOnClose(); }
+    : setInternalIsOpen;
   const [showTableSubmenu, setShowTableSubmenu] = useState(false);
   const [showTourSubmenu, setShowTourSubmenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -94,13 +105,6 @@ export function MobileToolbarMenu({
     }
     setActiveView(view);
     setIsOpen(false);
-  };
-
-  const handleBottomNavClick = (view: 'canvas' | 'guests') => {
-    if (currentEventId) {
-      navigate(`/events/${currentEventId}/${view}`);
-    }
-    setActiveView(view);
   };
 
   const handleAddTable = (shape: TableShape) => {
@@ -188,48 +192,6 @@ export function MobileToolbarMenu({
       default: return '\u2699'; // Gear (system)
     }
   };
-
-  // Render fixed-position elements via portal to avoid transform containment issues
-  const bottomNavContent = (
-    <nav className="mobile-bottom-nav" ref={menuRef}>
-      <button
-        className={`bottom-nav-item ${activeView === 'canvas' ? 'active' : ''}`}
-        onClick={() => handleBottomNavClick('canvas')}
-      >
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM5 15h14v3H5z"/>
-        </svg>
-        <span>Canvas</span>
-      </button>
-      <button
-        className={`bottom-nav-item ${activeView === 'guests' ? 'active' : ''}`}
-        onClick={() => handleBottomNavClick('guests')}
-      >
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-        </svg>
-        <span>Guests</span>
-      </button>
-      <button
-        className="bottom-nav-item add-btn"
-        onClick={() => setIsOpen(true)}
-      >
-        <svg viewBox="0 0 24 24" width="28" height="28">
-          <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-        <span>Add</span>
-      </button>
-      <button
-        className={`bottom-nav-item ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-        </svg>
-        <span>More</span>
-      </button>
-    </nav>
-  );
 
   const menuContent = isOpen && (
     <>
@@ -558,23 +520,8 @@ export function MobileToolbarMenu({
 
   return (
     <div className="mobile-toolbar-menu">
-      {/* Top hamburger button in toolbar */}
-      <button
-        className={`hamburger-btn ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Menu"
-        aria-expanded={isOpen}
-      >
-        <span className="hamburger-icon">
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </span>
-      </button>
-
-      {/* Render bottom nav via portal to escape transform containment */}
-      {/* Hide bottom nav on canvas view for cleaner mobile experience */}
-      {activeView !== 'canvas' && createPortal(bottomNavContent, document.body)}
+      {/* iOS Tab Bar is handled by IOSTabBar component in EventLayout/EventListView */}
+      {/* This component now only provides the menu sheet functionality */}
 
       {/* Render menu sheet via portal */}
       {menuContent && createPortal(menuContent, document.body)}

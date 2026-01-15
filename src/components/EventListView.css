@@ -493,6 +493,8 @@
 @media (max-width: 768px) {
   .event-list-view {
     padding: 1rem;
+    /* Add bottom padding for iOS tab bar */
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
   }
 
   .event-list-header {
@@ -520,6 +522,73 @@
 
   .event-cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* iOS Swipe-to-reveal actions for card view */
+  .event-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .event-card-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .event-card.swiped .event-card-actions {
+    transform: translateX(0);
+  }
+
+  .event-card.swiped {
+    background: var(--color-bg-secondary);
+  }
+
+  .event-card .card-action-btn {
+    flex: 1;
+    border-radius: 0;
+    border: none;
+    min-width: 80px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .event-card .card-action-btn.edit {
+    background: var(--color-text-secondary);
+    color: white;
+  }
+
+  .event-card .card-action-btn.delete {
+    background: var(--color-error);
+    color: white;
+  }
+
+  /* Swipe hint text (optional visual cue) */
+  .event-card::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    background: var(--color-border);
+    border-radius: 2px;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+  }
+
+  .event-card.swiped::after {
+    opacity: 0;
   }
 
   /* List view mobile layout - stacked rows */
@@ -578,14 +647,70 @@
     text-align: left;
   }
 
+  /* iOS Swipe-to-reveal actions for list view */
+  .event-list-row {
+    overflow: hidden;
+  }
+
   .event-list-row .col-actions {
-    width: 100%;
-    justify-content: stretch;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: auto;
+    display: flex;
+    gap: 0;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .event-list-row.swiped .col-actions {
+    transform: translateX(0);
+  }
+
+  .event-list-row.swiped {
+    background: var(--color-bg-secondary);
   }
 
   .event-list-row .list-action-btn {
-    flex: 1;
+    flex: none;
+    min-width: 80px;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-weight: 600;
+  }
+
+  .event-list-row .list-action-btn.edit {
+    background: var(--color-text-secondary);
+    color: white;
+  }
+
+  .event-list-row .list-action-btn.delete {
+    background: var(--color-error);
+    color: white;
+  }
+
+  /* Swipe hint for list rows */
+  .event-list-row::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 30px;
+    background: var(--color-border);
+    border-radius: 2px;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+  }
+
+  .event-list-row.swiped::after {
+    opacity: 0;
   }
 }
 

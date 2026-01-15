@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import { IOSActionSheet } from './IOSActionSheet';
+import { useIsMobile } from '../hooks/useResponsive';
 import type { Event } from '../types';
 import { trackEventCreatedConversion, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import './EventFormModal.css';
@@ -23,6 +25,8 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
   const navigate = useNavigate();
   const { createEvent, updateEventMetadata, switchEvent } = useStore();
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+  const [showEventTypeSheet, setShowEventTypeSheet] = useState(false);
 
   const [formData, setFormData] = useState({
     name: event?.name || '',
@@ -99,16 +103,27 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
             <div className="form-row two-columns">
               <label>
                 Event Type
-                <select
-                  value={formData.eventType}
-                  onChange={(e) => setFormData({ ...formData, eventType: e.target.value as Event['eventType'] })}
-                >
-                  {eventTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
+                {isMobile ? (
+                  <button
+                    type="button"
+                    className="ios-select-button"
+                    onClick={() => setShowEventTypeSheet(true)}
+                  >
+                    <span>{eventTypes.find(t => t.value === formData.eventType)?.label || 'Select'}</span>
+                    <span className="ios-select-chevron">›</span>
+                  </button>
+                ) : (
+                  <select
+                    value={formData.eventType}
+                    onChange={(e) => setFormData({ ...formData, eventType: e.target.value as Event['eventType'] })}
+                  >
+                    {eventTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </label>
               <label>
                 Event Date
@@ -169,6 +184,16 @@ export function EventFormModal({ mode, event, onClose }: EventFormModalProps) {
           </div>
         </form>
       </div>
+
+      {/* iOS Action Sheet for Event Type */}
+      <IOSActionSheet
+        isOpen={showEventTypeSheet}
+        onClose={() => setShowEventTypeSheet(false)}
+        onSelect={(value) => setFormData({ ...formData, eventType: value as Event['eventType'] })}
+        options={eventTypes}
+        selectedValue={formData.eventType}
+        title="Select Event Type"
+      />
     </div>
   );
 }

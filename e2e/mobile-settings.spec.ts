@@ -5,7 +5,7 @@ import { openMobileMenu, closeMobileMenu } from './test-utils';
 const MOBILE_VIEWPORT = { width: 393, height: 852 };
 
 // Helper to enter app on mobile
-// targetView: 'canvas' (immersive mode, no hamburger) or 'guests' (normal mode with hamburger)
+// targetView: 'canvas' (immersive mode) or 'guests' (normal mode with iOS Tab Bar)
 async function enterAppMobile(page: import('@playwright/test').Page, targetView: 'canvas' | 'guests' = 'guests') {
   // Set mobile viewport before any navigation
   await page.setViewportSize(MOBILE_VIEWPORT);
@@ -35,13 +35,13 @@ async function enterAppMobile(page: import('@playwright/test').Page, targetView:
 
     if (targetView === 'guests') {
       // Navigate to guests view via URL modification
-      // Canvas view uses immersive mode without the hamburger menu
+      // Canvas view uses immersive mode without the tab bar
       const currentUrl = page.url();
       const guestsUrl = currentUrl.replace('/canvas', '/guests');
       await page.goto(guestsUrl);
       await page.waitForTimeout(300);
-      // Wait for header with hamburger button to be visible
-      await expect(page.locator('.hamburger-btn')).toBeVisible({ timeout: 5000 });
+      // Wait for iOS Tab Bar to be visible (replaced hamburger menu)
+      await expect(page.locator('.ios-tab-bar')).toBeVisible({ timeout: 5000 });
     } else {
       // Stay on canvas view - immersive mode
       // Wait for corner indicator (immersive mode UI indicator)
@@ -192,14 +192,14 @@ test.describe('Mobile Settings - Subscribe', () => {
 
 test.describe('Bottom Navigation Routing', () => {
   test('Canvas tab navigates to canvas view', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Should start on guests view
     await expect(page).toHaveURL(/\/guests/);
 
     // Click Canvas tab to navigate to canvas (immersive mode)
-    await page.locator('.bottom-nav-item:has-text("Canvas")').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     await page.waitForTimeout(300);
 
     // Verify URL changed to canvas
@@ -210,14 +210,14 @@ test.describe('Bottom Navigation Routing', () => {
   });
 
   test('Guests tab navigates to guests view', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Should start on guests
     await expect(page).toHaveURL(/\/guests/);
 
     // Click Canvas tab first
-    await page.locator('.bottom-nav-item:has-text("Canvas")').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")').click();
     await page.waitForTimeout(500);
 
     // Now we're on canvas (immersive mode), need to access UI
@@ -236,18 +236,18 @@ test.describe('Bottom Navigation Routing', () => {
   });
 
   test('active tab highlights correctly', async ({ page }) => {
-    // Start on guests view (where bottom nav is visible)
+    // Start on guests view (where iOS Tab Bar is visible)
     await enterAppMobile(page, 'guests');
 
     // Guests tab should be active when starting on guests view
-    const canvasTab = page.locator('.bottom-nav-item:has-text("Canvas")');
-    const guestsTab = page.locator('.bottom-nav-item:has-text("Guests")');
+    const canvasTab = page.locator('.ios-tab-bar .tab-bar-item:has-text("Canvas")');
+    const guestsTab = page.locator('.ios-tab-bar .tab-bar-item:has-text("Guests")');
 
     await expect(guestsTab).toHaveClass(/active/);
     await expect(canvasTab).not.toHaveClass(/active/);
 
-    // Click Canvas tab - this will enter immersive mode where bottom nav is hidden
-    // We can't easily test the active state after clicking canvas since bottom nav disappears
+    // Click Canvas tab - this will enter immersive mode where iOS Tab Bar is hidden
+    // We can't easily test the active state after clicking canvas since tab bar disappears
     // But we can verify the navigation works
     await canvasTab.click();
     await page.waitForTimeout(300);
@@ -258,14 +258,14 @@ test.describe('Bottom Navigation Routing', () => {
 });
 
 test.describe('Cross-View Consistency', () => {
-  // Note: Canvas view uses immersive mode with BottomControlSheet instead of hamburger menu
-  // These tests focus on guests view where hamburger menu is available
+  // Note: Canvas view uses immersive mode with BottomControlSheet instead of iOS Tab Bar
+  // These tests focus on guests view where iOS Tab Bar and Settings menu are available
 
   test('Canvas Tools section NOT visible on Guests view', async ({ page }) => {
     // Start on guests view
     await enterAppMobile(page, 'guests');
 
-    // On Guests view - Canvas Tools should NOT be visible in hamburger menu
+    // On Guests view - Canvas Tools should NOT be visible in settings menu
     await openMobileMenu(page);
     await expect(page.locator('.menu-section-label:has-text("Canvas Tools")')).not.toBeAttached();
   });

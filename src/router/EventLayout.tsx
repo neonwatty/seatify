@@ -6,6 +6,8 @@ import { Header } from '../components/Header';
 import { GuestForm } from '../components/GuestForm';
 import { OnboardingWizard } from '../components/OnboardingWizard';
 import { EmailCaptureModal } from '../components/EmailCaptureModal';
+import { IOSTabBar } from '../components/IOSTabBar';
+import { MobileToolbarMenu } from '../components/MobileToolbarMenu';
 import { showToast } from '../components/toastStore';
 import { MobileMenuProvider, useMobileMenu } from '../contexts/MobileMenuContext';
 import { TOUR_REGISTRY, type TourId } from '../data/tourRegistry';
@@ -265,8 +267,18 @@ function EventLayoutContent({
   location: { pathname: string };
   isAutoStartedTour: boolean;
 }) {
-  const { showEmailCapture, handleEmailCaptureClose } = useMobileMenu();
+  const {
+    showEmailCapture,
+    handleEmailCaptureClose,
+    isMenuOpen,
+    setIsMenuOpen,
+    onShowHelp,
+    onStartTour,
+    onSubscribe,
+    canShowEmailButton,
+  } = useMobileMenu();
   const isMobile = useIsMobile();
+  const { addGuest, event } = useStore();
 
   // Hide header on mobile canvas view (immersive mode)
   // BUT keep it visible during tours so tour targets are accessible
@@ -286,6 +298,28 @@ function EventLayoutContent({
       <div className="main-content view-visible">
         <Outlet />
       </div>
+
+      {/* iOS Tab Bar - mobile only */}
+      {isMobile && (
+        <IOSTabBar onSettingsClick={() => setIsMenuOpen(true)} />
+      )}
+
+      {/* Mobile Menu Sheet - controlled by context */}
+      {isMobile && (
+        <MobileToolbarMenu
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          onAddGuest={() => {
+            const guestNumber = event.guests.length + 1;
+            addGuest({ firstName: 'Guest', lastName: `${guestNumber}` });
+            setIsMenuOpen(false);
+          }}
+          onShowHelp={onShowHelp ? () => { onShowHelp(); setIsMenuOpen(false); } : undefined}
+          onStartTour={onStartTour ? (tourId) => { onStartTour(tourId); setIsMenuOpen(false); } : undefined}
+          onSubscribe={onSubscribe ? () => { onSubscribe(); setIsMenuOpen(false); } : undefined}
+          canShowEmailButton={canShowEmailButton}
+        />
+      )}
 
       {/* Guest Edit Modal (global - accessible from anywhere) */}
       {editingGuestId && (
