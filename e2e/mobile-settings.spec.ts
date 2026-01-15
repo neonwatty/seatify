@@ -5,7 +5,7 @@ import { openMobileMenu, closeMobileMenu } from './test-utils';
 const MOBILE_VIEWPORT = { width: 393, height: 852 };
 
 // Helper to enter app on mobile
-// targetView: 'canvas' (immersive mode, no hamburger) or 'guests' (normal mode with hamburger)
+// targetView: 'canvas' (immersive mode) or 'guests' (normal mode with iOS Tab Bar)
 async function enterAppMobile(page: import('@playwright/test').Page, targetView: 'canvas' | 'guests' = 'guests') {
   // Set mobile viewport before any navigation
   await page.setViewportSize(MOBILE_VIEWPORT);
@@ -35,13 +35,13 @@ async function enterAppMobile(page: import('@playwright/test').Page, targetView:
 
     if (targetView === 'guests') {
       // Navigate to guests view via URL modification
-      // Canvas view uses immersive mode without the hamburger menu
+      // Canvas view uses immersive mode without the tab bar
       const currentUrl = page.url();
       const guestsUrl = currentUrl.replace('/canvas', '/guests');
       await page.goto(guestsUrl);
       await page.waitForTimeout(300);
-      // Wait for header with hamburger button to be visible
-      await expect(page.locator('.hamburger-btn')).toBeVisible({ timeout: 5000 });
+      // Wait for iOS Tab Bar to be visible (replaced hamburger menu)
+      await expect(page.locator('.ios-tab-bar')).toBeVisible({ timeout: 5000 });
     } else {
       // Stay on canvas view - immersive mode
       // Wait for corner indicator (immersive mode UI indicator)
@@ -258,14 +258,14 @@ test.describe('Bottom Navigation Routing', () => {
 });
 
 test.describe('Cross-View Consistency', () => {
-  // Note: Canvas view uses immersive mode with BottomControlSheet instead of hamburger menu
-  // These tests focus on guests view where hamburger menu is available
+  // Note: Canvas view uses immersive mode with BottomControlSheet instead of iOS Tab Bar
+  // These tests focus on guests view where iOS Tab Bar and Settings menu are available
 
   test('Canvas Tools section NOT visible on Guests view', async ({ page }) => {
     // Start on guests view
     await enterAppMobile(page, 'guests');
 
-    // On Guests view - Canvas Tools should NOT be visible in hamburger menu
+    // On Guests view - Canvas Tools should NOT be visible in settings menu
     await openMobileMenu(page);
     await expect(page.locator('.menu-section-label:has-text("Canvas Tools")')).not.toBeAttached();
   });

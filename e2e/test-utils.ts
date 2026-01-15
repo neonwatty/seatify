@@ -48,12 +48,15 @@ export async function enterApp(page: Page): Promise<void> {
  * Handles both immersive mode (canvas view) and normal mode (other views)
  */
 export async function openMobileMenu(page: Page): Promise<void> {
-  // Check if we're in immersive mode (hamburger button not directly visible)
-  const hamburger = page.locator('.hamburger-btn');
-  const hamburgerVisible = await hamburger.isVisible({ timeout: 500 }).catch(() => false);
+  // Check if iOS Tab Bar is visible (new iOS HIG compliant navigation)
+  const iosTabBar = page.locator('.ios-tab-bar');
+  const iosTabBarVisible = await iosTabBar.isVisible({ timeout: 500 }).catch(() => false);
 
-  if (!hamburgerVisible) {
-    // In immersive mode - need to tap corner indicator to reveal top bar first
+  if (iosTabBarVisible) {
+    // iOS Tab Bar mode - click the Settings tab to open menu
+    await page.locator('.ios-tab-bar .tab-item:has-text("Settings")').click();
+  } else {
+    // Check if we're in immersive mode (corner indicator visible)
     const cornerIndicator = page.locator('.corner-indicator');
     if (await cornerIndicator.isVisible({ timeout: 500 }).catch(() => false)) {
       await cornerIndicator.click();
@@ -62,9 +65,6 @@ export async function openMobileMenu(page: Page): Promise<void> {
       // Now click the menu button in the transient top bar
       await page.locator('.transient-top-bar .menu-btn').click();
     }
-  } else {
-    // Normal mode - just click hamburger
-    await hamburger.click();
   }
 
   await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
