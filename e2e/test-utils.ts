@@ -54,7 +54,7 @@ export async function openMobileMenu(page: Page): Promise<void> {
 
   if (iosTabBarVisible) {
     // iOS Tab Bar mode - click the Settings tab to open menu
-    await page.locator('.ios-tab-bar .tab-item:has-text("Settings")').click();
+    await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
   } else {
     // Check if we're in immersive mode (corner indicator visible)
     const cornerIndicator = page.locator('.corner-indicator');
