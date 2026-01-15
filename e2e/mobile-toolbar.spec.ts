@@ -196,15 +196,17 @@ test.describe('Mobile Menu Sheet - Actions', () => {
     // Canvas uses immersive mode with BottomControlSheet instead of iOS Tab Bar
   });
 
-  test('menu contains import option', async ({ page }) => {
+  test('menu contains view section', async ({ page }) => {
     await enterAppMobile(page);
 
     await page.locator('.ios-tab-bar .tab-bar-item:has-text("Settings")').click();
     await expect(page.locator('.mobile-menu-sheet')).toBeVisible();
     await page.waitForTimeout(300);
 
-    // Import should be in the menu
-    await expect(page.locator('.menu-item:has-text("Import")')).toBeAttached();
+    // View section should have Dashboard, Canvas, and Guest List options
+    await expect(page.locator('.menu-view-btn:has-text("Dashboard")')).toBeAttached();
+    await expect(page.locator('.menu-view-btn:has-text("Canvas")')).toBeAttached();
+    await expect(page.locator('.menu-view-btn:has-text("Guest List")')).toBeAttached();
   });
 });
 

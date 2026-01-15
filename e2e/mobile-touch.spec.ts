@@ -104,15 +104,15 @@ test.describe('Mobile Responsive Layout', () => {
       }
     }
 
-    test('mobile toolbar shows hamburger menu button on mobile in guests view', async ({ page }) => {
+    test('mobile iOS Tab Bar shows on mobile in guests view', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
-      // Navigate to guests view where hamburger is visible (canvas uses immersive mode)
+      // Navigate to guests view where iOS Tab Bar is visible (canvas uses immersive mode)
       await navigateToGuestsView(page);
 
-      // On mobile, the hamburger button should be visible
-      const hamburgerBtn = page.locator('.hamburger-btn');
-      await expect(hamburgerBtn).toBeVisible();
+      // On mobile, the iOS Tab Bar should be visible
+      const iosTabBar = page.locator('.ios-tab-bar');
+      await expect(iosTabBar).toBeVisible();
     });
 
     test('toolbar buttons show text on desktop', async ({ page }) => {
@@ -124,15 +124,15 @@ test.describe('Mobile Responsive Layout', () => {
       expect(textElements).toBeGreaterThan(0);
     });
 
-    test('hamburger button has minimum touch target size on mobile', async ({ page }) => {
+    test('iOS Tab Bar items have minimum touch target size on mobile', async ({ page }) => {
       await page.setViewportSize(MOBILE_VIEWPORT);
       await enterApp(page);
-      // Navigate to guests view where hamburger is visible (canvas uses immersive mode)
+      // Navigate to guests view where iOS Tab Bar is visible (canvas uses immersive mode)
       await navigateToGuestsView(page);
 
-      // Get the hamburger button
-      const button = page.locator('.hamburger-btn');
-      const box = await button.boundingBox();
+      // Get the first iOS Tab Bar item
+      const tabItem = page.locator('.ios-tab-bar .tab-bar-item').first();
+      const box = await tabItem.boundingBox();
 
       // Should be at least 40px (close to 44px min touch target)
       expect(box?.width).toBeGreaterThanOrEqual(40);
