@@ -194,9 +194,9 @@ test.describe('Import Wizard - Data Preview Step', () => {
     await page.locator('.wizard-footer .btn-primary').click();
     await page.locator('.wizard-footer .btn-primary').click();
 
-    // Uncheck first row
-    const firstRowCheckbox = page.locator('.preview-table tbody tr').first().locator('input[type="checkbox"]');
-    await firstRowCheckbox.uncheck();
+    // Uncheck first row (IOSCheckmark is checked by default, so click to uncheck)
+    const firstRowCheckmark = page.locator('.preview-table tbody tr').first().locator('button.ios-checkmark');
+    await firstRowCheckmark.click();
 
     // Stats should update to show 9 guests
     await expect(page.locator('.stat-value').first()).toContainText('9');

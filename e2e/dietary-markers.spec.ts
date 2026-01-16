@@ -52,7 +52,7 @@ test.describe('Dietary & Accessibility Markers', () => {
 
       for (const option of dietaryOptions) {
         await expect(
-          page.locator(`.checkbox-label:has-text("${option}")`)
+          page.locator(`.option-row:has-text("${option}")`)
         ).toBeVisible();
       }
     });
@@ -70,7 +70,7 @@ test.describe('Dietary & Accessibility Markers', () => {
 
       for (const option of accessibilityOptions) {
         await expect(
-          page.locator(`.checkbox-label:has-text("${option}")`)
+          page.locator(`.option-row:has-text("${option}")`)
         ).toBeVisible();
       }
     });
@@ -84,14 +84,14 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.fill('Test Dietary Guest');
 
       // Select dietary restrictions
-      await page.locator('.checkbox-label:has-text("Vegetarian")').click();
-      await page.locator('.checkbox-label:has-text("Gluten-free")').click();
+      await page.locator('.option-row:has-text("Vegetarian")').click();
+      await page.locator('.option-row:has-text("Gluten-free")').click();
 
-      // Verify checkboxes are checked
-      const vegCheckbox = page.locator('.checkbox-label:has-text("Vegetarian") input');
-      const gfCheckbox = page.locator('.checkbox-label:has-text("Gluten-free") input');
-      await expect(vegCheckbox).toBeChecked();
-      await expect(gfCheckbox).toBeChecked();
+      // Verify checkboxes are checked (IOSCheckmark uses aria-checked)
+      const vegCheckbox = page.locator('.option-row:has-text("Vegetarian") button.ios-checkmark');
+      const gfCheckbox = page.locator('.option-row:has-text("Gluten-free") button.ios-checkmark');
+      await expect(vegCheckbox).toHaveAttribute('aria-checked', 'true');
+      await expect(gfCheckbox).toHaveAttribute('aria-checked', 'true');
 
       // Save
       await page.click('button:has-text("Save")');
@@ -107,11 +107,11 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.fill('Test Accessibility Guest');
 
       // Select accessibility needs
-      await page.locator('.checkbox-label:has-text("Wheelchair access")').click();
+      await page.locator('.option-row:has-text("Wheelchair access")').click();
 
-      // Verify checkbox is checked
-      const wcCheckbox = page.locator('.checkbox-label:has-text("Wheelchair access") input');
-      await expect(wcCheckbox).toBeChecked();
+      // Verify checkbox is checked (IOSCheckmark uses aria-checked)
+      const wcCheckbox = page.locator('.option-row:has-text("Wheelchair access") button.ios-checkmark');
+      await expect(wcCheckbox).toHaveAttribute('aria-checked', 'true');
 
       // Save
       await page.click('button:has-text("Save")');
@@ -128,7 +128,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Vegan Guest');
 
-      await page.locator('.checkbox-label:has-text("Vegan")').click();
+      await page.locator('.option-row:has-text("Vegan")').click();
       await page.click('button:has-text("Save")');
 
       // Check the canvas guest has dietary icon
@@ -145,7 +145,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Wheelchair Guest');
 
-      await page.locator('.checkbox-label:has-text("Wheelchair access")').click();
+      await page.locator('.option-row:has-text("Wheelchair access")').click();
       await page.click('button:has-text("Save")');
 
       // Check the canvas guest has accessibility icon
@@ -162,7 +162,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Kosher Guest');
 
-      await page.locator('.checkbox-label:has-text("Kosher")').click();
+      await page.locator('.option-row:has-text("Kosher")').click();
       await page.click('button:has-text("Save")');
 
       // Check the canvas guest has title attribute with dietary info
@@ -182,7 +182,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Halal Guest');
 
-      await page.locator('.checkbox-label:has-text("Halal")').click();
+      await page.locator('.option-row:has-text("Halal")').click();
       await page.click('button:has-text("Save")');
 
       // Switch to Guest List view
@@ -215,8 +215,8 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Edit Test Guest');
 
-      await page.locator('.checkbox-label:has-text("Vegan")').click();
-      await page.locator('.checkbox-label:has-text("Nut allergy")').click();
+      await page.locator('.option-row:has-text("Vegan")').click();
+      await page.locator('.option-row:has-text("Nut allergy")').click();
       await page.click('button:has-text("Save")');
 
       // Now edit the guest again
@@ -227,10 +227,10 @@ test.describe('Dietary & Accessibility Markers', () => {
       // Verify the edit modal opens with dietary restrictions preserved
       await expect(page.locator('.guest-form-modal')).toBeVisible({ timeout: 3000 });
 
-      const veganCheckbox = page.locator('.checkbox-label:has-text("Vegan") input');
-      const nutCheckbox = page.locator('.checkbox-label:has-text("Nut allergy") input');
-      await expect(veganCheckbox).toBeChecked();
-      await expect(nutCheckbox).toBeChecked();
+      const veganCheckbox = page.locator('.option-row:has-text("Vegan") button.ios-checkmark');
+      const nutCheckbox = page.locator('.option-row:has-text("Nut allergy") button.ios-checkmark');
+      await expect(veganCheckbox).toHaveAttribute('aria-checked', 'true');
+      await expect(nutCheckbox).toHaveAttribute('aria-checked', 'true');
     });
 
     test('can uncheck dietary restrictions when editing', async ({ page }) => {
@@ -241,7 +241,7 @@ test.describe('Dietary & Accessibility Markers', () => {
       await nameInput.clear();
       await nameInput.fill('Uncheck Test Guest');
 
-      await page.locator('.checkbox-label:has-text("Vegetarian")').click();
+      await page.locator('.option-row:has-text("Vegetarian")').click();
       await page.click('button:has-text("Save")');
 
       // Edit the guest
@@ -252,9 +252,9 @@ test.describe('Dietary & Accessibility Markers', () => {
       await expect(page.locator('.guest-form-modal')).toBeVisible({ timeout: 3000 });
 
       // Uncheck the dietary restriction
-      await page.locator('.checkbox-label:has-text("Vegetarian")').click();
-      const vegCheckbox = page.locator('.checkbox-label:has-text("Vegetarian") input');
-      await expect(vegCheckbox).not.toBeChecked();
+      await page.locator('.option-row:has-text("Vegetarian")').click();
+      const vegCheckbox = page.locator('.option-row:has-text("Vegetarian") button.ios-checkmark');
+      await expect(vegCheckbox).toHaveAttribute('aria-checked', 'false');
 
       // Save
       await page.click('button:has-text("Save")');

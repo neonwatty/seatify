@@ -103,33 +103,33 @@ test.describe('Group Legend', () => {
     });
 
     test('checkboxes are checked by default (all groups visible)', async ({ page }) => {
-      const checkboxes = page.locator('.group-legend-item input[type="checkbox"]');
-      const count = await checkboxes.count();
+      const toggles = page.locator('.group-legend-item button.ios-toggle');
+      const count = await toggles.count();
       expect(count).toBeGreaterThan(0);
 
       for (let i = 0; i < count; i++) {
-        await expect(checkboxes.nth(i)).toBeChecked();
+        await expect(toggles.nth(i)).toHaveAttribute('aria-checked', 'true');
       }
     });
   });
 
   test.describe('Group Visibility Toggle', () => {
     test('clicking checkbox toggles group visibility', async ({ page }) => {
-      const firstCheckbox = page.locator('.group-legend-item input[type="checkbox"]').first();
+      const firstToggle = page.locator('.group-legend-item button.ios-toggle').first();
       const firstLabel = page.locator('.legend-item-label').first();
 
       // Initially visible
-      await expect(firstCheckbox).toBeChecked();
+      await expect(firstToggle).toHaveAttribute('aria-checked', 'true');
       await expect(firstLabel).not.toHaveClass(/hidden-group/);
 
       // Click to hide
-      await firstCheckbox.click();
-      await expect(firstCheckbox).not.toBeChecked();
+      await firstToggle.click();
+      await expect(firstToggle).toHaveAttribute('aria-checked', 'false');
       await expect(firstLabel).toHaveClass(/hidden-group/);
 
       // Click to show again
-      await firstCheckbox.click();
-      await expect(firstCheckbox).toBeChecked();
+      await firstToggle.click();
+      await expect(firstToggle).toHaveAttribute('aria-checked', 'true');
       await expect(firstLabel).not.toHaveClass(/hidden-group/);
     });
 
@@ -138,7 +138,7 @@ test.describe('Group Legend', () => {
       const firstGroupName = await page.locator('.legend-name').first().textContent();
 
       // Hide the first group
-      await page.locator('.group-legend-item input[type="checkbox"]').first().click();
+      await page.locator('.group-legend-item button.ios-toggle').first().click();
 
       // Check if any canvas guests are dimmed
       // (There should be at least some guests visible as dimmed if they belong to the hidden group)
@@ -165,11 +165,11 @@ test.describe('Group Legend', () => {
 
       await hideAllBtn.click();
 
-      // All checkboxes should be unchecked
-      const checkboxes = page.locator('.group-legend-item input[type="checkbox"]');
-      const count = await checkboxes.count();
+      // All toggles should be unchecked
+      const toggles = page.locator('.group-legend-item button.ios-toggle');
+      const count = await toggles.count();
       for (let i = 0; i < count; i++) {
-        await expect(checkboxes.nth(i)).not.toBeChecked();
+        await expect(toggles.nth(i)).toHaveAttribute('aria-checked', 'false');
       }
 
       // Hide All should now be disabled
@@ -186,11 +186,11 @@ test.describe('Group Legend', () => {
 
       await showAllBtn.click();
 
-      // All checkboxes should be checked
-      const checkboxes = page.locator('.group-legend-item input[type="checkbox"]');
-      const count = await checkboxes.count();
+      // All toggles should be checked
+      const toggles = page.locator('.group-legend-item button.ios-toggle');
+      const count = await toggles.count();
       for (let i = 0; i < count; i++) {
-        await expect(checkboxes.nth(i)).toBeChecked();
+        await expect(toggles.nth(i)).toHaveAttribute('aria-checked', 'true');
       }
     });
 
@@ -201,7 +201,7 @@ test.describe('Group Legend', () => {
       await expect(showAllBtn).toBeDisabled();
 
       // Hide one group
-      await page.locator('.group-legend-item input[type="checkbox"]').first().click();
+      await page.locator('.group-legend-item button.ios-toggle').first().click();
 
       // Now Show All should be enabled
       await expect(showAllBtn).not.toBeDisabled();
@@ -236,9 +236,9 @@ test.describe('Group Legend', () => {
       await expect(list).toHaveAttribute('aria-label', 'Guest groups');
     });
 
-    test('checkboxes have aria-labels for screen readers', async ({ page }) => {
-      const firstCheckbox = page.locator('.group-legend-item input[type="checkbox"]').first();
-      const ariaLabel = await firstCheckbox.getAttribute('aria-label');
+    test('toggles have aria-labels for screen readers', async ({ page }) => {
+      const firstToggle = page.locator('.group-legend-item button.ios-toggle').first();
+      const ariaLabel = await firstToggle.getAttribute('aria-label');
       expect(ariaLabel).toContain('Hide'); // or 'Show' depending on state
     });
   });
