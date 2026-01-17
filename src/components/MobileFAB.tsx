@@ -9,15 +9,22 @@ interface MobileFABProps {
   isHidden?: boolean; // Hide during drag operations
 }
 
+/**
+ * iOS-style add button with action sheet.
+ * Uses iOS Human Interface Guidelines patterns:
+ * - Subtle "+" button instead of Material Design FAB
+ * - Action sheet slides up from bottom (iOS pattern)
+ * - Cancel button at bottom of action sheet
+ */
 export function MobileFAB({ onAddGuest, isHidden = false }: MobileFABProps) {
   const { event, addTable } = useStore();
   const [isExpanded, setIsExpanded] = useState(false);
-  const fabRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (fabRef.current && !fabRef.current.contains(e.target as Node)) {
+      if (sheetRef.current && !sheetRef.current.contains(e.target as Node)) {
         setIsExpanded(false);
       }
     };
@@ -54,57 +61,69 @@ export function MobileFAB({ onAddGuest, isHidden = false }: MobileFABProps) {
     setIsExpanded(false);
   };
 
-  const fabContent = (
-    <div
-      className={`mobile-fab-container ${isHidden ? 'hidden' : ''} ${isExpanded ? 'expanded' : ''}`}
-      ref={fabRef}
-    >
-      {/* Backdrop when expanded */}
-      {isExpanded && (
-        <div className="fab-backdrop" onClick={() => setIsExpanded(false)} />
-      )}
+  const handleCancel = () => {
+    setIsExpanded(false);
+  };
 
-      {/* Action buttons (appear when expanded) */}
-      <div className={`fab-actions ${isExpanded ? 'visible' : ''}`}>
+  // iOS Action Sheet content
+  const actionSheetContent = isExpanded && (
+    <>
+      <div className="ios-action-sheet-backdrop" onClick={handleCancel} />
+      <div className="ios-action-sheet" ref={sheetRef} role="dialog" aria-modal="true">
+        <div className="ios-action-sheet-group">
+          <div className="ios-action-sheet-title">Add to Canvas</div>
+          <button
+            className="ios-action-sheet-btn"
+            onClick={handleAddGuest}
+          >
+            <span className="ios-action-icon">👤</span>
+            Add Guest
+          </button>
+          <button
+            className="ios-action-sheet-btn"
+            onClick={() => handleAddTable('round')}
+          >
+            <span className="ios-action-icon">⭕</span>
+            Add Round Table
+          </button>
+          <button
+            className="ios-action-sheet-btn"
+            onClick={() => handleAddTable('rectangle')}
+          >
+            <span className="ios-action-icon">▭</span>
+            Add Rectangle Table
+          </button>
+        </div>
+        <div className="ios-action-sheet-group">
+          <button
+            className="ios-action-sheet-btn ios-action-sheet-cancel"
+            onClick={handleCancel}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Compact add button */}
+      <div className={`mobile-add-btn-container ${isHidden ? 'hidden' : ''}`}>
         <button
-          className="fab-action"
-          onClick={handleAddGuest}
-          aria-label="Add Guest"
+          className="mobile-add-btn"
+          onClick={() => setIsExpanded(!isExpanded)}
+          aria-label="Add items"
+          aria-expanded={isExpanded}
         >
-          <span className="fab-action-icon">👤</span>
-          <span className="fab-action-label">Guest</span>
-        </button>
-        <button
-          className="fab-action"
-          onClick={() => handleAddTable('round')}
-          aria-label="Add Round Table"
-        >
-          <span className="fab-action-icon">⭕</span>
-          <span className="fab-action-label">Round</span>
-        </button>
-        <button
-          className="fab-action"
-          onClick={() => handleAddTable('rectangle')}
-          aria-label="Add Rectangle Table"
-        >
-          <span className="fab-action-icon">▭</span>
-          <span className="fab-action-label">Rectangle</span>
+          <svg viewBox="0 0 24 24" width="24" height="24" className="add-icon">
+            <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
         </button>
       </div>
 
-      {/* Main FAB button */}
-      <button
-        className={`mobile-fab ${isExpanded ? 'active' : ''}`}
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-label={isExpanded ? 'Close menu' : 'Add items'}
-        aria-expanded={isExpanded}
-      >
-        <svg viewBox="0 0 24 24" width="28" height="28" className="fab-icon">
-          <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-        </svg>
-      </button>
-    </div>
+      {/* Render action sheet via portal */}
+      {actionSheetContent && createPortal(actionSheetContent, document.body)}
+    </>
   );
-
-  return createPortal(fabContent, document.body);
 }

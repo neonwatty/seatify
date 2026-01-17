@@ -1,30 +1,56 @@
-/* Mobile Floating Action Button */
+/* iOS-style Add Button and Action Sheet */
 
-.mobile-fab-container {
+/* Compact add button (replaces Material FAB) */
+.mobile-add-btn-container {
   position: fixed;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   right: 20px;
   z-index: 500;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.mobile-fab-container.hidden {
+.mobile-add-btn-container.hidden {
   opacity: 0;
   pointer-events: none;
   transform: scale(0.8);
 }
 
-/* Backdrop */
-.fab-backdrop {
+.mobile-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-add-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-add-btn:active {
+  transform: scale(0.95);
+}
+
+.mobile-add-btn .add-icon {
+  transition: transform 0.2s ease;
+}
+
+/* iOS Action Sheet Backdrop */
+.ios-action-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: -1;
-  animation: fadeIn 0.15s ease-out;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
@@ -32,193 +58,154 @@
   to { opacity: 1; }
 }
 
-/* Main FAB button */
-.mobile-fab {
+/* iOS Action Sheet Container */
+.ios-action-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 8px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Action Sheet Groups */
+.ios-action-sheet-group {
+  background: var(--color-bg);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.ios-action-sheet-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Action Sheet Title */
+.ios-action-sheet-title {
+  padding: 14px 16px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Action Sheet Buttons */
+.ios-action-sheet-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: var(--color-primary);
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  color: white;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--color-primary);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb, 194, 65, 12), 0.35),
-              0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
 }
 
-.mobile-fab:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(var(--color-primary-rgb, 194, 65, 12), 0.4),
-              0 3px 6px rgba(0, 0, 0, 0.12);
+.ios-action-sheet-btn:last-child {
+  border-bottom: none;
 }
 
-.mobile-fab:active {
-  transform: scale(0.95);
-}
-
-.mobile-fab.active {
-  background: var(--color-text);
-}
-
-.mobile-fab.active .fab-icon {
-  transform: rotate(45deg);
-}
-
-.fab-icon {
-  transition: transform 0.2s ease;
-}
-
-/* Action buttons */
-.fab-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(20px);
-  transition: all 0.2s ease;
-}
-
-.fab-actions.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
-
-.fab-action {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-lg);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.fab-action:hover {
+.ios-action-sheet-btn:hover {
   background: var(--color-bg-hover);
-  transform: translateX(-4px);
 }
 
-.fab-action:active {
-  transform: scale(0.97);
+.ios-action-sheet-btn:active {
+  background: var(--color-bg-hover);
 }
 
-.fab-action-icon {
-  font-size: 18px;
-  width: 24px;
+/* Cancel button styling */
+.ios-action-sheet-cancel {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Icon in action sheet */
+.ios-action-icon {
+  font-size: 20px;
+  width: 28px;
   text-align: center;
 }
 
-.fab-action-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text);
-  white-space: nowrap;
-}
-
-/* Stagger animation for actions */
-.fab-actions.visible .fab-action:nth-child(1) {
-  animation: slideIn 0.2s ease-out 0s forwards;
-}
-
-.fab-actions.visible .fab-action:nth-child(2) {
-  animation: slideIn 0.2s ease-out 0.05s forwards;
-}
-
-.fab-actions.visible .fab-action:nth-child(3) {
-  animation: slideIn 0.2s ease-out 0.1s forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px) translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) translateX(0);
-  }
-}
-
 /* Dark mode adjustments */
-[data-theme="dark"] .mobile-fab {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
-              0 2px 4px rgba(0, 0, 0, 0.2);
+[data-theme="dark"] .ios-action-sheet-backdrop {
+  background: rgba(0, 0, 0, 0.6);
 }
 
-[data-theme="dark"] .fab-action {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+[data-theme="dark"] .ios-action-sheet-group {
+  background: var(--color-surface, #1c1c1e);
 }
 
-[data-theme="dark"] .fab-backdrop {
-  background: rgba(0, 0, 0, 0.5);
+[data-theme="dark"] .ios-action-sheet-btn {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]):not([data-theme="dark"]) .mobile-fab {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
-                0 2px 4px rgba(0, 0, 0, 0.2);
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .ios-action-sheet-backdrop {
+    background: rgba(0, 0, 0, 0.6);
   }
 
-  :root:not([data-theme="light"]):not([data-theme="dark"]) .fab-action {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .ios-action-sheet-group {
+    background: var(--color-surface, #1c1c1e);
   }
 
-  :root:not([data-theme="light"]):not([data-theme="dark"]) .fab-backdrop {
-    background: rgba(0, 0, 0, 0.5);
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .ios-action-sheet-btn {
+    border-color: rgba(255, 255, 255, 0.1);
   }
 }
 
 /* ===== LANDSCAPE MODE ===== */
 @media (orientation: landscape) and (max-height: 500px) {
-  .mobile-fab-container {
+  .mobile-add-btn-container {
     /* Account for safe areas in landscape (iPhone notch on sides) */
     right: calc(16px + env(safe-area-inset-right, 0px));
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Smaller FAB in landscape to save vertical space */
-  .mobile-fab {
-    width: 48px;
-    height: 48px;
+  /* Smaller button in landscape */
+  .mobile-add-btn {
+    width: 40px;
+    height: 40px;
   }
 
-  .fab-icon svg {
+  .mobile-add-btn .add-icon {
     width: 20px;
     height: 20px;
   }
 
-  /* Compact actions in landscape */
-  .fab-actions {
-    gap: 8px;
+  /* Compact action sheet in landscape */
+  .ios-action-sheet {
+    padding: 6px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
   }
 
-  .fab-action {
-    padding: 8px 12px;
-    gap: 8px;
+  .ios-action-sheet-btn {
+    padding: 12px;
+    min-height: 44px;
+    font-size: 15px;
   }
 
-  .fab-action-icon {
-    font-size: 16px;
-    width: 20px;
-  }
-
-  .fab-action-label {
-    font-size: 13px;
-  }
-
-  /* Account for landscape header */
-  .fab-backdrop {
-    top: 44px;
+  .ios-action-sheet-title {
+    padding: 10px 16px 6px;
+    font-size: 12px;
   }
 }
