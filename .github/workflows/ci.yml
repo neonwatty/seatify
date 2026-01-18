@@ -2,9 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [main, next-migration, develop, staging]
+    branches: [main, next-migration]
+    tags: ['v*']
   pull_request:
-    branches: [main, next-migration, develop, staging]
+    branches: [main, next-migration]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
