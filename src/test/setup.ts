@@ -2,6 +2,7 @@ import { vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
 // React 19 act environment flag
+// @ts-expect-error - React testing environment flag
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock next/navigation
