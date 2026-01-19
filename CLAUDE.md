@@ -64,3 +64,7 @@ When asked to "make a plan", spawn at least 3 planning agents in parallel, each 
 ## Pull Requests
 
 After creating a PR, repeatedly check GitHub Actions workflows using `gh run list` and `gh run watch` until they succeed. Debug and fix any failures before considering the PR complete.
+
+## Repository
+
+This repository is hosted at `mean-weasel/seatify` with organization-level branch protection.
