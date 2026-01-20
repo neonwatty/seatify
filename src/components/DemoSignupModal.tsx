@@ -16,6 +16,7 @@ export type GatedFeature =
 interface DemoSignupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   feature: GatedFeature;
 }
 
@@ -54,7 +55,7 @@ const FEATURE_MESSAGES: Record<GatedFeature, { title: string; description: strin
 
 type ModalState = 'form' | 'loading' | 'success' | 'verify_email';
 
-export function DemoSignupModal({ isOpen, onClose, feature }: DemoSignupModalProps) {
+export function DemoSignupModal({ isOpen, onClose, onSuccess: _onSuccess, feature }: DemoSignupModalProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

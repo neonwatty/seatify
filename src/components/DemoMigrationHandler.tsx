@@ -30,45 +30,6 @@ export function DemoMigrationHandler() {
   const router = useRouter();
   const [isMigrating, setIsMigrating] = useState(false);
 
-  useEffect(() => {
-    const migrate = searchParams.get('migrate');
-    const feature = searchParams.get('feature') as GatedFeature | null;
-
-    if (migrate !== 'demo' || isMigrating) {
-      return;
-    }
-
-    // Check for demo data in sessionStorage
-    const storedData = sessionStorage.getItem(DEMO_MIGRATION_KEY);
-    if (!storedData) {
-      // No demo data to migrate, clean up URL
-      cleanupUrl();
-      return;
-    }
-
-    // Parse the stored data
-    let migrationData: DemoMigrationData;
-    try {
-      migrationData = JSON.parse(storedData);
-    } catch {
-      console.error('Failed to parse demo migration data');
-      sessionStorage.removeItem(DEMO_MIGRATION_KEY);
-      cleanupUrl();
-      return;
-    }
-
-    // Check if data is expired (24 hours)
-    const isExpired = Date.now() - migrationData.timestamp > 24 * 60 * 60 * 1000;
-    if (isExpired) {
-      sessionStorage.removeItem(DEMO_MIGRATION_KEY);
-      cleanupUrl();
-      return;
-    }
-
-    // Perform migration
-    performMigration(migrationData, feature);
-  }, [searchParams, isMigrating, performMigration, cleanupUrl]);
-
   const cleanupUrl = useCallback(() => {
     // Remove migrate and feature params from URL
     const url = new URL(window.location.href);
@@ -114,6 +75,45 @@ export function DemoMigrationHandler() {
       setIsMigrating(false);
     }
   }, [cleanupUrl, router]);
+
+  useEffect(() => {
+    const migrate = searchParams.get('migrate');
+    const feature = searchParams.get('feature') as GatedFeature | null;
+
+    if (migrate !== 'demo' || isMigrating) {
+      return;
+    }
+
+    // Check for demo data in sessionStorage
+    const storedData = sessionStorage.getItem(DEMO_MIGRATION_KEY);
+    if (!storedData) {
+      // No demo data to migrate, clean up URL
+      cleanupUrl();
+      return;
+    }
+
+    // Parse the stored data
+    let migrationData: DemoMigrationData;
+    try {
+      migrationData = JSON.parse(storedData);
+    } catch {
+      console.error('Failed to parse demo migration data');
+      sessionStorage.removeItem(DEMO_MIGRATION_KEY);
+      cleanupUrl();
+      return;
+    }
+
+    // Check if data is expired (24 hours)
+    const isExpired = Date.now() - migrationData.timestamp > 24 * 60 * 60 * 1000;
+    if (isExpired) {
+      sessionStorage.removeItem(DEMO_MIGRATION_KEY);
+      cleanupUrl();
+      return;
+    }
+
+    // Perform migration
+    performMigration(migrationData, feature);
+  }, [searchParams, isMigrating, performMigration, cleanupUrl]);
 
   // Show loading state while migrating
   if (isMigrating) {
