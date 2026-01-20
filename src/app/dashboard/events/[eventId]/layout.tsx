@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { DEMO_EVENT_ID } from '@/lib/constants';
 
 interface EventLayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,12 @@ export default async function EventLayout({
   params,
 }: EventLayoutProps) {
   const { eventId } = await params;
+
+  // For demo event, skip the ownership check
+  if (eventId === DEMO_EVENT_ID) {
+    return <>{children}</>;
+  }
+
   const supabase = await createClient();
 
   // Verify the event exists and belongs to the user

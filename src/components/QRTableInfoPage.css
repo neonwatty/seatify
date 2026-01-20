@@ -28,12 +28,10 @@
   margin: 0 0 0.5rem;
 }
 
-.qr-brand .logo-seat {
-  color: var(--color-text);
-}
-
+.qr-brand .logo-seat,
 .qr-brand .logo-ify {
   color: var(--color-primary);
+  font-family: var(--font-caveat), cursive;
 }
 
 .event-name {

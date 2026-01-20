@@ -1,24 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { DEMO_EVENT_ID as _DEMO_EVENT_ID } from '@/lib/constants'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  // Check for demo event route FIRST - allow without any auth
   const pathname = request.nextUrl.pathname;
-  if (pathname.includes('/events/00000000-0000-0000-0000-000000000001')) {
-    // Forward demo mode via request header so layouts can access it
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('x-demo-mode', 'true');
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
-  }
+
+  // Check if this is a demo event route
+  const isDemoRoute = pathname.includes('/events/00000000-0000-0000-0000-000000000001');
 
   // Skip Supabase auth if environment variables are not configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -59,10 +50,11 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes - redirect to login if not authenticated
-  // Note: Demo event check is done earlier in the function
+  // Exception: demo event routes are allowed without auth
   if (
     !user &&
-    request.nextUrl.pathname.startsWith('/dashboard')
+    pathname.startsWith('/dashboard') &&
+    !isDemoRoute
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -72,7 +64,7 @@ export async function updateSession(request: NextRequest) {
   // Redirect logged-in users away from auth pages
   if (
     user &&
-    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
+    (pathname === '/login' || pathname === '/signup')
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'

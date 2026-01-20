@@ -103,16 +103,10 @@
   opacity: 1;
 }
 
-.header .logo-seat {
-  color: var(--color-text);
-}
-
+.header .logo-seat,
 .header .logo-ify {
   color: var(--color-primary);
   font-family: var(--font-caveat), cursive;
-  font-size: 1.15em;
-  font-weight: 600;
-  vertical-align: baseline;
 }
 
 .version-badge {

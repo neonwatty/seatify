@@ -35,14 +35,10 @@
   margin-bottom: 0.75rem;
 }
 
-.footer-logo-seat {
-  color: var(--color-text);
-}
-
+.footer-logo-seat,
 .footer-logo-ify {
   color: var(--color-primary);
   font-family: var(--font-caveat), cursive;
-  font-weight: 600;
 }
 
 .footer-tagline {

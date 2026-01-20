@@ -50,14 +50,10 @@
   letter-spacing: -0.02em;
 }
 
-.header-logo .logo-seat {
-  color: #171717;
-}
-
+.header-logo .logo-seat,
 .header-logo .logo-ify {
   color: var(--color-primary, #f97352);
   font-family: var(--font-caveat), cursive;
-  font-weight: 500;
 }
 
 .header-right {
@@ -592,8 +588,10 @@
     border-color: #262626;
   }
 
-  .header-logo .logo-seat {
-    color: #fafafa;
+  .header-logo .logo-seat,
+  .header-logo .logo-ify {
+    color: var(--color-primary, #f97352);
+    font-family: var(--font-caveat), cursive;
   }
 
   .user-menu-button:hover {

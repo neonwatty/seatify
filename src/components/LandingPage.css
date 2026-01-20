@@ -71,15 +71,10 @@
   animation-delay: 0.1s;
 }
 
-.logo-seat {
-  color: var(--color-text);
-}
-
+.logo-seat,
 .logo-ify {
   color: var(--color-primary);
   font-family: var(--font-caveat), cursive;
-  font-size: 4rem;
-  font-weight: 600;
 }
 
 @keyframes floatDown {

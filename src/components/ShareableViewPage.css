@@ -30,16 +30,10 @@
   margin: 0;
 }
 
-.shareable-brand .logo-seat {
-  color: var(--color-text);
-}
-
+.shareable-brand .logo-seat,
 .shareable-brand .logo-ify {
   color: var(--color-primary);
   font-family: var(--font-caveat), cursive;
-  font-size: 1.15em;
-  font-weight: 600;
-  vertical-align: baseline;
 }
 
 /* Upload prompt */
@@ -163,16 +157,10 @@
   margin: 0;
 }
 
-.shareable-brand-small .logo-seat {
-  color: var(--color-text);
-}
-
+.shareable-brand-small .logo-seat,
 .shareable-brand-small .logo-ify {
   color: var(--color-primary);
   font-family: var(--font-caveat), cursive;
-  font-size: 1.15em;
-  font-weight: 600;
-  vertical-align: baseline;
 }
 
 .shareable-badge {
