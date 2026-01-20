@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { DashboardHeader } from '@/components/DashboardHeader';
 import { PreferencesSyncProvider } from '@/components/PreferencesSyncProvider';
