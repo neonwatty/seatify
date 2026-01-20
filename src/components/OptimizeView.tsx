@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStore } from '../store/useStore';
 import { useSyncToSupabase } from '../hooks/useSyncToSupabase';
 import type { Guest, Table, Constraint } from '../types';
 import { getFullName } from '../types';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { ConstraintForm } from './ConstraintForm';
-import { trackOptimizerRun, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
+import { trackOptimizerRun, trackFunnelStep, trackMilestone, setUserProperties, trackCTAClick } from '../utils/analytics';
 import {
   shouldShowEmailCapture,
   markTriggerShown,
@@ -28,8 +29,9 @@ interface OptimizationResult {
 }
 
 export function OptimizeView() {
-  const { event } = useStore();
+  const { event, isDemo, trackDemoAction } = useStore();
   const { assignGuestToTable, addConstraint, removeConstraint } = useSyncToSupabase();
+  const router = useRouter();
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [newConstraint, setNewConstraint] = useState({
@@ -69,6 +71,11 @@ export function OptimizeView() {
     trackFunnelStep('optimizer_used', { guest_count: confirmedGuests, table_count: event.tables.length });
     trackMilestone('first_optimization');
     setUserProperties({ hasUsedOptimizer: true });
+
+    // Track demo action
+    if (isDemo) {
+      trackDemoAction('ranOptimizer');
+    }
 
     // Simulate async work
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -308,6 +315,27 @@ export function OptimizeView() {
                 })}
               </div>
             </div>
+
+            {isDemo && (
+              <div className="demo-save-cta">
+                <div className="demo-save-cta-content">
+                  <span className="demo-save-cta-icon">✨</span>
+                  <div className="demo-save-cta-text">
+                    <strong>Want to save this optimized layout?</strong>
+                    <span>Create a free account to keep your work</span>
+                  </div>
+                </div>
+                <button
+                  className="demo-save-cta-btn"
+                  onClick={() => {
+                    trackCTAClick('demo_post_optimizer');
+                    router.push('/signup');
+                  }}
+                >
+                  Save &amp; Sign Up
+                </button>
+              </div>
+            )}
 
             <div className="result-actions">
               <button className="apply-btn" onClick={applyOptimization}>

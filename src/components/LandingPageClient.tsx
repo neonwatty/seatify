@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import './LandingPage.css';
 import { EmailCaptureModal } from './EmailCaptureModal';
+import { LandingChoiceModal } from './LandingChoiceModal';
 import { Footer } from './Footer';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
 import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../utils/analytics';
@@ -155,6 +156,7 @@ const useCases = ['Weddings', 'Corporate Dinners', 'Galas', 'Team Offsites', 'Pr
 export function LandingPageClient() {
   const router = useRouter();
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   // Check if user has already subscribed (don't show button if so)
@@ -172,10 +174,7 @@ export function LandingPageClient() {
 
   const handleEnterApp = () => {
     trackCTAClick('hero');
-    trackAppEntryConversion();
-    trackFunnelStep('cta_click');
-    trackFunnelStep('app_entry');
-    router.push('/dashboard');
+    setShowChoiceModal(true);
   };
 
   const handleViewDemo = () => {
@@ -199,10 +198,7 @@ export function LandingPageClient() {
   // Secondary CTA handler
   const handleSecondaryCTA = () => {
     trackCTAClick('secondary');
-    trackAppEntryConversion();
-    trackFunnelStep('cta_click');
-    trackFunnelStep('app_entry');
-    router.push('/dashboard');
+    setShowChoiceModal(true);
   };
 
   // Toggle FAQ item
@@ -413,6 +409,12 @@ export function LandingPageClient() {
           source="landing"
         />
       )}
+
+      {/* Landing Choice Modal */}
+      <LandingChoiceModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+      />
     </div>
   );
 }

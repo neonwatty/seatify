@@ -95,6 +95,16 @@ const MAX_EVENTS = 10;
 // Theme type
 type Theme = 'light' | 'dark' | 'system';
 
+// Demo interaction tracking
+export interface DemoInteraction {
+  movedGuest: boolean;
+  addedTable: boolean;
+  ranOptimizer: boolean;
+  viewedRelationships: boolean;
+  addedConstraint: boolean;
+  actionsCount: number;
+}
+
 // Onboarding state
 interface OnboardingState {
   hasCompletedOnboarding: boolean;
@@ -127,6 +137,9 @@ interface AppState extends OnboardingState {
 
   // Demo mode - when true, disables write operations
   isDemo: boolean;
+
+  // Demo interaction tracking
+  demoInteraction: DemoInteraction;
 
   // Undo/Redo history
   history: HistoryEntry[];
@@ -173,6 +186,8 @@ interface AppState extends OnboardingState {
 
   // Actions - Demo Mode
   setDemoMode: (isDemo: boolean) => void;
+  trackDemoAction: (action: keyof Omit<DemoInteraction, 'actionsCount'>) => void;
+  resetDemoInteraction: () => void;
 
   // Actions - Event Management (multi-event)
   createEvent: (data?: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => string;
@@ -687,6 +702,14 @@ export const useStore = create<AppState>()(
       sidebarOpen: false,
       theme: 'system',
       isDemo: false,
+      demoInteraction: {
+        movedGuest: false,
+        addedTable: false,
+        ranOptimizer: false,
+        viewedRelationships: false,
+        addedConstraint: false,
+        actionsCount: 0,
+      },
       visibleGroups: 'all',
       contextMenu: {
         isOpen: false,
@@ -1768,6 +1791,28 @@ export const useStore = create<AppState>()(
       // Theme actions
       setTheme: (theme) => set({ theme }),
       setDemoMode: (isDemo) => set({ isDemo }),
+      trackDemoAction: (action) =>
+        set((state) => {
+          if (!state.isDemo) return state;
+          return {
+            demoInteraction: {
+              ...state.demoInteraction,
+              [action]: true,
+              actionsCount: state.demoInteraction.actionsCount + 1,
+            },
+          };
+        }),
+      resetDemoInteraction: () =>
+        set({
+          demoInteraction: {
+            movedGuest: false,
+            addedTable: false,
+            ranOptimizer: false,
+            viewedRelationships: false,
+            addedConstraint: false,
+            actionsCount: 0,
+          },
+        }),
       cycleTheme: () =>
         set((state) => {
           const themes: Theme[] = ['light', 'dark', 'system'];

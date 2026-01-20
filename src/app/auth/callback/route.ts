@@ -5,7 +5,20 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard';
+  let next = searchParams.get('next') ?? '/dashboard';
+
+  // Check for demo migration parameters
+  const migrate = searchParams.get('migrate');
+  const feature = searchParams.get('feature');
+
+  // If migrating from demo, append query params to redirect URL
+  if (migrate === 'demo') {
+    const separator = next.includes('?') ? '&' : '?';
+    next = `${next}${separator}migrate=demo`;
+    if (feature) {
+      next = `${next}&feature=${feature}`;
+    }
+  }
 
   if (code) {
     const supabase = await createClient();

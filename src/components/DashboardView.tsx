@@ -7,6 +7,8 @@ import { PDFPreviewModal, type PlaceCardOptions, type TableCardOptions } from '.
 import { ShareLinkModal } from './ShareLinkModal';
 import { OnboardingWizard } from './OnboardingWizard';
 import { EmailCaptureModal } from './EmailCaptureModal';
+import { DemoSignupModal } from './DemoSignupModal';
+import { useDemoGate } from '../hooks/useDemoGate';
 import { QR_TOUR_STEPS } from '../data/onboardingSteps';
 import {
   downloadTableCards,
@@ -32,12 +34,14 @@ export function DashboardView() {
     setEventType,
     exportEvent
   } = useStore();
+  const { isDemo, checkGate, gatedFeature, closeGate, completeSignup } = useDemoGate();
   const [showQRPrintView, setShowQRPrintView] = useState(false);
   const [showQRTour, setShowQRTour] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isGeneratingTableCards, setIsGeneratingTableCards] = useState(false);
   const [isGeneratingPlaceCards, setIsGeneratingPlaceCards] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   // PDF Preview state
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -74,7 +78,7 @@ export function DashboardView() {
     setShowEmailCapture(false);
   };
 
-  const handleExport = () => {
+  const doExport = () => {
     const json = exportEvent();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -86,7 +90,15 @@ export function DashboardView() {
     triggerEmailCaptureOnExport();
   };
 
-  const handlePreviewTableCards = async () => {
+  const handleExport = () => {
+    if (!checkGate('share_file', doExport)) {
+      setPendingAction(() => doExport);
+      return;
+    }
+    doExport();
+  };
+
+  const doPreviewTableCards = async () => {
     if (totalTables === 0) {
       showToast('Add tables first to preview table cards', 'warning');
       return;
@@ -108,7 +120,15 @@ export function DashboardView() {
     }
   };
 
-  const handlePreviewPlaceCards = async () => {
+  const handlePreviewTableCards = () => {
+    if (!checkGate('pdf_table_cards', doPreviewTableCards)) {
+      setPendingAction(() => doPreviewTableCards);
+      return;
+    }
+    doPreviewTableCards();
+  };
+
+  const doPreviewPlaceCards = async () => {
     const seatedConfirmed = event.guests.filter(
       g => g.tableId && g.rsvpStatus === 'confirmed'
     ).length;
@@ -132,6 +152,14 @@ export function DashboardView() {
     } finally {
       setIsGeneratingPreview(false);
     }
+  };
+
+  const handlePreviewPlaceCards = () => {
+    if (!checkGate('pdf_place_cards', doPreviewPlaceCards)) {
+      setPendingAction(() => doPreviewPlaceCards);
+      return;
+    }
+    doPreviewPlaceCards();
   };
 
   const handleClosePreview = () => {
@@ -386,7 +414,13 @@ export function DashboardView() {
             </button>
             <button
               className="action-btn secondary"
-              onClick={() => setShowShareModal(true)}
+              onClick={() => {
+                if (!checkGate('share_link', () => setShowShareModal(true))) {
+                  setPendingAction(() => () => setShowShareModal(true));
+                  return;
+                }
+                setShowShareModal(true);
+              }}
               disabled={totalGuests === 0 && totalTables === 0}
             >
               <span className="action-icon">↗</span>
@@ -461,7 +495,13 @@ export function DashboardView() {
               <div className="tables-header-actions">
                 <button
                   className="qr-print-btn"
-                  onClick={() => setShowQRPrintView(true)}
+                  onClick={() => {
+                    if (!checkGate('qr_codes', () => setShowQRPrintView(true))) {
+                      setPendingAction(() => () => setShowQRPrintView(true));
+                      return;
+                    }
+                    setShowQRPrintView(true);
+                  }}
                   title="Print all table QR codes"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -554,6 +594,20 @@ export function DashboardView() {
           source="export_prompt"
         />
       )}
+
+      {/* Demo Signup Modal (for gated features) */}
+      <DemoSignupModal
+        isOpen={!!gatedFeature}
+        onClose={closeGate}
+        onSuccess={() => {
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+          completeSignup();
+        }}
+        feature={gatedFeature || 'pdf_table_cards'}
+      />
     </div>
   );
 }

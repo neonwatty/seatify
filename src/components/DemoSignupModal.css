@@ -1,0 +1,445 @@
+/* Demo Signup Modal - Inline signup for gated features */
+
+.demo-signup-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.demo-signup-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.demo-signup-header {
+  padding: 2rem 2rem 1rem;
+  text-align: center;
+  position: relative;
+}
+
+.demo-signup-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #fef3f0 0%, #fde8e2 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-signup-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--color-primary, #f97352);
+}
+
+.demo-signup-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--color-text, #1a1a1a);
+}
+
+.demo-signup-header p {
+  color: var(--color-text-secondary, #666);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.demo-signup-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted, #999);
+  transition: all 0.2s;
+}
+
+.demo-signup-close:hover {
+  background: var(--color-bg-hover, #f5f5f5);
+  color: var(--color-text, #1a1a1a);
+}
+
+.demo-signup-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Benefits list */
+.demo-signup-benefits {
+  background: var(--color-bg-subtle, #f9fafb);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, #555);
+}
+
+.benefit-item svg {
+  width: 18px;
+  height: 18px;
+  stroke: #10b981;
+  flex-shrink: 0;
+}
+
+/* Form */
+.demo-signup-form {
+  padding: 0 2rem 1rem;
+}
+
+.demo-signup-form .form-group {
+  margin-bottom: 1rem;
+}
+
+.demo-signup-form .form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1a1a1a);
+  margin-bottom: 0.5rem;
+}
+
+.demo-signup-form .form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: white;
+  color: var(--color-text, #1a1a1a);
+  transition: all 0.2s;
+}
+
+.demo-signup-form .form-group input:hover {
+  border-color: var(--color-border-hover, #d1d5db);
+}
+
+.demo-signup-form .form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary, #f97352);
+  box-shadow: 0 0 0 3px rgba(249, 115, 82, 0.1);
+}
+
+.demo-signup-form .form-group input:disabled {
+  background: var(--color-bg-subtle, #f9fafb);
+  cursor: not-allowed;
+}
+
+.demo-signup-form .form-group input::placeholder {
+  color: var(--color-text-muted, #999);
+}
+
+/* Error message */
+.demo-signup-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Buttons */
+.demo-signup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.demo-signup-btn.primary {
+  background: linear-gradient(135deg, #f97352 0%, #e85d3b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(249, 115, 82, 0.3);
+}
+
+.demo-signup-btn.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(249, 115, 82, 0.35);
+}
+
+.demo-signup-btn.primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.demo-signup-btn.primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.demo-signup-btn.google {
+  background: white;
+  color: var(--color-text, #1a1a1a);
+  border: 2px solid var(--color-border, #e5e7eb);
+  margin: 0 2rem;
+  width: calc(100% - 4rem);
+}
+
+.demo-signup-btn.google:hover:not(:disabled) {
+  background: var(--color-bg-subtle, #f9fafb);
+  border-color: var(--color-border-hover, #d1d5db);
+}
+
+.demo-signup-btn.google:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.demo-signup-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+}
+
+.demo-signup-divider::before,
+.demo-signup-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border, #e5e7eb);
+}
+
+.demo-signup-divider span {
+  color: var(--color-text-muted, #999);
+  font-size: 0.875rem;
+}
+
+/* Footer */
+.demo-signup-footer {
+  text-align: center;
+  padding: 1rem 2rem 2rem;
+  color: var(--color-text-secondary, #666);
+  font-size: 0.9rem;
+}
+
+.demo-signup-footer a {
+  color: var(--color-primary, #f97352);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.demo-signup-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Success state */
+.demo-signup-success {
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.demo-signup-success .success-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.demo-signup-success .success-icon svg {
+  width: 36px;
+  height: 36px;
+  stroke: white;
+}
+
+.demo-signup-success h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--color-text, #1a1a1a);
+}
+
+.demo-signup-success p {
+  color: var(--color-text-secondary, #666);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.demo-signup-success strong {
+  color: var(--color-text, #1a1a1a);
+}
+
+/* Spinner */
+.demo-signup-btn .spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .demo-signup-modal {
+    background: #1a1a1a;
+  }
+
+  .demo-signup-icon {
+    background: linear-gradient(135deg, #2d2319 0%, #3d2a1c 100%);
+  }
+
+  .demo-signup-benefits {
+    background: #262626;
+  }
+
+  .demo-signup-form .form-group input {
+    background: #262626;
+    border-color: #404040;
+    color: #f5f5f5;
+  }
+
+  .demo-signup-form .form-group input:hover {
+    border-color: #525252;
+  }
+
+  .demo-signup-form .form-group input:focus {
+    border-color: var(--color-primary, #f97352);
+    box-shadow: 0 0 0 3px rgba(249, 115, 82, 0.2);
+  }
+
+  .demo-signup-form .form-group input:disabled {
+    background: #333;
+  }
+
+  .demo-signup-btn.google {
+    background: #262626;
+    border-color: #404040;
+    color: #f5f5f5;
+  }
+
+  .demo-signup-btn.google:hover:not(:disabled) {
+    background: #333;
+    border-color: #525252;
+  }
+
+  .demo-signup-error {
+    background: #450a0a;
+    border-color: #7f1d1d;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .demo-signup-modal {
+    max-width: none;
+    margin: 0.5rem;
+    border-radius: 12px;
+  }
+
+  .demo-signup-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
+  .demo-signup-form {
+    padding: 0 1.5rem 1rem;
+  }
+
+  .demo-signup-btn.google {
+    margin: 0 1.5rem;
+    width: calc(100% - 3rem);
+  }
+
+  .demo-signup-divider {
+    padding: 1rem 1.5rem;
+  }
+
+  .demo-signup-footer {
+    padding: 1rem 1.5rem 1.5rem;
+  }
+
+  .demo-signup-success {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .demo-signup-modal-overlay,
+  .demo-signup-modal {
+    animation: none;
+  }
+
+  .demo-signup-error {
+    animation: none;
+  }
+
+  .demo-signup-btn .spinner {
+    animation: none;
+  }
+}

@@ -28,6 +28,11 @@ export function useSyncToSupabase() {
 
   // Table operations with persistence
   const addTableWithSync = useCallback(async (shape: TableShape, x: number, y: number) => {
+    // Track demo action if in demo mode
+    if (store.isDemo) {
+      store.trackDemoAction('addedTable');
+    }
+
     // Add to local store first (optimistic update)
     store.addTable(shape, x, y);
 
@@ -215,6 +220,11 @@ export function useSyncToSupabase() {
   }, [store, eventId, isAuthenticated]);
 
   const assignGuestToTableWithSync = useCallback(async (guestId: string, tableId: string | undefined, seatIndex?: number) => {
+    // Track demo action if in demo mode
+    if (store.isDemo) {
+      store.trackDemoAction('movedGuest');
+    }
+
     // Update local store first
     store.assignGuestToTable(guestId, tableId, seatIndex);
 
@@ -401,6 +411,11 @@ export function useSyncToSupabase() {
 
   // Constraint operations with persistence
   const addConstraintWithSync = useCallback(async (constraint: Omit<Constraint, 'id'>) => {
+    // Track demo action if in demo mode
+    if (store.isDemo) {
+      store.trackDemoAction('addedConstraint');
+    }
+
     // Add to local store first (optimistic update)
     store.addConstraint(constraint);
 
