@@ -5,15 +5,12 @@ const DEMO_EVENT_URL = '/dashboard/events/00000000-0000-0000-0000-000000000001/c
 /**
  * Demo experience E2E tests.
  *
- * Note: Demo canvas tests require the demo event to be seeded in the database,
- * which isn't available in CI. These tests are skipped in CI environments.
- * The landing page modal tests work without database dependencies.
+ * These tests require the demo event to be seeded in the database.
+ * In CI, Supabase is started locally and seeded before running tests.
+ * Locally, ensure you've run the seed-demo.sql script against your Supabase instance.
  */
 
-// Skip demo canvas tests in CI (no seeded demo event)
-const describeOrSkip = process.env.CI ? test.describe.skip : test.describe;
-
-describeOrSkip('Demo Canvas Page', () => {
+test.describe('Demo Canvas Page', () => {
   test.beforeEach(async ({ page }) => {
     // Clear localStorage to ensure fresh state for each test
     await page.goto('/');
