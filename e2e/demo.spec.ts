@@ -176,6 +176,165 @@ test.describe('Demo Canvas Page', () => {
   });
 });
 
+test.describe('Demo Banner Signup Modal', () => {
+  test.beforeEach(async ({ page }) => {
+    // Set session flag to prevent auto-start of tour before navigating
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.setItem('tourRemindLater', 'true');
+    });
+  });
+
+  test('should show signup modal when clicking banner CTA', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure page loaded and no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Demo banner should be visible
+    const demoBanner = page.locator('.demo-banner');
+    await expect(demoBanner).toBeVisible();
+
+    // Click the banner CTA button
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    // Signup modal should appear
+    const signupModal = page.locator('.demo-signup-modal');
+    await expect(signupModal).toBeVisible({ timeout: 5000 });
+  });
+
+  test('should show "Save Your Work" messaging in modal', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Click the banner CTA
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    // Modal should show "Save Your Work" title
+    const modalTitle = page.locator('.demo-signup-modal h2');
+    await expect(modalTitle).toHaveText('Save Your Work');
+
+    // Modal should show the description
+    const modalDescription = page.locator('.demo-signup-header p');
+    await expect(modalDescription).toContainText('save your seating arrangement');
+  });
+
+  test('should close modal when clicking close button', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Open the modal
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    const signupModal = page.locator('.demo-signup-modal');
+    await expect(signupModal).toBeVisible();
+
+    // Click close button
+    const closeButton = page.locator('.demo-signup-close');
+    await closeButton.click();
+
+    // Modal should close
+    await expect(signupModal).not.toBeVisible({ timeout: 2000 });
+  });
+
+  test('should close modal when clicking overlay', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Open the modal
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    const signupModal = page.locator('.demo-signup-modal');
+    await expect(signupModal).toBeVisible();
+
+    // Click on the overlay (outside the modal content)
+    const overlay = page.locator('.demo-signup-modal-overlay');
+    await overlay.click({ position: { x: 10, y: 10 } });
+
+    // Modal should close
+    await expect(signupModal).not.toBeVisible({ timeout: 2000 });
+  });
+
+  test('should have Google signup option', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Open the modal
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    // Google signup button should be visible
+    const googleButton = page.locator('.demo-signup-btn.google');
+    await expect(googleButton).toBeVisible();
+    await expect(googleButton).toContainText('Continue with Google');
+  });
+
+  test('should have email signup form', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Open the modal
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    // Form fields should be visible
+    await expect(page.locator('#demo-signup-email')).toBeVisible();
+    await expect(page.locator('#demo-signup-password')).toBeVisible();
+    await expect(page.locator('#demo-signup-confirm')).toBeVisible();
+
+    // Submit button should show correct CTA
+    const submitButton = page.locator('.demo-signup-btn.primary');
+    await expect(submitButton).toContainText('Create Free Account');
+  });
+
+  test('should show benefit items in modal', async ({ page }) => {
+    await page.goto('/demo');
+    await page.waitForLoadState('networkidle');
+
+    // Ensure no overlay is blocking
+    await expect(page.locator('.event-layout')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.onboarding-overlay')).not.toBeVisible({ timeout: 3000 });
+
+    // Open the modal
+    const bannerCTA = page.locator('.demo-banner-cta');
+    await bannerCTA.click();
+
+    // Benefits should be listed
+    const benefits = page.locator('.benefit-item');
+    await expect(benefits).toHaveCount(3);
+    await expect(benefits.nth(0)).toContainText('Your demo work will be saved');
+    await expect(benefits.nth(1)).toContainText('Access from any device');
+    await expect(benefits.nth(2)).toContainText('Free forever');
+  });
+});
+
 test.describe('Landing Page Choice Modal', () => {
   test('should show choice modal when clicking Start Planning Free', async ({ page }) => {
     await page.goto('/');

@@ -11,7 +11,8 @@ export type GatedFeature =
   | 'share_link'
   | 'share_file'
   | 'qr_codes'
-  | 'survey_builder';
+  | 'survey_builder'
+  | 'save_work';
 
 interface DemoSignupModalProps {
   isOpen: boolean;
@@ -50,6 +51,11 @@ const FEATURE_MESSAGES: Record<GatedFeature, { title: string; description: strin
     title: 'Create Guest Surveys',
     description: 'Create a free account to build surveys and collect guest responses.',
     cta: 'Sign up to create surveys',
+  },
+  save_work: {
+    title: 'Save Your Work',
+    description: 'Create a free account to save your seating arrangement and access it anytime.',
+    cta: 'Create Free Account',
   },
 };
 
