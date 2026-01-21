@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { trackCTAClick } from '../utils/analytics';
 import { DemoSignupModal } from './DemoSignupModal';
+import { isDemoEvent } from '../lib/constants';
 import './DemoBanner.css';
 
 interface BannerContent {
@@ -52,9 +53,11 @@ function getBannerContent(demoInteraction: {
 
 export function DemoBanner() {
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const { isDemo, demoInteraction } = useStore();
+  const { isDemo, demoInteraction, event } = useStore();
 
-  if (!isDemo) return null;
+  // Only show banner if both isDemo is true AND we're viewing the actual demo event
+  // This prevents the banner from showing on migrated events due to stale store state
+  if (!isDemo || !event || !isDemoEvent(event.id)) return null;
 
   const { message, cta } = getBannerContent(demoInteraction);
 
