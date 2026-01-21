@@ -381,9 +381,8 @@ test.describe('Demo Migration Flow', () => {
     await page.waitForURL(/\/dashboard\?migrate=demo/, { timeout: 15000 });
 
     // 8. Verify migration handler processes the migration
-    const migrationOverlay = page.locator('.migration-overlay');
     // The overlay appears briefly during migration - it may already be gone
-    // So we check for either the overlay OR successful redirect to an event
+    // So we just wait for the redirect to complete
 
     // 9. Wait for migration to complete and redirect to new event
     // When feature is provided, redirects to event dashboard; otherwise canvas
