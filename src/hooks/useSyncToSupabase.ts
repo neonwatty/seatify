@@ -2,8 +2,8 @@
 
 import { useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { insertTable, updateTable, deleteTable, type TableInput } from '@/actions/tables';
-import { insertGuests, updateGuests, deleteGuests, insertRelationships, deleteRelationship, type GuestInput } from '@/actions/guests';
+import { insertTable, updateTable, deleteTable } from '@/actions/tables';
+import { insertGuests, updateGuests, deleteGuests, insertRelationships, deleteRelationship } from '@/actions/guests';
 import {
   insertConstraint,
   updateConstraint as updateConstraintAction,
@@ -14,6 +14,7 @@ import {
   updateVenueElement as updateVenueElementAction,
   deleteVenueElement as deleteVenueElementAction,
 } from '@/actions/venueElements';
+import type { TableInput, GuestInput } from '@/actions/types';
 import type { TableShape, Guest, RelationshipType, Constraint, VenueElement } from '@/types';
 
 /**

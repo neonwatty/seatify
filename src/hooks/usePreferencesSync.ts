@@ -5,8 +5,8 @@ import { useStore } from '@/store/useStore';
 import {
   loadUserPreferences,
   updateUserPreference,
-  type UserPreferences,
 } from '@/actions/profilePreferences';
+import type { UserPreferences } from '@/actions/types';
 import type { TourId } from '@/data/tourRegistry';
 
 /**

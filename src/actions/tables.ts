@@ -1,119 +1,81 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
 import type { TableShape } from '@/types';
+import type { TableInput } from './types';
 
-// Type for table data from the frontend
-export interface TableInput {
-  id?: string;
-  name: string;
-  shape: TableShape;
-  capacity: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation?: number;
-}
-
-// Transform frontend table to database format
-function toDbTable(table: TableInput, eventId: string) {
-  return {
-    id: table.id,
-    event_id: eventId,
-    name: table.name,
-    shape: table.shape,
-    capacity: table.capacity,
-    x: table.x,
-    y: table.y,
-    width: table.width,
-    height: table.height,
-    rotation: table.rotation ?? 0,
+interface TableResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      id: string;
+      name: string;
+      shape: TableShape;
+      capacity: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      rotation: number;
+    };
   };
 }
 
 // Insert a single table
 export async function insertTable(eventId: string, table: TableInput) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const response = await serverRailsApi.post<TableResponse>(
+    `/api/v1/events/${eventId}/tables`,
+    {
+      table: {
+        id: table.id,
+        name: table.name,
+        shape: table.shape,
+        capacity: table.capacity,
+        x: table.x,
+        y: table.y,
+        width: table.width,
+        height: table.height,
+        rotation: table.rotation ?? 0,
+      },
+    }
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  const dbTable = toDbTable(table, eventId);
-
-  const { data, error } = await supabase
-    .from('tables')
-    .insert(dbTable)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error inserting table:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error inserting table:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
-  return { data };
+  return { data: response.data?.data.attributes };
 }
 
 // Batch insert tables
 export async function insertTables(eventId: string, tables: TableInput[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const results = await Promise.all(
+    tables.map(table => insertTable(eventId, table))
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    return { error: `Failed to insert ${errors.length} tables` };
   }
 
-  const dbTables = tables.map(t => toDbTable(t, eventId));
-
-  const { data, error } = await supabase
-    .from('tables')
-    .insert(dbTables)
-    .select();
-
-  if (error) {
-    console.error('Error inserting tables:', error);
-    return { error: error.message };
-  }
-
-  revalidatePath(`/dashboard/events/${eventId}/canvas`);
-  return { data, count: data.length };
+  return { data: results.map(r => r.data), count: results.length };
 }
 
 // Update a single table
 export async function updateTable(eventId: string, table: TableInput) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
@@ -121,74 +83,39 @@ export async function updateTable(eventId: string, table: TableInput) {
     return { error: 'Table ID required for update' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const response = await serverRailsApi.patch<TableResponse>(
+    `/api/v1/events/${eventId}/tables/${table.id}`,
+    {
+      table: {
+        name: table.name,
+        shape: table.shape,
+        capacity: table.capacity,
+        x: table.x,
+        y: table.y,
+        width: table.width,
+        height: table.height,
+        rotation: table.rotation ?? 0,
+      },
+    }
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  const dbTable = toDbTable(table, eventId);
-
-  const { data, error } = await supabase
-    .from('tables')
-    .update(dbTable)
-    .eq('id', table.id)
-    .eq('event_id', eventId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating table:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error updating table:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
-  return { data };
+  return { data: response.data?.data.attributes };
 }
 
 // Batch update tables
 export async function updateTables(eventId: string, tables: TableInput[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  // Update each table
   const results = await Promise.all(
-    tables.map(async (table) => {
-      if (!table.id) return { error: 'Table ID required for update' };
-
-      const dbTable = toDbTable(table, eventId);
-      const { data, error } = await supabase
-        .from('tables')
-        .update(dbTable)
-        .eq('id', table.id)
-        .eq('event_id', eventId)
-        .select()
-        .single();
-
-      return { data, error: error?.message };
-    })
+    tables.map(table => updateTable(eventId, table))
   );
 
   const errors = results.filter(r => r.error);
@@ -202,34 +129,17 @@ export async function updateTables(eventId: string, tables: TableInput[]) {
 
 // Delete a single table
 export async function deleteTable(eventId: string, tableId: string) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const response = await serverRailsApi.delete<{ message: string }>(
+    `/api/v1/events/${eventId}/tables/${tableId}`
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  const { error } = await supabase
-    .from('tables')
-    .delete()
-    .eq('id', tableId)
-    .eq('event_id', eventId);
-
-  if (error) {
-    console.error('Error deleting table:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error deleting table:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
@@ -238,34 +148,17 @@ export async function deleteTable(eventId: string, tableId: string) {
 
 // Delete multiple tables
 export async function deleteTables(eventId: string, tableIds: string[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const results = await Promise.all(
+    tableIds.map(tableId => deleteTable(eventId, tableId))
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  const { error } = await supabase
-    .from('tables')
-    .delete()
-    .in('id', tableIds)
-    .eq('event_id', eventId);
-
-  if (error) {
-    console.error('Error deleting tables:', error);
-    return { error: error.message };
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    return { error: `Failed to delete ${errors.length} tables` };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);

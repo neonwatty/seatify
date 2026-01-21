@@ -3,56 +3,35 @@ import {
   loadUserPreferences,
   updateUserPreference,
   updateUserPreferences,
-  type UserPreferences,
 } from './profilePreferences';
-import { mockUser } from '@/test/mocks/supabase';
+import type { UserPreferences } from './types';
 
-// Mock the server Supabase client
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: vi.fn(),
+// Mock the Rails server client
+vi.mock('@/lib/rails/server', () => ({
+  serverRailsApi: {
+    get: vi.fn(),
+    patch: vi.fn(),
+  },
+  isAuthenticated: vi.fn(),
 }));
 
-import { createClient } from '@/lib/supabase/server';
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
 
-const mockedCreateClient = vi.mocked(createClient);
+const mockedIsAuthenticated = vi.mocked(isAuthenticated);
+const mockedServerRailsApi = vi.mocked(serverRailsApi);
 
-// Helper to create a mock client for profile operations
-const createMockProfileClient = (overrides: {
-  user?: typeof mockUser | null;
-  selectResult?: { data: unknown; error: unknown };
-  updateResult?: { data: unknown; error: unknown };
-} = {}) => {
-  const {
-    user = mockUser,
-    selectResult = { data: null, error: null },
-    updateResult = { data: null, error: null },
-  } = overrides;
-
-  return {
-    auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user }, error: null }),
+// Mock API response for user preferences
+const mockUserResponse = {
+  data: {
+    attributes: {
+      theme: 'dark',
+      eventListViewMode: 'list',
+      hasCompletedOnboarding: true,
+      completedTours: ['welcome', 'canvas-basics'],
+      hasUsedOptimizeButton: true,
+      optimizeAnimationEnabled: false,
     },
-    from: vi.fn((_table: string) => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue(selectResult),
-        }),
-      }),
-      update: vi.fn().mockReturnValue({
-        eq: vi.fn().mockResolvedValue(updateResult),
-      }),
-    })),
-  };
-};
-
-// Mock profile data as stored in database
-const mockDbProfile = {
-  theme: 'dark',
-  event_list_view_mode: 'list',
-  has_completed_onboarding: true,
-  completed_tours: ['welcome', 'canvas-basics'],
-  has_used_optimize_button: true,
-  optimize_animation_enabled: false,
+  },
 };
 
 // Expected transformed preferences
@@ -72,32 +51,29 @@ describe('Profile Preferences Actions', () => {
 
   describe('loadUserPreferences', () => {
     it('should load preferences successfully', async () => {
-      const mockClient = createMockProfileClient({
-        selectResult: { data: mockDbProfile, error: null },
-      });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.get.mockResolvedValue({ data: mockUserResponse });
 
       const result = await loadUserPreferences();
 
       expect(result.data).toEqual(expectedPreferences);
       expect(result.error).toBeUndefined();
+      expect(mockedServerRailsApi.get).toHaveBeenCalledWith('/api/v1/me');
     });
 
     it('should return error when not authenticated', async () => {
-      const mockClient = createMockProfileClient({ user: null });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+      mockedIsAuthenticated.mockResolvedValue(false);
 
       const result = await loadUserPreferences();
 
       expect(result.error).toBe('Not authenticated');
       expect(result.data).toBeUndefined();
+      expect(mockedServerRailsApi.get).not.toHaveBeenCalled();
     });
 
-    it('should return default preferences when profile has no preference data', async () => {
-      const mockClient = createMockProfileClient({
-        selectResult: { data: null, error: null },
-      });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+    it('should return default preferences when API returns no data', async () => {
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.get.mockResolvedValue({ data: undefined });
 
       const result = await loadUserPreferences();
 
@@ -111,26 +87,27 @@ describe('Profile Preferences Actions', () => {
       });
     });
 
-    it('should return error on database failure', async () => {
-      const mockClient = createMockProfileClient({
-        selectResult: { data: null, error: { message: 'Database error' } },
-      });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+    it('should return error on API failure', async () => {
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.get.mockResolvedValue({ error: 'API error' });
 
       const result = await loadUserPreferences();
 
-      expect(result.error).toBe('Database error');
+      expect(result.error).toBe('API error');
     });
 
     it('should handle partial profile data with defaults', async () => {
-      const partialProfile = {
-        theme: 'light',
-        // Other fields missing
-      };
-      const mockClient = createMockProfileClient({
-        selectResult: { data: partialProfile, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.get.mockResolvedValue({
+        data: {
+          data: {
+            attributes: {
+              theme: 'light',
+              // Other fields missing/undefined
+            },
+          },
+        },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await loadUserPreferences();
 
@@ -147,65 +124,75 @@ describe('Profile Preferences Actions', () => {
 
   describe('updateUserPreference', () => {
     it('should update theme preference successfully', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreference('theme', 'dark');
 
       expect(result.success).toBe(true);
       expect(result.error).toBeUndefined();
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: { theme: 'dark' },
+      });
     });
 
     it('should update eventListViewMode preference successfully', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreference('eventListViewMode', 'list');
 
       expect(result.success).toBe(true);
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: { event_list_view_mode: 'list' },
+      });
     });
 
     it('should update hasCompletedOnboarding preference successfully', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreference('hasCompletedOnboarding', true);
 
       expect(result.success).toBe(true);
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: { has_completed_onboarding: true },
+      });
     });
 
     it('should update completedTours array successfully', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreference('completedTours', ['welcome', 'canvas']);
 
       expect(result.success).toBe(true);
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: { completed_tours: ['welcome', 'canvas'] },
+      });
     });
 
     it('should return error when not authenticated', async () => {
-      const mockClient = createMockProfileClient({ user: null });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+      mockedIsAuthenticated.mockResolvedValue(false);
 
       const result = await updateUserPreference('theme', 'dark');
 
       expect(result.error).toBe('Not authenticated');
       expect(result.success).toBeUndefined();
+      expect(mockedServerRailsApi.patch).not.toHaveBeenCalled();
     });
 
-    it('should return error on database failure', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: { message: 'Update failed' } },
-      });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+    it('should return error on API failure', async () => {
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({ error: 'Update failed' });
 
       const result = await updateUserPreference('theme', 'dark');
 
@@ -215,10 +202,10 @@ describe('Profile Preferences Actions', () => {
 
   describe('updateUserPreferences', () => {
     it('should update multiple preferences successfully', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreferences({
         theme: 'dark',
@@ -228,31 +215,36 @@ describe('Profile Preferences Actions', () => {
 
       expect(result.success).toBe(true);
       expect(result.error).toBeUndefined();
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: {
+          theme: 'dark',
+          event_list_view_mode: 'list',
+          has_completed_onboarding: true,
+        },
+      });
     });
 
     it('should return success when no preferences to update', async () => {
-      const mockClient = createMockProfileClient();
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+      mockedIsAuthenticated.mockResolvedValue(true);
 
       const result = await updateUserPreferences({});
 
       expect(result.success).toBe(true);
+      expect(mockedServerRailsApi.patch).not.toHaveBeenCalled();
     });
 
     it('should return error when not authenticated', async () => {
-      const mockClient = createMockProfileClient({ user: null });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+      mockedIsAuthenticated.mockResolvedValue(false);
 
       const result = await updateUserPreferences({ theme: 'dark' });
 
       expect(result.error).toBe('Not authenticated');
+      expect(mockedServerRailsApi.patch).not.toHaveBeenCalled();
     });
 
-    it('should return error on database failure', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: { message: 'Batch update failed' } },
-      });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
+    it('should return error on API failure', async () => {
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({ error: 'Batch update failed' });
 
       const result = await updateUserPreferences({
         theme: 'dark',
@@ -263,10 +255,10 @@ describe('Profile Preferences Actions', () => {
     });
 
     it('should handle all preference types in single update', async () => {
-      const mockClient = createMockProfileClient({
-        updateResult: { data: null, error: null },
+      mockedIsAuthenticated.mockResolvedValue(true);
+      mockedServerRailsApi.patch.mockResolvedValue({
+        data: { data: { attributes: {} } },
       });
-      mockedCreateClient.mockResolvedValue(mockClient as never);
 
       const result = await updateUserPreferences({
         theme: 'system',
@@ -278,6 +270,16 @@ describe('Profile Preferences Actions', () => {
       });
 
       expect(result.success).toBe(true);
+      expect(mockedServerRailsApi.patch).toHaveBeenCalledWith('/api/v1/me', {
+        user: {
+          theme: 'system',
+          event_list_view_mode: 'cards',
+          has_completed_onboarding: false,
+          completed_tours: [],
+          has_used_optimize_button: false,
+          optimize_animation_enabled: true,
+        },
+      });
     });
   });
 });

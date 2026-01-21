@@ -1,42 +1,40 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
+import type { GuestInput } from './types';
 
-// Type for guest data from the frontend
-export interface GuestInput {
-  id?: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  company?: string;
-  jobTitle?: string;
-  industry?: string;
-  profileSummary?: string;
-  group?: string;
-  rsvpStatus?: 'pending' | 'confirmed' | 'declined';
-  notes?: string;
-  tableId?: string;
-  seatIndex?: number;
-  canvasX?: number;
-  canvasY?: number;
-  // Profile data (stored in separate table)
-  interests?: string[];
-  dietaryRestrictions?: string[];
-  accessibilityNeeds?: string[];
-  // Relationships (stored in separate table)
-  relationships?: {
-    guestId: string;
+interface GuestResponse {
+  data: {
+    id: string;
     type: string;
-    strength: number;
-  }[];
+    attributes: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string | null;
+      company: string | null;
+      jobTitle: string | null;
+      industry: string | null;
+      profileSummary: string | null;
+      group: string | null;
+      rsvpStatus: string;
+      notes: string | null;
+      tableId: string | null;
+      seatIndex: number | null;
+      canvasX: number | null;
+      canvasY: number | null;
+      interests: string[];
+      dietaryRestrictions: string[];
+      accessibilityNeeds: string[];
+    };
+  };
 }
 
-// Transform frontend guest to database format
-function toDbGuest(guest: GuestInput, eventId: string) {
+// Transform frontend guest to Rails format
+function toRailsGuest(guest: GuestInput) {
   return {
     id: guest.id,
-    event_id: eventId,
     first_name: guest.firstName,
     last_name: guest.lastName,
     email: guest.email || null,
@@ -51,105 +49,61 @@ function toDbGuest(guest: GuestInput, eventId: string) {
     seat_index: guest.seatIndex ?? null,
     canvas_x: guest.canvasX ?? null,
     canvas_y: guest.canvasY ?? null,
+    interests: guest.interests || [],
+    dietary_restrictions: guest.dietaryRestrictions || [],
+    accessibility_needs: guest.accessibilityNeeds || [],
   };
 }
 
 // Batch insert guests
 export async function insertGuests(eventId: string, guests: GuestInput[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const results = await Promise.all(
+    guests.map(async (guest) => {
+      const response = await serverRailsApi.post<GuestResponse>(
+        `/api/v1/events/${eventId}/guests`,
+        { guest: toRailsGuest(guest) }
+      );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
+      if (response.error) {
+        return { error: response.error };
+      }
+      return { data: response.data?.data.attributes };
+    })
+  );
 
-  // Prepare guests for insert
-  const dbGuests = guests.map(g => toDbGuest(g, eventId));
-
-  // Insert guests
-  const { data: insertedGuests, error: guestsError } = await supabase
-    .from('guests')
-    .insert(dbGuests)
-    .select();
-
-  if (guestsError) {
-    console.error('Error inserting guests:', guestsError);
-    return { error: guestsError.message };
-  }
-
-  // Insert guest profiles for those with profile data
-  const profileData = guests
-    .filter(g => g.interests?.length || g.dietaryRestrictions?.length || g.accessibilityNeeds?.length)
-    .map((g, idx) => ({
-      guest_id: insertedGuests[idx].id,
-      interests: g.interests || [],
-      dietary_restrictions: g.dietaryRestrictions || [],
-      accessibility_needs: g.accessibilityNeeds || [],
-    }));
-
-  if (profileData.length > 0) {
-    const { error: profilesError } = await supabase
-      .from('guest_profiles')
-      .insert(profileData);
-
-    if (profilesError) {
-      console.error('Error inserting guest profiles:', profilesError);
-      // Non-fatal, continue
-    }
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    console.error('Error inserting guests:', errors);
+    return { error: `Failed to insert ${errors.length} guests` };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
-  return { data: insertedGuests, count: insertedGuests.length };
+  return { data: results.map(r => r.data), count: results.length };
 }
 
 // Batch update guests
 export async function updateGuests(eventId: string, guests: GuestInput[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  // Update each guest
   const results = await Promise.all(
     guests.map(async (guest) => {
       if (!guest.id) return { error: 'Guest ID required for update' };
 
-      const dbGuest = toDbGuest(guest, eventId);
-      const { data, error } = await supabase
-        .from('guests')
-        .update(dbGuest)
-        .eq('id', guest.id)
-        .eq('event_id', eventId)
-        .select()
-        .single();
+      const response = await serverRailsApi.patch<GuestResponse>(
+        `/api/v1/events/${eventId}/guests/${guest.id}`,
+        { guest: toRailsGuest(guest) }
+      );
 
-      return { data, error: error?.message };
+      if (response.error) {
+        return { error: response.error };
+      }
+      return { data: response.data?.data.attributes };
     })
   );
 
@@ -164,35 +118,27 @@ export async function updateGuests(eventId: string, guests: GuestInput[]) {
 
 // Delete guests
 export async function deleteGuests(eventId: string, guestIds: string[]) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const results = await Promise.all(
+    guestIds.map(async (guestId) => {
+      const response = await serverRailsApi.delete<{ message: string }>(
+        `/api/v1/events/${eventId}/guests/${guestId}`
+      );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
+      if (response.error) {
+        return { error: response.error };
+      }
+      return { success: true };
+    })
+  );
 
-  // Delete guests (cascades to profiles and relationships)
-  const { error } = await supabase
-    .from('guests')
-    .delete()
-    .in('id', guestIds)
-    .eq('event_id', eventId);
-
-  if (error) {
-    console.error('Error deleting guests:', error);
-    return { error: error.message };
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    console.error('Error deleting guests:', errors);
+    return { error: `Failed to delete ${errors.length} guests` };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
@@ -201,44 +147,52 @@ export async function deleteGuests(eventId: string, guestIds: string[]) {
 
 // Get guests for export
 export async function getGuestsForExport(eventId: string) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Get guests with profiles and table names
-  const { data: guests, error } = await supabase
-    .from('guests')
-    .select(`
-      *,
-      guest_profiles (*),
-      tables (name)
-    `)
-    .eq('event_id', eventId)
-    .order('last_name', { ascending: true });
+  // Fetch all guests for the event
+  const response = await serverRailsApi.get<{
+    data: Array<{
+      attributes: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string | null;
+        company: string | null;
+        jobTitle: string | null;
+        industry: string | null;
+        group: string | null;
+        rsvpStatus: string;
+        notes: string | null;
+        tableId: string | null;
+        interests: string[];
+        dietaryRestrictions: string[];
+        accessibilityNeeds: string[];
+      };
+    }>;
+  }>(`/api/v1/events/${eventId}/guests`);
 
-  if (error) {
-    console.error('Error fetching guests:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error fetching guests:', response.error);
+    return { error: response.error };
   }
 
   // Transform to export format
-  const exportData = guests.map(g => ({
-    firstName: g.first_name,
-    lastName: g.last_name,
-    email: g.email || '',
-    company: g.company || '',
-    jobTitle: g.job_title || '',
-    industry: g.industry || '',
-    group: g.group_name || '',
-    rsvpStatus: g.rsvp_status,
-    notes: g.notes || '',
-    tableName: g.tables?.name || '',
-    interests: g.guest_profiles?.interests?.join(', ') || '',
-    dietaryRestrictions: g.guest_profiles?.dietary_restrictions?.join(', ') || '',
-    accessibilityNeeds: g.guest_profiles?.accessibility_needs?.join(', ') || '',
+  const exportData = (response.data?.data || []).map(g => ({
+    firstName: g.attributes.firstName,
+    lastName: g.attributes.lastName,
+    email: g.attributes.email || '',
+    company: g.attributes.company || '',
+    jobTitle: g.attributes.jobTitle || '',
+    industry: g.attributes.industry || '',
+    group: g.attributes.group || '',
+    rsvpStatus: g.attributes.rsvpStatus,
+    notes: g.attributes.notes || '',
+    tableName: '', // Table name would need to be fetched separately
+    interests: g.attributes.interests?.join(', ') || '',
+    dietaryRestrictions: g.attributes.dietaryRestrictions?.join(', ') || '',
+    accessibilityNeeds: g.attributes.accessibilityNeeds?.join(', ') || '',
   }));
 
   return { data: exportData };
@@ -249,47 +203,39 @@ export async function insertRelationships(
   eventId: string,
   relationships: { guestId: string; relatedGuestId: string; type: string; strength: number }[]
 ) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  const results = await Promise.all(
+    relationships.map(async (rel) => {
+      const response = await serverRailsApi.post<{ data: unknown }>(
+        `/api/v1/events/${eventId}/guest_relationships`,
+        {
+          guest_relationship: {
+            guest_id: rel.guestId,
+            related_guest_id: rel.relatedGuestId,
+            relationship_type: rel.type,
+            strength: rel.strength,
+          },
+        }
+      );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
+      if (response.error) {
+        return { error: response.error };
+      }
+      return { data: response.data };
+    })
+  );
 
-  // Prepare relationships
-  const dbRelationships = relationships.map(r => ({
-    event_id: eventId,
-    guest_id: r.guestId,
-    related_guest_id: r.relatedGuestId,
-    relationship_type: r.type,
-    strength: r.strength,
-  }));
-
-  // Upsert relationships (insert or update on conflict)
-  const { data, error } = await supabase
-    .from('guest_relationships')
-    .upsert(dbRelationships, { onConflict: 'guest_id,related_guest_id' })
-    .select();
-
-  if (error) {
-    console.error('Error inserting relationships:', error);
-    return { error: error.message };
+  const errors = results.filter(r => r.error);
+  if (errors.length > 0) {
+    console.error('Error inserting relationships:', errors);
+    return { error: `Failed to insert ${errors.length} relationships` };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);
-  return { data, count: data.length };
+  return { data: results.map(r => r.data), count: results.length };
 }
 
 // Delete a guest relationship
@@ -298,36 +244,19 @@ export async function deleteRelationship(
   guestId: string,
   relatedGuestId: string
 ) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Verify user owns the event
-  const { data: event } = await supabase
-    .from('events')
-    .select('id')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
+  // Find and delete the relationship
+  // We need to get relationships first to find the ID
+  const response = await serverRailsApi.delete<{ message: string }>(
+    `/api/v1/events/${eventId}/guest_relationships?guest_id=${guestId}&related_guest_id=${relatedGuestId}`
+  );
 
-  if (!event) {
-    return { error: 'Event not found or access denied' };
-  }
-
-  // Delete the relationship
-  const { error } = await supabase
-    .from('guest_relationships')
-    .delete()
-    .eq('event_id', eventId)
-    .eq('guest_id', guestId)
-    .eq('related_guest_id', relatedGuestId);
-
-  if (error) {
-    console.error('Error deleting relationship:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error deleting relationship:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath(`/dashboard/events/${eventId}/canvas`);

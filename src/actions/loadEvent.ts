@@ -1,343 +1,264 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
 import type { Event, Guest, Table, VenueElement, Constraint, TableShape, VenueElementType, RelationshipType, Relationship } from '@/types';
 
-// Database row types
-interface DbEvent {
-  id: string;
-  user_id: string;
-  name: string;
-  event_type: string;
-  date: string | null;
-  venue_name: string | null;
-  venue_address: string | null;
-  guest_capacity_limit: number | null;
-  created_at: string;
-  updated_at: string;
+// Response types from Rails API
+interface EventApiResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      id: string;
+      name: string;
+      eventType: string;
+      date: string | null;
+      venueName: string | null;
+      venueAddress: string | null;
+      guestCapacityLimit: number | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+    relationships?: {
+      tables: { data: Array<{ id: string; type: string }> };
+      guests: { data: Array<{ id: string; type: string }> };
+      constraints: { data: Array<{ id: string; type: string }> };
+      venueElements: { data: Array<{ id: string; type: string }> };
+    };
+  };
+  included?: Array<{
+    id: string;
+    type: string;
+    attributes: Record<string, unknown>;
+  }>;
 }
 
-interface DbTable {
+interface TableAttributes {
   id: string;
-  event_id: string;
   name: string;
-  shape: string;
+  shape: TableShape;
   capacity: number;
   x: number;
   y: number;
   width: number;
   height: number;
-  rotation: number | null;
-  created_at: string;
-  updated_at: string;
+  rotation: number;
 }
 
-interface DbGuest {
+interface GuestAttributes {
   id: string;
-  event_id: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   email: string | null;
   company: string | null;
-  job_title: string | null;
+  jobTitle: string | null;
   industry: string | null;
-  profile_summary: string | null;
-  group_name: string | null;
-  rsvp_status: string;
+  profileSummary: string | null;
+  group: string | null;
+  rsvpStatus: string;
   notes: string | null;
-  table_id: string | null;
-  seat_index: number | null;
-  canvas_x: number | null;
-  canvas_y: number | null;
-  created_at: string;
-  updated_at: string;
+  tableId: string | null;
+  seatIndex: number | null;
+  canvasX: number | null;
+  canvasY: number | null;
+  interests: string[];
+  dietaryRestrictions: string[];
+  accessibilityNeeds: string[];
+  relationships: Array<{
+    guestId: string;
+    type: RelationshipType;
+    strength: number;
+  }>;
 }
 
-interface DbRelationship {
+interface ConstraintAttributes {
   id: string;
-  event_id: string;
-  guest_id: string;
-  related_guest_id: string;
-  relationship_type: string;
-  strength: number;
-  created_at: string;
-  updated_at: string;
+  constraintType: Constraint['type'];
+  priority: Constraint['priority'];
+  guestIds: string[];
+  description: string | null;
 }
 
-interface DbVenueElement {
+interface VenueElementAttributes {
   id: string;
-  event_id: string;
-  type: string;
+  type: VenueElementType;
   label: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  rotation: number | null;
-  created_at: string;
-  updated_at: string;
+  rotation: number;
 }
 
-interface DbConstraint {
-  id: string;
-  event_id: string;
-  constraint_type: string;
-  priority: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// Transform Rails API response to frontend Event format
+function transformApiToEvent(response: EventApiResponse): Event {
+  const eventAttrs = response.data.attributes;
+  const included = response.included || [];
 
-interface DbGuestProfile {
-  guest_id: string;
-  interests: string[] | null;
-  dietary_restrictions: string[] | null;
-  accessibility_needs: string[] | null;
-}
-
-interface DbConstraintGuest {
-  constraint_id: string;
-  guest_id: string;
-}
-
-// Transform database event to frontend format
-function transformEvent(
-  dbEvent: DbEvent,
-  dbTables: DbTable[] | null,
-  dbGuests: DbGuest[] | null,
-  dbRelationships: DbRelationship[] | null,
-  dbVenueElements: DbVenueElement[] | null,
-  dbConstraints: DbConstraint[] | null,
-  dbGuestProfiles: DbGuestProfile[] | null,
-  dbConstraintGuests: DbConstraintGuest[] | null
-): Event {
-  // Create a map of guest profiles
-  const profileMap = new Map<string, DbGuestProfile>();
-  (dbGuestProfiles || []).forEach(p => profileMap.set(p.guest_id, p));
-
-  // Create a map of relationships by guest ID (bidirectional)
-  const relationshipMap = new Map<string, Relationship[]>();
-  (dbRelationships || []).forEach(r => {
-    // Add relationship from guest_id perspective
-    if (!relationshipMap.has(r.guest_id)) {
-      relationshipMap.set(r.guest_id, []);
-    }
-    relationshipMap.get(r.guest_id)!.push({
-      guestId: r.related_guest_id,
-      type: r.relationship_type as RelationshipType,
-      strength: r.strength,
+  // Extract tables
+  const tables: Table[] = included
+    .filter(item => item.type === 'table')
+    .map(item => {
+      const attrs = item.attributes as unknown as TableAttributes;
+      return {
+        id: attrs.id,
+        name: attrs.name,
+        shape: attrs.shape,
+        capacity: attrs.capacity,
+        x: Number(attrs.x),
+        y: Number(attrs.y),
+        width: Number(attrs.width),
+        height: Number(attrs.height),
+        rotation: attrs.rotation ? Number(attrs.rotation) : 0,
+      };
     });
 
-    // Add reverse relationship from related_guest_id perspective
-    if (!relationshipMap.has(r.related_guest_id)) {
-      relationshipMap.set(r.related_guest_id, []);
-    }
-    relationshipMap.get(r.related_guest_id)!.push({
-      guestId: r.guest_id,
-      type: r.relationship_type as RelationshipType,
-      strength: r.strength,
+  // Extract guests
+  const guests: Guest[] = included
+    .filter(item => item.type === 'guest')
+    .map(item => {
+      const attrs = item.attributes as unknown as GuestAttributes;
+      return {
+        id: attrs.id,
+        firstName: attrs.firstName,
+        lastName: attrs.lastName,
+        email: attrs.email || undefined,
+        company: attrs.company || undefined,
+        jobTitle: attrs.jobTitle || undefined,
+        industry: attrs.industry || undefined,
+        profileSummary: attrs.profileSummary || undefined,
+        group: attrs.group || undefined,
+        rsvpStatus: attrs.rsvpStatus as 'pending' | 'confirmed' | 'declined',
+        notes: attrs.notes || undefined,
+        tableId: attrs.tableId || undefined,
+        seatIndex: attrs.seatIndex ?? undefined,
+        canvasX: attrs.canvasX ? Number(attrs.canvasX) : undefined,
+        canvasY: attrs.canvasY ? Number(attrs.canvasY) : undefined,
+        interests: attrs.interests || [],
+        dietaryRestrictions: attrs.dietaryRestrictions || [],
+        accessibilityNeeds: attrs.accessibilityNeeds || [],
+        relationships: attrs.relationships || [],
+      };
     });
-  });
 
-  // Transform tables
-  const tables: Table[] = (dbTables || []).map(t => ({
-    id: t.id,
-    name: t.name,
-    shape: t.shape as TableShape,
-    capacity: t.capacity,
-    x: Number(t.x),
-    y: Number(t.y),
-    width: Number(t.width),
-    height: Number(t.height),
-    rotation: t.rotation ? Number(t.rotation) : 0,
-  }));
+  // Extract constraints
+  const constraints: Constraint[] = included
+    .filter(item => item.type === 'constraint')
+    .map(item => {
+      const attrs = item.attributes as unknown as ConstraintAttributes;
+      return {
+        id: attrs.id,
+        type: attrs.constraintType,
+        priority: attrs.priority,
+        guestIds: attrs.guestIds || [],
+        description: attrs.description || undefined,
+      };
+    });
 
-  // Transform guests
-  const guests: Guest[] = (dbGuests || []).map(g => {
-    const profile = profileMap.get(g.id);
-    const relationships = relationshipMap.get(g.id) || [];
-
-    return {
-      id: g.id,
-      firstName: g.first_name,
-      lastName: g.last_name,
-      email: g.email || undefined,
-      company: g.company || undefined,
-      jobTitle: g.job_title || undefined,
-      industry: g.industry || undefined,
-      profileSummary: g.profile_summary || undefined,
-      group: g.group_name || undefined,
-      rsvpStatus: g.rsvp_status as 'pending' | 'confirmed' | 'declined',
-      notes: g.notes || undefined,
-      tableId: g.table_id || undefined,
-      seatIndex: g.seat_index ?? undefined,
-      canvasX: g.canvas_x ? Number(g.canvas_x) : undefined,
-      canvasY: g.canvas_y ? Number(g.canvas_y) : undefined,
-      interests: profile?.interests || [],
-      dietaryRestrictions: profile?.dietary_restrictions || [],
-      accessibilityNeeds: profile?.accessibility_needs || [],
-      relationships,
-    };
-  });
-
-  // Transform venue elements
-  const venueElements: VenueElement[] = (dbVenueElements || []).map(v => ({
-    id: v.id,
-    type: v.type as VenueElementType,
-    label: v.label,
-    x: Number(v.x),
-    y: Number(v.y),
-    width: Number(v.width),
-    height: Number(v.height),
-    rotation: v.rotation ? Number(v.rotation) : 0,
-  }));
-
-  // Create a map of constraint guest IDs
-  const constraintGuestMap = new Map<string, string[]>();
-  (dbConstraintGuests || []).forEach(cg => {
-    const existing = constraintGuestMap.get(cg.constraint_id) || [];
-    existing.push(cg.guest_id);
-    constraintGuestMap.set(cg.constraint_id, existing);
-  });
-
-  // Transform constraints with their guest IDs
-  const constraints: Constraint[] = (dbConstraints || []).map(c => ({
-    id: c.id,
-    type: c.constraint_type as Constraint['type'],
-    priority: c.priority as Constraint['priority'],
-    guestIds: constraintGuestMap.get(c.id) || [],
-    description: c.description || undefined,
-  }));
+  // Extract venue elements
+  const venueElements: VenueElement[] = included
+    .filter(item => item.type === 'venue_element')
+    .map(item => {
+      const attrs = item.attributes as unknown as VenueElementAttributes;
+      return {
+        id: attrs.id,
+        type: attrs.type,
+        label: attrs.label,
+        x: Number(attrs.x),
+        y: Number(attrs.y),
+        width: Number(attrs.width),
+        height: Number(attrs.height),
+        rotation: attrs.rotation ? Number(attrs.rotation) : 0,
+      };
+    });
 
   return {
-    id: dbEvent.id,
-    name: dbEvent.name,
-    date: dbEvent.date || undefined,
-    eventType: dbEvent.event_type as Event['eventType'],
+    id: eventAttrs.id,
+    name: eventAttrs.name,
+    date: eventAttrs.date || undefined,
+    eventType: eventAttrs.eventType as Event['eventType'],
     tables,
     guests,
     constraints,
     surveyQuestions: [],
     surveyResponses: [],
     venueElements,
-    venueName: dbEvent.venue_name || undefined,
-    venueAddress: dbEvent.venue_address || undefined,
-    guestCapacityLimit: dbEvent.guest_capacity_limit || undefined,
-    createdAt: dbEvent.created_at,
-    updatedAt: dbEvent.updated_at,
+    venueName: eventAttrs.venueName || undefined,
+    venueAddress: eventAttrs.venueAddress || undefined,
+    guestCapacityLimit: eventAttrs.guestCapacityLimit || undefined,
+    createdAt: eventAttrs.createdAt,
+    updatedAt: eventAttrs.updatedAt,
   };
 }
 
 // Load full event with all related data
 export async function loadEvent(eventId: string): Promise<{ data?: Event; error?: string }> {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Fetch event
-  const { data: event, error: eventError } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (eventError || !event) {
-    console.error('Error loading event:', eventError);
-    return { error: eventError?.message || 'Event not found' };
-  }
-
-  // Fetch all related data in parallel
-  const [
-    { data: tables },
-    { data: guests },
-    { data: relationships },
-    { data: venueElements },
-    { data: constraints },
-  ] = await Promise.all([
-    supabase.from('tables').select('*').eq('event_id', eventId),
-    supabase.from('guests').select('*').eq('event_id', eventId),
-    supabase.from('guest_relationships').select('*').eq('event_id', eventId),
-    supabase.from('venue_elements').select('*').eq('event_id', eventId),
-    supabase.from('constraints').select('*').eq('event_id', eventId),
-  ]);
-
-  // Fetch constraint-guest mappings if there are constraints
-  const constraintIds = (constraints || []).map(c => c.id);
-  let constraintGuests: DbConstraintGuest[] | null = null;
-  if (constraintIds.length > 0) {
-    const { data: cgData } = await supabase
-      .from('constraint_guests')
-      .select('constraint_id, guest_id')
-      .in('constraint_id', constraintIds);
-    constraintGuests = cgData as DbConstraintGuest[] | null;
-  }
-
-  // Fetch guest profiles for all guests
-  const guestIds = (guests || []).map(g => g.id);
-  let guestProfiles: DbGuestProfile[] | null = null;
-  if (guestIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from('guest_profiles')
-      .select('*')
-      .in('guest_id', guestIds);
-    guestProfiles = profiles;
-  }
-
-  // Transform and return
-  const transformedEvent = transformEvent(
-    event as DbEvent,
-    tables as DbTable[] | null,
-    guests as DbGuest[] | null,
-    relationships as DbRelationship[] | null,
-    venueElements as DbVenueElement[] | null,
-    constraints as DbConstraint[] | null,
-    guestProfiles,
-    constraintGuests
+  // Fetch event with included relationships
+  const response = await serverRailsApi.get<EventApiResponse>(
+    `/api/v1/events/${eventId}?include=tables,guests,constraints,venue_elements`
   );
 
-  return { data: transformedEvent };
+  if (response.error) {
+    console.error('Error loading event:', response.error);
+    return { error: response.error };
+  }
+
+  if (!response.data) {
+    return { error: 'Event not found' };
+  }
+
+  const event = transformApiToEvent(response.data);
+  return { data: event };
 }
 
 // Load events list for dashboard
-export async function loadEvents(): Promise<{ data?: Array<{ id: string; name: string; eventType: string; date?: string; guestCount: number; tableCount: number }>; error?: string }> {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+export async function loadEvents(): Promise<{
+  data?: Array<{
+    id: string;
+    name: string;
+    eventType: string;
+    date?: string;
+    guestCount: number;
+    tableCount: number;
+  }>;
+  error?: string;
+}> {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Fetch events with guest and table counts
-  const { data: events, error } = await supabase
-    .from('events')
-    .select(`
-      id,
-      name,
-      event_type,
-      date,
-      guests(count),
-      tables(count)
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  const response = await serverRailsApi.get<{
+    data: Array<{
+      id: string;
+      type: string;
+      attributes: {
+        id: string;
+        name: string;
+        eventType: string;
+        date: string | null;
+        guestCount: number;
+        tableCount: number;
+      };
+    }>;
+  }>('/api/v1/events');
 
-  if (error) {
-    console.error('Error loading events:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error loading events:', response.error);
+    return { error: response.error };
   }
 
-  const transformedEvents = (events || []).map(e => ({
-    id: e.id,
-    name: e.name,
-    eventType: e.event_type,
-    date: e.date || undefined,
-    guestCount: (e.guests as unknown as { count: number }[])?.[0]?.count || 0,
-    tableCount: (e.tables as unknown as { count: number }[])?.[0]?.count || 0,
+  const events = (response.data?.data || []).map(e => ({
+    id: e.attributes.id,
+    name: e.attributes.name,
+    eventType: e.attributes.eventType,
+    date: e.attributes.date || undefined,
+    guestCount: e.attributes.guestCount || 0,
+    tableCount: e.attributes.tableCount || 0,
   }));
 
-  return { data: transformedEvents };
+  return { data: events };
 }

@@ -1,60 +1,67 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
+import type { UpdateEventData } from './types';
 
-export interface UpdateEventData {
-  name?: string;
-  event_type?: string;
-  date?: string | null;
-  venue_name?: string | null;
-  venue_address?: string | null;
-  guest_capacity_limit?: number | null;
+interface EventResponse {
+  data: {
+    id: string;
+    type: string;
+    attributes: {
+      id: string;
+      name: string;
+      eventType: string;
+      date: string | null;
+      venueName: string | null;
+      venueAddress: string | null;
+      guestCapacityLimit: number | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
 }
 
 export async function updateEvent(eventId: string, data: UpdateEventData) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // RLS will ensure user can only update their own events
-  const { data: event, error } = await supabase
-    .from('events')
-    .update(data)
-    .eq('id', eventId)
-    .select()
-    .single();
+  const response = await serverRailsApi.patch<EventResponse>(
+    `/api/v1/events/${eventId}`,
+    {
+      event: {
+        name: data.name,
+        event_type: data.event_type,
+        date: data.date,
+        venue_name: data.venue_name,
+        venue_address: data.venue_address,
+        guest_capacity_limit: data.guest_capacity_limit,
+      },
+    }
+  );
 
-  if (error) {
-    console.error('Error updating event:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error updating event:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath('/dashboard');
-  return { data: event };
+  return { data: response.data?.data.attributes };
 }
 
 export async function deleteEvent(eventId: string) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Delete related data first (cascade should handle this, but being explicit)
-  // The database has ON DELETE CASCADE, so this should work automatically
-  const { error } = await supabase
-    .from('events')
-    .delete()
-    .eq('id', eventId);
+  const response = await serverRailsApi.delete<{ message: string }>(
+    `/api/v1/events/${eventId}`
+  );
 
-  if (error) {
-    console.error('Error deleting event:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error deleting event:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath('/dashboard');
@@ -62,28 +69,22 @@ export async function deleteEvent(eventId: string) {
 }
 
 export async function createEvent(name: string, eventType: string) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  const { data: event, error } = await supabase
-    .from('events')
-    .insert({
+  const response = await serverRailsApi.post<EventResponse>('/api/v1/events', {
+    event: {
       name: name.trim(),
       event_type: eventType,
-      user_id: user.id,
-    })
-    .select()
-    .single();
+    },
+  });
 
-  if (error) {
-    console.error('Error creating event:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error creating event:', response.error);
+    return { error: response.error };
   }
 
   revalidatePath('/dashboard');
-  return { data: event };
+  return { data: response.data?.data.attributes };
 }

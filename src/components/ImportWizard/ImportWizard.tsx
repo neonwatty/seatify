@@ -19,7 +19,8 @@ import {
   computeFinalTableAssignments,
   calculateTablePositions,
 } from './utils/tableAssignment';
-import { insertGuests, updateGuests, type GuestInput } from '../../actions/guests';
+import { insertGuests, updateGuests } from '../../actions/guests';
+import type { GuestInput } from '../../actions/types';
 import type { Guest } from '../../types';
 import './ImportWizard.css';
 

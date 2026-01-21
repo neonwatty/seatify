@@ -1,16 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
-
-// Types matching the Zustand store
-export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
-  eventListViewMode: 'cards' | 'list';
-  hasCompletedOnboarding: boolean;
-  completedTours: string[];
-  hasUsedOptimizeButton: boolean;
-  optimizeAnimationEnabled: boolean;
-}
+import { serverRailsApi, isAuthenticated } from '@/lib/rails/server';
+import type { UserPreferences } from './types';
 
 // Default preferences
 const defaultPreferences: UserPreferences = {
@@ -22,45 +13,44 @@ const defaultPreferences: UserPreferences = {
   optimizeAnimationEnabled: true,
 };
 
-// Load user preferences from Supabase
+// Load user preferences from Rails API
 export async function loadUserPreferences(): Promise<{ data?: UserPreferences; error?: string }> {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select(`
-      theme,
-      event_list_view_mode,
-      has_completed_onboarding,
-      completed_tours,
-      has_used_optimize_button,
-      optimize_animation_enabled
-    `)
-    .eq('id', user.id)
-    .single();
+  const response = await serverRailsApi.get<{
+    data: {
+      attributes: {
+        theme: string;
+        eventListViewMode: string;
+        hasCompletedOnboarding: boolean;
+        completedTours: string[];
+        hasUsedOptimizeButton: boolean;
+        optimizeAnimationEnabled: boolean;
+      };
+    };
+  }>('/api/v1/me');
 
-  if (error) {
-    console.error('Error loading preferences:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error loading preferences:', response.error);
+    return { error: response.error };
   }
 
-  if (!profile) {
+  if (!response.data) {
     return { data: defaultPreferences };
   }
 
-  // Transform database format to frontend format
+  const attrs = response.data.data.attributes;
+
+  // Transform API response to frontend format
   const preferences: UserPreferences = {
-    theme: (profile.theme as UserPreferences['theme']) || 'system',
-    eventListViewMode: (profile.event_list_view_mode as UserPreferences['eventListViewMode']) || 'cards',
-    hasCompletedOnboarding: profile.has_completed_onboarding ?? false,
-    completedTours: profile.completed_tours || [],
-    hasUsedOptimizeButton: profile.has_used_optimize_button ?? false,
-    optimizeAnimationEnabled: profile.optimize_animation_enabled ?? true,
+    theme: (attrs.theme as UserPreferences['theme']) || 'system',
+    eventListViewMode: (attrs.eventListViewMode as UserPreferences['eventListViewMode']) || 'cards',
+    hasCompletedOnboarding: attrs.hasCompletedOnboarding ?? false,
+    completedTours: attrs.completedTours || [],
+    hasUsedOptimizeButton: attrs.hasUsedOptimizeButton ?? false,
+    optimizeAnimationEnabled: attrs.optimizeAnimationEnabled ?? true,
   };
 
   return { data: preferences };
@@ -71,14 +61,11 @@ export async function updateUserPreference<K extends keyof UserPreferences>(
   key: K,
   value: UserPreferences[K]
 ): Promise<{ success?: boolean; error?: string }> {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Map frontend keys to database column names
+  // Map frontend keys to Rails API keys
   const keyMap: Record<keyof UserPreferences, string> = {
     theme: 'theme',
     eventListViewMode: 'event_list_view_mode',
@@ -88,17 +75,16 @@ export async function updateUserPreference<K extends keyof UserPreferences>(
     optimizeAnimationEnabled: 'optimize_animation_enabled',
   };
 
-  const dbKey = keyMap[key];
-  const updateData = { [dbKey]: value };
+  const railsKey = keyMap[key];
+  const updateData = { [railsKey]: value };
 
-  const { error } = await supabase
-    .from('profiles')
-    .update(updateData)
-    .eq('id', user.id);
+  const response = await serverRailsApi.patch<{
+    data: { attributes: Record<string, unknown> };
+  }>('/api/v1/me', { user: updateData });
 
-  if (error) {
-    console.error(`Error updating preference ${key}:`, error);
-    return { error: error.message };
+  if (response.error) {
+    console.error(`Error updating preference ${key}:`, response.error);
+    return { error: response.error };
   }
 
   return { success: true };
@@ -108,14 +94,11 @@ export async function updateUserPreference<K extends keyof UserPreferences>(
 export async function updateUserPreferences(
   preferences: Partial<UserPreferences>
 ): Promise<{ success?: boolean; error?: string }> {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  if (!await isAuthenticated()) {
     return { error: 'Not authenticated' };
   }
 
-  // Transform frontend keys to database column names
+  // Transform frontend keys to Rails API keys
   const updateData: Record<string, unknown> = {};
 
   if (preferences.theme !== undefined) {
@@ -141,14 +124,13 @@ export async function updateUserPreferences(
     return { success: true }; // Nothing to update
   }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update(updateData)
-    .eq('id', user.id);
+  const response = await serverRailsApi.patch<{
+    data: { attributes: Record<string, unknown> };
+  }>('/api/v1/me', { user: updateData });
 
-  if (error) {
-    console.error('Error updating preferences:', error);
-    return { error: error.message };
+  if (response.error) {
+    console.error('Error updating preferences:', response.error);
+    return { error: response.error };
   }
 
   return { success: true };
