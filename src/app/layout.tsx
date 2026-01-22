@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito, Caveat } from "next/font/google";
+import { ClarityScript } from "@/components/ClarityScript";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -17,15 +18,15 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://seatify.app'),
   title: {
-    default: "Seatify - Smart Seating Arrangements Made Easy",
+    default: "Free Seating Chart Maker - Wedding & Event Planner | Seatify",
     template: "%s | Seatify",
   },
-  description: "Create beautiful seating charts for weddings, corporate events, and parties. Drag-and-drop interface, smart optimization, and instant exports.",
-  keywords: ["seating chart", "wedding seating", "event planning", "table arrangement", "seating planner"],
+  description: "Create beautiful seating charts for weddings, corporate events, and parties. Free drag-and-drop seating planner with smart optimization and PDF exports. No signup required.",
+  keywords: ["seating chart maker", "free seating chart", "wedding seating chart", "event seating planner", "table arrangement tool", "reception seating"],
   authors: [{ name: "Seatify" }],
   openGraph: {
-    title: "Seatify - Smart Seating Arrangements Made Easy",
-    description: "Create beautiful seating charts for weddings, corporate events, and parties.",
+    title: "Free Seating Chart Maker for Weddings & Events | Seatify",
+    description: "Create beautiful seating charts for free. Drag-and-drop editor, smart optimization, and PDF exports. No signup required.",
     url: "https://seatify.app",
     siteName: "Seatify",
     images: [
@@ -41,8 +42,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Seatify - Smart Seating Arrangements Made Easy",
-    description: "Create beautiful seating charts for weddings, corporate events, and parties.",
+    title: "Free Seating Chart Maker for Weddings & Events",
+    description: "Create beautiful seating charts for free. Drag-and-drop editor, smart optimization, and PDF exports.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -66,6 +67,7 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
       </head>
       <body className={`${nunito.variable} ${caveat.variable}`} suppressHydrationWarning>
+        <ClarityScript />
         {children}
       </body>
     </html>

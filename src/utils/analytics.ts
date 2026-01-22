@@ -432,6 +432,74 @@ export function setUserProperties(properties: {
 }
 
 // ============================================
+// Scroll Depth Tracking
+// ============================================
+
+/**
+ * Track scroll depth milestones
+ * Use this to understand how far users scroll on landing pages
+ */
+export function trackScrollDepth(percentage: 25 | 50 | 75 | 100): void {
+  trackEvent('scroll_depth', {
+    event_category: 'engagement',
+    scroll_percentage: percentage,
+  });
+}
+
+/**
+ * Track engaged time on page
+ * Call periodically while user is actively engaged
+ */
+export function trackEngagedTime(seconds: number, pagePath: string): void {
+  trackEvent('engaged_time', {
+    event_category: 'engagement',
+    time_seconds: seconds,
+    page_path: pagePath,
+  });
+}
+
+/**
+ * Create a scroll depth tracker for a page
+ * Returns a cleanup function to remove the listener
+ *
+ * Usage:
+ * useEffect(() => {
+ *   const cleanup = initScrollDepthTracking();
+ *   return cleanup;
+ * }, []);
+ */
+export function initScrollDepthTracking(): () => void {
+  if (typeof window === 'undefined') return () => {};
+
+  const thresholds = [25, 50, 75, 100] as const;
+  const tracked = new Set<number>();
+
+  const handleScroll = () => {
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollHeight <= 0) return;
+
+    const scrollPercent = Math.round((window.scrollY / scrollHeight) * 100);
+
+    for (const threshold of thresholds) {
+      if (scrollPercent >= threshold && !tracked.has(threshold)) {
+        tracked.add(threshold);
+        trackScrollDepth(threshold);
+      }
+    }
+  };
+
+  // Use passive listener for better scroll performance
+  window.addEventListener('scroll', handleScroll, { passive: true });
+
+  // Check initial scroll position (in case page loads scrolled)
+  handleScroll();
+
+  return () => {
+    window.removeEventListener('scroll', handleScroll);
+  };
+}
+
+// ============================================
 // Core Web Vitals tracking
 // ============================================
 
