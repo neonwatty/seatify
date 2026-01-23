@@ -124,8 +124,32 @@ export interface RSVPSettings {
   collectSeatingPreferences: boolean;
   customMessage?: string; // Welcome message on RSVP page
   confirmationMessage?: string; // Shown after submitting
+  // Email invitation settings (Pro feature)
+  reminderEnabled?: boolean;
+  reminderDaysBefore?: number;
+  lastReminderSentAt?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+// Email log entry for tracking invitation/reminder status
+export type EmailLogStatus = 'pending' | 'sent' | 'delivered' | 'opened' | 'bounced' | 'failed';
+export type EmailLogType = 'invitation' | 'reminder';
+
+export interface EmailLog {
+  id: string;
+  eventId: string;
+  guestId: string;
+  emailType: EmailLogType;
+  resendId?: string;
+  recipientEmail: string;
+  subject: string;
+  status: EmailLogStatus;
+  errorMessage?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  openedAt?: string;
+  createdAt: string;
 }
 
 // RSVP Response audit record

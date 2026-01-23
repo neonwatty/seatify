@@ -12,6 +12,8 @@ export const DEFAULT_RSVP_SETTINGS: Omit<RSVPSettings, 'eventId'> = {
   collectDietary: true,
   collectAccessibility: true,
   collectSeatingPreferences: true,
+  reminderEnabled: false,
+  reminderDaysBefore: 7,
 };
 
 /**
@@ -60,6 +62,9 @@ export async function loadRSVPSettings(
     collectSeatingPreferences: data.collect_seating_preferences,
     customMessage: data.custom_message,
     confirmationMessage: data.confirmation_message,
+    reminderEnabled: data.reminder_enabled ?? false,
+    reminderDaysBefore: data.reminder_days_before ?? 7,
+    lastReminderSentAt: data.last_reminder_sent_at,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -105,6 +110,8 @@ export async function saveRSVPSettings(
     collect_seating_preferences: settings.collectSeatingPreferences,
     custom_message: settings.customMessage || null,
     confirmation_message: settings.confirmationMessage || null,
+    reminder_enabled: settings.reminderEnabled ?? false,
+    reminder_days_before: settings.reminderDaysBefore ?? 7,
   };
 
   const { error } = await supabase

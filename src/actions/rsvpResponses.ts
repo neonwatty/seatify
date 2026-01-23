@@ -135,6 +135,45 @@ export async function loadPublicEventForRSVP(
 }
 
 /**
+ * Find a guest by RSVP token (for direct email links)
+ */
+export async function findGuestByToken(
+  eventId: string,
+  token: string
+): Promise<{ data?: Guest; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: guest, error } = await supabase
+    .from('guests')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('rsvp_token', token)
+    .is('plus_one_of', null)
+    .single();
+
+  if (error || !guest) {
+    return { error: 'Invalid or expired invitation link' };
+  }
+
+  // Transform to camelCase
+  const transformedGuest: Guest = {
+    id: guest.id,
+    firstName: guest.first_name,
+    lastName: guest.last_name,
+    email: guest.email,
+    rsvpStatus: guest.rsvp_status,
+    mealPreference: guest.meal_preference,
+    dietaryRestrictions: guest.dietary_restrictions || [],
+    accessibilityNeeds: guest.accessibility_needs || [],
+    seatingPreferences: guest.seating_preferences || [],
+    rsvpToken: guest.rsvp_token,
+    relationships: [],
+  };
+
+  return { data: transformedGuest };
+}
+
+/**
  * Find a guest by email or name
  */
 export async function findGuestByEmailOrName(

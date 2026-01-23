@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import QRCode from 'react-qr-code';
 import { loadRSVPSettings, saveRSVPSettings, DEFAULT_RSVP_SETTINGS } from '@/actions/rsvpSettings';
+import { useSubscription } from '@/hooks/useSubscription';
 import { copyToClipboard } from '@/utils/qrCodeUtils';
 import { showToast } from './toastStore';
 import type { RSVPSettings as RSVPSettingsType } from '@/types';
@@ -14,6 +15,7 @@ interface RSVPSettingsProps {
 }
 
 export function RSVPSettings({ eventId, eventName }: RSVPSettingsProps) {
+  const { isPro } = useSubscription();
   const [settings, setSettings] = useState<RSVPSettingsType>({
     eventId,
     ...DEFAULT_RSVP_SETTINGS,
@@ -320,6 +322,56 @@ export function RSVPSettings({ eventId, eventName }: RSVPSettingsProps) {
                 rows={3}
               />
             </div>
+          </div>
+
+          {/* Email Reminders (Pro Feature) */}
+          <div className="rsvp-setting-group">
+            <h3>
+              Automatic Reminders
+              {!isPro && <span className="pro-badge">Pro</span>}
+            </h3>
+            {isPro ? (
+              <>
+                <div className="setting-row toggle-row">
+                  <div className="setting-info">
+                    <label htmlFor="reminder-enabled">Enable automatic reminders</label>
+                    <span className="setting-hint">Send email reminders to guests who haven&apos;t responded</span>
+                  </div>
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      id="reminder-enabled"
+                      checked={settings.reminderEnabled || false}
+                      onChange={e => updateSetting('reminderEnabled', e.target.checked)}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+                {settings.reminderEnabled && settings.deadline && (
+                  <div className="setting-row">
+                    <label htmlFor="reminder-days">Send reminder</label>
+                    <select
+                      id="reminder-days"
+                      value={settings.reminderDaysBefore || 7}
+                      onChange={e => updateSetting('reminderDaysBefore', parseInt(e.target.value))}
+                    >
+                      <option value={3}>3 days before deadline</option>
+                      <option value={5}>5 days before deadline</option>
+                      <option value={7}>7 days before deadline</option>
+                      <option value={14}>14 days before deadline</option>
+                    </select>
+                  </div>
+                )}
+                {settings.reminderEnabled && !settings.deadline && (
+                  <p className="setting-warning">Set a deadline above to enable automatic reminders.</p>
+                )}
+              </>
+            ) : (
+              <div className="pro-feature-promo">
+                <p>Automatically remind guests who haven&apos;t responded yet.</p>
+                <a href="/settings/billing" className="upgrade-link">Upgrade to Pro</a>
+              </div>
+            )}
           </div>
         </>
       )}

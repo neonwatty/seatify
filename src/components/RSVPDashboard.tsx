@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { loadRSVPDashboardData, type RSVPDashboardData } from '@/actions/rsvpResponses';
+import { useSubscription } from '@/hooks/useSubscription';
+import { EmailInvitationsPanel } from './EmailInvitationsPanel';
 import { showToast } from './toastStore';
 import './RSVPDashboard.css';
 
@@ -10,9 +12,10 @@ interface RSVPDashboardProps {
 }
 
 export function RSVPDashboard({ eventId }: RSVPDashboardProps) {
+  const { isPro } = useSubscription();
   const [data, setData] = useState<RSVPDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'preferences'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'preferences' | 'invitations'>('overview');
 
   useEffect(() => {
     let cancelled = false;
@@ -121,6 +124,12 @@ export function RSVPDashboard({ eventId }: RSVPDashboardProps) {
           onClick={() => setActiveTab('preferences')}
         >
           Seating Preferences
+        </button>
+        <button
+          className={`rsvp-tab ${activeTab === 'invitations' ? 'active' : ''}`}
+          onClick={() => setActiveTab('invitations')}
+        >
+          Invitations {!isPro && <span className="pro-badge">Pro</span>}
         </button>
       </div>
 
@@ -275,6 +284,10 @@ export function RSVPDashboard({ eventId }: RSVPDashboardProps) {
               </>
             )}
           </div>
+        )}
+
+        {activeTab === 'invitations' && (
+          <EmailInvitationsPanel eventId={eventId} />
         )}
       </div>
     </div>
