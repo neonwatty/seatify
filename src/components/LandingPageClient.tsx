@@ -7,7 +7,7 @@ import { EmailCaptureModal } from './EmailCaptureModal';
 import { LandingChoiceModal } from './LandingChoiceModal';
 import { Footer } from './Footer';
 import { MobileSettingsHeader } from './MobileSettingsHeader';
-import { trackCTAClick, trackAppEntryConversion, trackFunnelStep } from '../utils/analytics';
+import { trackCTAClick, trackAppEntryConversion, trackFunnelStep, initScrollDepthTracking } from '../utils/analytics';
 import { captureUtmParams } from '../utils/utm';
 import { shouldShowEmailCapture } from '../utils/emailCaptureManager';
 import type { TourId } from '../data/tourRegistry';
@@ -170,6 +170,12 @@ export function LandingPageClient() {
   useEffect(() => {
     captureUtmParams();
     trackFunnelStep('landing_view');
+  }, []);
+
+  // Track scroll depth for engagement analytics
+  useEffect(() => {
+    const cleanup = initScrollDepthTracking();
+    return cleanup;
   }, []);
 
   const handleEnterApp = () => {

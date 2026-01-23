@@ -43,6 +43,7 @@ Copy `.env.local.example` to `.env.local` and configure:
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
 - `NEXT_PUBLIC_APP_URL` - App URL for OAuth redirects
+- `NEXT_PUBLIC_CLARITY_PROJECT_ID` - (Optional) Microsoft Clarity project ID for heatmaps
 
 ## Database
 

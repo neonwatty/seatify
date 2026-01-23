@@ -1,5 +1,11 @@
 import { LandingPageClient } from '@/components/LandingPageClient';
+import { LandingPageStructuredData } from '@/components/StructuredData';
 
 export default function HomePage() {
-  return <LandingPageClient />;
+  return (
+    <>
+      <LandingPageStructuredData />
+      <LandingPageClient />
+    </>
+  );
 }
