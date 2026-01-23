@@ -146,7 +146,7 @@ export async function findGuestByEmailOrName(
   const searchLower = searchTerm.toLowerCase().trim();
 
   // Try to find by email first
-  let { data: guest, error } = await supabase
+  const { data: guestByEmail } = await supabase
     .from('guests')
     .select('*')
     .eq('event_id', eventId)
@@ -154,8 +154,10 @@ export async function findGuestByEmailOrName(
     .is('plus_one_of', null)
     .single();
 
+  let guest = guestByEmail;
+
   // If not found by email, try by full name
-  if (error || !guest) {
+  if (!guest) {
     const { data: guests } = await supabase
       .from('guests')
       .select('*')

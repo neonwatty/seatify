@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   type PublicEventData,
   findGuestByEmailOrName,
@@ -52,19 +53,20 @@ export function RSVPPageClient({ eventId, initialData, initialError }: RSVPPageC
   const settings = eventData?.rsvpSettings;
 
   // Format event date
+  const eventDate = eventData?.date;
   const formattedDate = useMemo(() => {
-    if (!eventData?.date) return null;
+    if (!eventDate) return null;
     try {
-      return new Date(eventData.date).toLocaleDateString('en-US', {
+      return new Date(eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric',
       });
     } catch {
-      return eventData.date;
+      return eventDate;
     }
-  }, [eventData?.date]);
+  }, [eventDate]);
 
   const handleNavigateToApp = () => {
     router.push('/');
@@ -574,12 +576,12 @@ export function RSVPPageClient({ eventId, initialData, initialError }: RSVPPageC
       <footer className="rsvp-footer">
         <p>
           Powered by{' '}
-          <a href="/" target="_blank" rel="noopener noreferrer">
+          <Link href="/" target="_blank" rel="noopener noreferrer">
             <strong>Seatify</strong>
-          </a>
+          </Link>
         </p>
         <p className="footer-cta">
-          <a href="/">Create your own seating chart</a>
+          <Link href="/">Create your own seating chart</Link>
         </p>
       </footer>
     </div>

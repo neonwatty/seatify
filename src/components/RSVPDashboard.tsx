@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { loadRSVPDashboardData, type RSVPDashboardData } from '@/actions/rsvpResponses';
 import { showToast } from './toastStore';
 import './RSVPDashboard.css';
@@ -14,19 +14,26 @@ export function RSVPDashboard({ eventId }: RSVPDashboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'preferences'>('overview');
 
-  const loadData = useCallback(async () => {
-    const result = await loadRSVPDashboardData(eventId);
-    if (result.data) {
-      setData(result.data);
-    } else if (result.error) {
-      showToast(result.error, 'error');
-    }
-    setIsLoading(false);
-  }, [eventId]);
-
   useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const result = await loadRSVPDashboardData(eventId);
+      if (cancelled) return;
+      if (result.data) {
+        setData(result.data);
+      } else if (result.error) {
+        showToast(result.error, 'error');
+      }
+      setIsLoading(false);
+    }
+
     loadData();
-  }, [loadData]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId]);
 
   if (isLoading) {
     return (

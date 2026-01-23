@@ -46,6 +46,20 @@ export function GoogleSheetsImport({ eventId, onImportComplete, onClose }: Googl
   // Import results
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
+  const loadSpreadsheets = useCallback(async () => {
+    setIsLoading(true);
+    const result = await listGoogleSpreadsheets();
+    if (result.error === 'NOT_CONNECTED') {
+      setIsConnected(false);
+      setStep('connect');
+    } else if (result.data) {
+      setSpreadsheets(result.data);
+    } else {
+      showToast(result.error || 'Failed to load spreadsheets', 'error');
+    }
+    setIsLoading(false);
+  }, []);
+
   // Check connection status on mount
   useEffect(() => {
     async function checkConnection() {
@@ -61,21 +75,7 @@ export function GoogleSheetsImport({ eventId, onImportComplete, onClose }: Googl
       setIsLoading(false);
     }
     checkConnection();
-  }, []);
-
-  const loadSpreadsheets = async () => {
-    setIsLoading(true);
-    const result = await listGoogleSpreadsheets();
-    if (result.error === 'NOT_CONNECTED') {
-      setIsConnected(false);
-      setStep('connect');
-    } else if (result.data) {
-      setSpreadsheets(result.data);
-    } else {
-      showToast(result.error || 'Failed to load spreadsheets', 'error');
-    }
-    setIsLoading(false);
-  };
+  }, [loadSpreadsheets]);
 
   const handleConnect = async () => {
     setIsLoading(true);
