@@ -124,6 +124,35 @@ function getThemeColors(theme?: ColorTheme): ThemeColors {
 }
 
 /**
+ * Draw watermark on PDF page
+ * Adds "Made with Seatify" text at the bottom of each page
+ */
+function drawWatermark(
+  doc: jsPDFInstance,
+  pageWidth: number,
+  pageHeight: number
+): void {
+  const watermarkText = 'Made with Seatify';
+  const watermarkUrl = 'seatify.app';
+
+  // Save current state
+  doc.saveGraphicsState();
+
+  // Semi-transparent light gray
+  doc.setTextColor(180, 180, 180);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+
+  // Position at bottom center of page
+  const y = pageHeight - 5;
+  doc.text(`${watermarkText} • ${watermarkUrl}`, pageWidth / 2, y, {
+    align: 'center',
+  });
+
+  doc.restoreGraphicsState();
+}
+
+/**
  * Generate PDF with table tent cards
  * Each card is designed to fold in half and stand up
  */
@@ -132,7 +161,7 @@ export async function generateTableCardsPDF(
   tables: Table[],
   options: TableCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme, cardSize = 'standard' } = options;
+  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme, cardSize = 'standard', showWatermark = false } = options;
   const fontSizes = TABLE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
   const cardDimensions = TABLE_CARD_SIZES[cardSize];
@@ -173,6 +202,15 @@ export async function generateTableCardsPDF(
 
     drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName, themeColors, cardDimensions });
   });
+
+  // Add watermark to all pages if enabled
+  if (showWatermark) {
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      drawWatermark(doc, pageWidth, pageHeight);
+    }
+  }
 
   return doc;
 }
@@ -325,6 +363,7 @@ export interface TableCardPDFOptions {
   showEventName?: boolean;
   colorTheme?: ColorTheme;
   cardSize?: CardSize;
+  showWatermark?: boolean; // If true, adds "Made with Seatify" watermark
 }
 
 export interface PlaceCardPDFOptions {
@@ -334,6 +373,7 @@ export interface PlaceCardPDFOptions {
   fontFamily?: FontFamily;
   colorTheme?: ColorTheme;
   cardSize?: CardSize;
+  showWatermark?: boolean; // If true, adds "Made with Seatify" watermark
 }
 
 /**
@@ -344,7 +384,7 @@ export async function generatePlaceCardsPDF(
   guests: Guest[],
   options: PlaceCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme, cardSize = 'standard' } = options;
+  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme, cardSize = 'standard', showWatermark = false } = options;
 
   const fontSizes = PLACE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
@@ -397,6 +437,15 @@ export async function generatePlaceCardsPDF(
     const table = event.tables.find(t => t.id === guest.tableId);
     drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily, themeColors, cardDimensions });
   });
+
+  // Add watermark to all pages if enabled
+  if (showWatermark) {
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      drawWatermark(doc, pageWidth, pageHeight);
+    }
+  }
 
   return doc;
 }

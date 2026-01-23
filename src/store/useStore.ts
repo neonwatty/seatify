@@ -90,7 +90,13 @@ export interface FadingOutGuest {
 }
 
 const MAX_HISTORY_SIZE = 50;
-const MAX_EVENTS = 10;
+
+// Free tier limits (can be overridden by subscription)
+export const FREE_TIER_MAX_EVENTS = 5;
+export const FREE_TIER_MAX_GUESTS_PER_EVENT = 200;
+
+// For backwards compatibility, MAX_EVENTS uses free tier default
+const MAX_EVENTS = FREE_TIER_MAX_EVENTS;
 
 // Theme type
 type Theme = 'light' | 'dark' | 'system';
@@ -196,6 +202,9 @@ interface AppState extends OnboardingState {
   loadEvent: (event: Event) => void;
   updateEventMetadata: (eventId: string, updates: Partial<Pick<Event, 'name' | 'eventType' | 'date' | 'venueName' | 'venueAddress' | 'guestCapacityLimit'>>) => void;
   canCreateEvent: () => boolean;
+  canAddGuest: () => boolean;
+  getGuestCount: () => number;
+  getEventCount: () => number;
 
   // Actions - Current Event
   setEventName: (name: string) => void;
@@ -888,6 +897,9 @@ export const useStore = create<AppState>()(
       },
 
       canCreateEvent: () => get().events.length < MAX_EVENTS,
+      canAddGuest: () => get().event.guests.length < FREE_TIER_MAX_GUESTS_PER_EVENT,
+      getGuestCount: () => get().event.guests.length,
+      getEventCount: () => get().events.length,
 
       // Current Event actions
       setEventName: (name) => {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { getServerSubscription } from '@/lib/subscription/server';
 
 // Type for guest data from the frontend
 export interface GuestInput {
@@ -73,6 +74,35 @@ export async function insertGuests(eventId: string, guests: GuestInput[]) {
 
   if (!event) {
     return { error: 'Event not found or access denied' };
+  }
+
+  // Check subscription limits
+  const { limits } = await getServerSubscription(user.id);
+
+  // Count existing guests in this event
+  const { count: currentGuestCount, error: countError } = await supabase
+    .from('guests')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId);
+
+  if (countError) {
+    console.error('Error counting guests:', countError);
+    return { error: countError.message };
+  }
+
+  // Check if adding these guests would exceed limit (-1 means unlimited)
+  const totalAfterInsert = (currentGuestCount ?? 0) + guests.length;
+  if (limits.maxGuestsPerEvent !== -1 && totalAfterInsert > limits.maxGuestsPerEvent) {
+    const remaining = Math.max(0, limits.maxGuestsPerEvent - (currentGuestCount ?? 0));
+    return {
+      error: 'Guest limit reached',
+      limitReached: true,
+      currentCount: currentGuestCount,
+      maxAllowed: limits.maxGuestsPerEvent,
+      attempted: guests.length,
+      remaining,
+      plan: limits.plan,
+    };
   }
 
   // Prepare guests for insert

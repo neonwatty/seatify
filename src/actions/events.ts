@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { getServerSubscription } from '@/lib/subscription/server';
 
 export interface UpdateEventData {
   name?: string;
@@ -67,6 +68,31 @@ export async function createEvent(name: string, eventType: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { error: 'Not authenticated' };
+  }
+
+  // Check subscription limits
+  const { limits } = await getServerSubscription(user.id);
+
+  // Count existing events
+  const { count: eventCount, error: countError } = await supabase
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+  if (countError) {
+    console.error('Error counting events:', countError);
+    return { error: countError.message };
+  }
+
+  // Check if at limit (-1 means unlimited)
+  if (limits.maxEvents !== -1 && (eventCount ?? 0) >= limits.maxEvents) {
+    return {
+      error: 'Event limit reached',
+      limitReached: true,
+      currentCount: eventCount,
+      maxAllowed: limits.maxEvents,
+      plan: limits.plan,
+    };
   }
 
   const { data: event, error } = await supabase
