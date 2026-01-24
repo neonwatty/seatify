@@ -67,6 +67,29 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- Add identity for test user (required for email login)
+INSERT INTO auth.identities (
+  id,
+  user_id,
+  provider_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-1111-1111-111111111111',
+  'test@example.com',
+  '{"sub":"11111111-1111-1111-1111-111111111111","email":"test@example.com","email_verified":true}',
+  'email',
+  NOW(),
+  NOW(),
+  NOW()
+)
+ON CONFLICT (id, provider) DO NOTHING;
+
 -- =====================================================
 -- STEP 2: Create demo profile
 -- =====================================================
