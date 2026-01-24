@@ -88,7 +88,7 @@ VALUES (
   NOW(),
   NOW()
 )
-ON CONFLICT (id, provider) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
 -- STEP 2: Create demo profile
