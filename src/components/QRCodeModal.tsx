@@ -1,6 +1,7 @@
 import { useRef, useCallback, useMemo } from 'react';
 import QRCode from 'react-qr-code';
 import { useStore } from '../store/useStore';
+import { useSubscription } from '../hooks/useSubscription';
 import type { Table, Guest } from '../types';
 import {
   generateTableQRUrl,
@@ -18,6 +19,7 @@ interface QRCodeModalProps {
 export function QRCodeModal({ tableId, onClose }: QRCodeModalProps) {
   const qrRef = useRef<HTMLDivElement>(null);
   const { event } = useStore();
+  const { limits } = useSubscription();
 
   const table = useMemo(
     () => event?.tables.find((t: Table) => t.id === tableId),
@@ -25,8 +27,8 @@ export function QRCodeModal({ tableId, onClose }: QRCodeModalProps) {
   );
 
   const qrUrl = useMemo(
-    () => (event && table ? generateTableQRUrl(event, table) : ''),
-    [event, table]
+    () => (event && table ? generateTableQRUrl(event, table, { hideBranding: limits.canRemoveBranding }) : ''),
+    [event, table, limits.canRemoveBranding]
   );
 
   const guestCount = useMemo(

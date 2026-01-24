@@ -2,10 +2,14 @@ import type { Event, Table, QRTableData } from '../types';
 
 const QR_DATA_VERSION = 1;
 
+export interface EncodeTableDataOptions {
+  hideBranding?: boolean;
+}
+
 /**
  * Encode table data for QR code URL
  */
-export function encodeTableData(event: Event, table: Table): string {
+export function encodeTableData(event: Event, table: Table, options?: EncodeTableDataOptions): string {
   const guests = event.guests
     .filter((g) => g.tableId === table.id && g.rsvpStatus === 'confirmed')
     .map((g) => `${g.firstName} ${g.lastName}`.trim());
@@ -18,6 +22,11 @@ export function encodeTableData(event: Event, table: Table): string {
     g: guests,
     c: table.capacity,
   };
+
+  // Add branding flag (0 = hide branding for Pro users)
+  if (options?.hideBranding) {
+    data.b = 0;
+  }
 
   // Use URL-safe base64 encoding
   return btoa(JSON.stringify(data))
@@ -73,8 +82,8 @@ export function validateQRData(data: unknown): data is QRTableData {
 /**
  * Generate full URL for QR code
  */
-export function generateTableQRUrl(event: Event, table: Table): string {
-  const encoded = encodeTableData(event, table);
+export function generateTableQRUrl(event: Event, table: Table, options?: EncodeTableDataOptions): string {
+  const encoded = encodeTableData(event, table, options);
   const baseUrl = window.location.origin;
   return `${baseUrl}/table/${encoded}`;
 }

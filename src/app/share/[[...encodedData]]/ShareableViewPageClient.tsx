@@ -3,9 +3,8 @@
 import { useMemo, useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { decodeShareableUrl, importEventDataFile } from '@/utils/shareableEventUtils';
+import { decodeShareableUrl, importEventDataFile, type ExpandedShareableData } from '@/utils/shareableEventUtils';
 import { ReadOnlyCanvas } from '@/components/ReadOnlyCanvas';
-import type { Event } from '@/types';
 import '@/components/ShareableViewPage.css';
 
 interface ShareableViewPageClientProps {
@@ -16,23 +15,24 @@ export function ShareableViewPageClient({ encodedData }: ShareableViewPageClient
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [importedEvent, setImportedEvent] = useState<Partial<Event> | null>(null);
+  const [importedEvent, setImportedEvent] = useState<ExpandedShareableData | null>(null);
   const [isImporting, setIsImporting] = useState(false);
 
   // Decode event data from URL
-  const { eventData, error } = useMemo(() => {
+  const { eventData, error, hideBranding } = useMemo(() => {
     if (!encodedData) {
-      return { eventData: null, error: false };
+      return { eventData: null, error: false, hideBranding: false };
     }
     const data = decodeShareableUrl(encodedData);
     if (data) {
-      return { eventData: data, error: false };
+      return { eventData: data, error: false, hideBranding: data.hideBranding || false };
     }
-    return { eventData: null, error: true };
+    return { eventData: null, error: true, hideBranding: false };
   }, [encodedData]);
 
   // Use imported event if available, otherwise use URL data
   const displayEvent = importedEvent || eventData;
+  const showBranding = !(importedEvent?.hideBranding ?? hideBranding);
 
   const handleNavigateToApp = () => {
     router.push('/');
@@ -168,15 +168,21 @@ export function ShareableViewPageClient({ encodedData }: ShareableViewPageClient
   if (displayEvent) {
     return (
       <div className="shareable-page has-canvas">
-        <div className="shareable-header-bar">
-          <h1 className="shareable-brand-small">
-            <span className="logo-seat">Seat</span>
-            <span className="logo-ify">ify</span>
-          </h1>
+        <div className={`shareable-header-bar ${!showBranding ? 'no-branding' : ''}`}>
+          {showBranding ? (
+            <h1 className="shareable-brand-small">
+              <span className="logo-seat">Seat</span>
+              <span className="logo-ify">ify</span>
+            </h1>
+          ) : (
+            <div className="event-brand-placeholder" />
+          )}
           {displayEvent.name && <span className="event-title">{displayEvent.name}</span>}
-          <button className="header-cta" onClick={handleNavigateToApp}>
-            Create Your Own
-          </button>
+          {showBranding && (
+            <button className="header-cta" onClick={handleNavigateToApp}>
+              Create Your Own
+            </button>
+          )}
         </div>
 
         <div className="shareable-canvas-wrapper">

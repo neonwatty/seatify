@@ -10,10 +10,12 @@ import './MobileToolbarMenu.css';
 
 type ActiveView = 'event-list' | 'dashboard' | 'canvas' | 'guests';
 
+type ExportFormat = 'csv' | 'xlsx';
+
 interface MobileToolbarMenuProps {
   onAddGuest: () => void;
   onImport?: () => void;
-  onExport?: () => void;
+  onExport?: (format: ExportFormat) => void;
   showRelationships?: boolean;
   onToggleRelationships?: () => void;
   showGridControls?: boolean;
@@ -42,6 +44,7 @@ export function MobileToolbarMenu({
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showTableSubmenu, setShowTableSubmenu] = useState(false);
+  const [showExportSubmenu, setShowExportSubmenu] = useState(false);
   const [showTourSubmenu, setShowTourSubmenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuSheetRef = useRef<HTMLDivElement>(null);
@@ -68,6 +71,7 @@ export function MobileToolbarMenu({
       if (isOutsideBottomNav && isOutsideMenuSheet) {
         setIsOpen(false);
         setShowTableSubmenu(false);
+        setShowExportSubmenu(false);
         setShowTourSubmenu(false);
       }
     };
@@ -81,6 +85,7 @@ export function MobileToolbarMenu({
       if (e.key === 'Escape') {
         setIsOpen(false);
         setShowTableSubmenu(false);
+        setShowExportSubmenu(false);
         setShowTourSubmenu(false);
       }
     };
@@ -126,9 +131,10 @@ export function MobileToolbarMenu({
     }
   };
 
-  const handleExport = () => {
+  const handleExport = (format: ExportFormat) => {
     if (onExport) {
-      onExport();
+      onExport(format);
+      setShowExportSubmenu(false);
       setIsOpen(false);
     }
   };
@@ -343,14 +349,44 @@ export function MobileToolbarMenu({
               )}
 
               {onExport && (
-                <button
-                  className="menu-item"
-                  onClick={handleExport}
-                  role="menuitem"
-                >
-                  <span className="menu-icon">📤</span>
-                  <span>Export Guests</span>
-                </button>
+                showExportSubmenu ? (
+                  <>
+                    <button
+                      className="menu-item back"
+                      onClick={() => setShowExportSubmenu(false)}
+                      role="menuitem"
+                    >
+                      <span className="menu-icon">←</span>
+                      <span>Back</span>
+                    </button>
+                    <button
+                      className="menu-item"
+                      onClick={() => handleExport('csv')}
+                      role="menuitem"
+                    >
+                      <span className="menu-icon">📄</span>
+                      <span>Export as CSV</span>
+                    </button>
+                    <button
+                      className="menu-item"
+                      onClick={() => handleExport('xlsx')}
+                      role="menuitem"
+                    >
+                      <span className="menu-icon">📊</span>
+                      <span>Export as Excel</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="menu-item"
+                    onClick={() => setShowExportSubmenu(true)}
+                    role="menuitem"
+                  >
+                    <span className="menu-icon">📤</span>
+                    <span>Export Guests</span>
+                    <span className="menu-chevron">›</span>
+                  </button>
+                )
               )}
 
               {activeView === 'canvas' && (

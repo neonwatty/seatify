@@ -7,7 +7,7 @@ import { RelationshipMatrix } from './RelationshipMatrix';
 import { MainToolbar } from './MainToolbar';
 import { EmptyState } from './EmptyState';
 import { ImportWizard } from './ImportWizard/ImportWizard';
-import { downloadGuestsAsCSV } from '../utils/csvExport';
+import { downloadGuests, type ExportFormat } from '../utils/csvExport';
 import { showToast } from './toastStore';
 import type { Guest } from '../types';
 import { getFullName } from '../types';
@@ -162,13 +162,14 @@ export function GuestManagementView() {
     ? event.guests.find(g => g.id === selectedGuestDetail)
     : null;
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback((format: ExportFormat = 'csv') => {
     if (event.guests.length === 0) {
       showToast('No guests to export', 'warning');
       return;
     }
-    downloadGuestsAsCSV(event.guests, event.tables, event.name);
-    showToast(`Exported ${event.guests.length} guests to CSV`, 'success');
+    downloadGuests(event.guests, event.tables, event.name, format);
+    const formatLabel = format === 'xlsx' ? 'Excel' : 'CSV';
+    showToast(`Exported ${event.guests.length} guests to ${formatLabel}`, 'success');
   }, [event.guests, event.tables, event.name]);
 
   return (

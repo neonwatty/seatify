@@ -14,15 +14,19 @@ export function QRTableInfoPageClient({ encodedData }: QRTableInfoPageClientProp
   const router = useRouter();
 
   // Decode table data synchronously using useMemo
-  const { tableData, error } = useMemo(() => {
+  const { tableData, error, showBranding } = useMemo(() => {
     if (!encodedData) {
-      return { tableData: null, error: true };
+      return { tableData: null, error: true, showBranding: true };
     }
     const data = decodeTableData(encodedData);
     if (data) {
-      return { tableData: data as QRTableData, error: false };
+      return {
+        tableData: data as QRTableData,
+        error: false,
+        showBranding: data.b !== 0, // Show branding unless explicitly hidden
+      };
     }
-    return { tableData: null, error: true };
+    return { tableData: null, error: true, showBranding: true };
   }, [encodedData]);
 
   const handleNavigateToApp = () => {
@@ -62,10 +66,12 @@ export function QRTableInfoPageClient({ encodedData }: QRTableInfoPageClientProp
     <div className="qr-info-page">
       <div className="qr-info-container">
         <div className="qr-info-header">
-          <h1 className="qr-brand">
-            <span className="logo-seat">Seat</span>
-            <span className="logo-ify">ify</span>
-          </h1>
+          {showBranding && (
+            <h1 className="qr-brand">
+              <span className="logo-seat">Seat</span>
+              <span className="logo-ify">ify</span>
+            </h1>
+          )}
           {tableData.e && <p className="event-name">{tableData.e}</p>}
           {tableData.d && <p className="event-date">{tableData.d}</p>}
         </div>
@@ -96,12 +102,14 @@ export function QRTableInfoPageClient({ encodedData }: QRTableInfoPageClientProp
           </div>
         )}
 
-        <div className="qr-footer">
-          <p>Seating chart powered by</p>
-          <button className="footer-cta" onClick={handleNavigateToApp}>
-            Seatify
-          </button>
-        </div>
+        {showBranding && (
+          <div className="qr-footer">
+            <p>Seating chart powered by</p>
+            <button className="footer-cta" onClick={handleNavigateToApp}>
+              Seatify
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

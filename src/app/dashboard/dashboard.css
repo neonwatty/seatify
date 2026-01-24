@@ -18,7 +18,7 @@
 
   min-height: 100vh;
   min-height: 100dvh;
-  background: #fafafa;
+  background: var(--color-bg);
 }
 
 /* ========================================
@@ -30,8 +30,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-5);
-  background: white;
-  border-bottom: 1px solid #e5e5e5;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -82,7 +82,7 @@
 }
 
 .user-menu-button:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-hover);
 }
 
 .user-avatar {
@@ -109,10 +109,10 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 180px;
-  background: white;
-  border: 1px solid #e5e5e5;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-lg);
   padding: var(--space-2);
   z-index: 1000;
 }
@@ -126,13 +126,13 @@
   border-radius: 8px;
   text-align: left;
   font-size: 0.875rem;
-  color: #404040;
+  color: var(--color-text-secondary);
   cursor: pointer;
   text-decoration: none;
 }
 
 .menu-item:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-hover);
 }
 
 .menu-item.sign-out {
@@ -142,7 +142,7 @@
 .menu-divider {
   margin: var(--space-2) 0;
   border: none;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--color-border-light);
 }
 
 /* ========================================
@@ -184,7 +184,7 @@
 .events-header h1 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #171717;
+  color: var(--color-text);
   margin: 0;
   letter-spacing: -0.025em;
 }
@@ -233,16 +233,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background: white;
-  border: 1px solid #e5e5e5;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: var(--space-4);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .event-card-wrapper:hover {
-  border-color: #d4d4d4;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: var(--color-border-light);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Event Icon - handled in component */
@@ -263,7 +263,7 @@
 .event-card h3 {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #171717;
+  color: var(--color-text);
   margin: 0 0 var(--space-1);
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -276,7 +276,7 @@
   align-items: center;
   gap: var(--space-3);
   font-size: 0.8125rem;
-  color: #737373;
+  color: var(--color-text-secondary);
 }
 
 .event-card .event-meta span {
@@ -309,18 +309,18 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  color: #a3a3a3;
+  color: var(--color-text-light);
   transition: all 0.15s ease;
 }
 
 .event-action-btn:hover {
-  background: #f5f5f5;
-  color: #525252;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
 }
 
 .event-action-btn.delete-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--color-error-light);
+  color: var(--color-error);
 }
 
 .event-action-btn svg {
@@ -338,8 +338,8 @@
   align-items: center;
   text-align: center;
   padding: var(--space-12) var(--space-6);
-  background: white;
-  border: 1px dashed #d4d4d4;
+  background: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border);
   border-radius: 12px;
 }
 
@@ -352,13 +352,13 @@
 .empty-state h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #171717;
+  color: var(--color-text);
   margin: 0 0 var(--space-2);
 }
 
 .empty-state p {
   font-size: 0.875rem;
-  color: #737373;
+  color: var(--color-text-secondary);
   margin: 0 0 var(--space-6);
   max-width: 280px;
   line-height: 1.5;
@@ -388,7 +388,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-bg-secondary);
   border-radius: 16px 16px 0 0;
   padding: var(--space-6);
   width: 100%;
@@ -410,7 +410,7 @@
 .modal-content h2 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #171717;
+  color: var(--color-text);
   margin: 0 0 var(--space-6);
   letter-spacing: -0.01em;
 }
@@ -424,7 +424,7 @@
   display: block;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #525252;
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-2);
 }
 
@@ -432,11 +432,11 @@
 .modal-content .form-group select {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
-  background: white;
-  color: #171717;
+  background: var(--color-bg);
+  color: var(--color-text);
   transition: border-color 0.15s ease;
   -webkit-appearance: none;
 }
@@ -444,11 +444,11 @@
 .modal-content .form-group input:focus,
 .modal-content .form-group select:focus {
   outline: none;
-  border-color: #171717;
+  border-color: var(--color-primary);
 }
 
 .modal-content .form-group input::placeholder {
-  color: #a3a3a3;
+  color: var(--color-text-light);
 }
 
 /* Modal Buttons */
@@ -472,12 +472,12 @@
 }
 
 .btn-primary {
-  background: #171717;
+  background: var(--color-primary);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #404040;
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:disabled {
@@ -486,12 +486,12 @@
 }
 
 .btn-secondary {
-  background: #f5f5f5;
-  color: #525252;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
 }
 
 .btn-secondary:hover {
-  background: #e5e5e5;
+  background: var(--color-border);
 }
 
 .btn-danger {
@@ -511,13 +511,13 @@
 /* Delete Modal */
 .delete-modal p {
   font-size: 0.9375rem;
-  color: #525252;
+  color: var(--color-text-secondary);
   line-height: 1.6;
   margin: 0;
 }
 
 .delete-modal p strong {
-  color: #171717;
+  color: var(--color-text);
 }
 
 /* ========================================
@@ -554,7 +554,7 @@
   .user-email {
     display: block;
     font-size: 0.875rem;
-    color: #525252;
+    color: var(--color-text-secondary);
     max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -570,137 +570,14 @@
 
   .chevron {
     display: block;
-    color: #a3a3a3;
+    color: var(--color-text-light);
   }
 }
 
 /* ========================================
-   Dark Mode
+   Dark Mode - Handled via CSS variables in globals.css
+   The theme automatically switches based on [data-theme] or prefers-color-scheme
    ======================================== */
-
-@media (prefers-color-scheme: dark) {
-  .dashboard-layout {
-    background: #0a0a0a;
-  }
-
-  .dashboard-header {
-    background: #171717;
-    border-color: #262626;
-  }
-
-  .header-logo .logo-seat,
-  .header-logo .logo-ify {
-    color: var(--color-primary, #f97352);
-    font-family: var(--font-caveat), cursive;
-  }
-
-  .user-menu-button:hover {
-    background: #262626;
-  }
-
-  .user-menu-dropdown {
-    background: #171717;
-    border-color: #262626;
-  }
-
-  .menu-item {
-    color: #d4d4d4;
-  }
-
-  .menu-item:hover {
-    background: #262626;
-  }
-
-  .event-card-wrapper {
-    background: #171717;
-    border-color: #262626;
-  }
-
-  .event-card-wrapper:hover {
-    border-color: #404040;
-  }
-
-  .event-card-wrapper::before {
-    background: #262626;
-  }
-
-  .event-card h3 {
-    color: #fafafa;
-  }
-
-  .event-card .event-meta {
-    color: #737373;
-  }
-
-  .event-action-btn:hover {
-    background: #262626;
-    color: #d4d4d4;
-  }
-
-  .event-action-btn.delete-btn:hover {
-    background: #450a0a;
-    color: #f87171;
-  }
-
-  .empty-state {
-    background: #171717;
-    border-color: #404040;
-  }
-
-  .empty-state h3 {
-    color: #fafafa;
-  }
-
-  .modal-content {
-    background: #171717;
-  }
-
-  .modal-content h2 {
-    color: #fafafa;
-  }
-
-  .modal-content .form-group label {
-    color: #a3a3a3;
-  }
-
-  .modal-content .form-group input,
-  .modal-content .form-group select {
-    background: #0a0a0a;
-    border-color: #262626;
-    color: #fafafa;
-  }
-
-  .modal-content .form-group input:focus,
-  .modal-content .form-group select:focus {
-    border-color: #525252;
-  }
-
-  .btn-primary {
-    background: #fafafa;
-    color: #171717;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #e5e5e5;
-  }
-
-  .btn-secondary {
-    background: #262626;
-    color: #d4d4d4;
-  }
-
-  .btn-secondary:hover {
-    background: #404040;
-  }
-
-  .delete-modal p {
-    color: #a3a3a3;
-  }
-
-  .delete-modal p strong {
-    color: #fafafa;
-  }
-}
 
 /* ========================================
    Reduced Motion

@@ -11,11 +11,13 @@ import type { TableShape } from '../types';
 import type { TourId } from '../data/tourRegistry';
 import './MainToolbar.css';
 
+export type ExportFormat = 'csv' | 'xlsx';
+
 interface MainToolbarProps {
   children?: React.ReactNode;
   onAddGuest?: () => void;
   onImport?: () => void;
-  onExport?: () => void;
+  onExport?: (format: ExportFormat) => void;
   showRelationships?: boolean;
   onToggleRelationships?: () => void;
   // Mobile settings props
@@ -44,9 +46,11 @@ export function MainToolbar({ children, onAddGuest, onImport, onExport, showRela
   const isMobile = useIsMobile();
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showOptimizeDropdown, setShowOptimizeDropdown] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const addDropdownRef = useRef<HTMLDivElement>(null);
   const optimizeDropdownRef = useRef<HTMLDivElement>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
 
   // Check if optimization is possible
   const hasRelationships = event.guests.some(g => g.relationships.length > 0);
@@ -154,6 +158,9 @@ export function MainToolbar({ children, onAddGuest, onImport, onExport, showRela
       if (optimizeDropdownRef.current && !optimizeDropdownRef.current.contains(e.target as Node)) {
         setShowOptimizeDropdown(false);
       }
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(e.target as Node)) {
+        setShowExportDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -258,10 +265,26 @@ export function MainToolbar({ children, onAddGuest, onImport, onExport, showRela
         )}
 
         {onExport && (
-          <button onClick={onExport} className="toolbar-btn secondary" title="Export guests to CSV">
-            <span className="btn-icon">📤</span>
-            {!isMobile && <span className="btn-text">Export</span>}
-          </button>
+          <div className="export-dropdown" ref={exportDropdownRef}>
+            <button
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="toolbar-btn secondary"
+              title="Export guests"
+            >
+              <span className="btn-icon">📤</span>
+              {!isMobile && <span className="btn-text">Export</span>}
+            </button>
+            {showExportDropdown && (
+              <div className="dropdown-menu">
+                <button onClick={() => { onExport('csv'); setShowExportDropdown(false); }}>
+                  <span className="export-format-icon">📄</span> Export as CSV
+                </button>
+                <button onClick={() => { onExport('xlsx'); setShowExportDropdown(false); }}>
+                  <span className="export-format-icon">📊</span> Export as Excel
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {activeView === 'canvas' && (

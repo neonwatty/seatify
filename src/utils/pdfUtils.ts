@@ -153,6 +153,40 @@ function drawWatermark(
 }
 
 /**
+ * Draw custom logo on PDF page
+ * Adds the custom logo at the bottom right corner of each page
+ */
+async function drawCustomLogo(
+  doc: jsPDFInstance,
+  pageWidth: number,
+  pageHeight: number,
+  logoUrl: string
+): Promise<void> {
+  try {
+    // Logo dimensions (max 15mm height, maintain aspect ratio)
+    const maxHeight = 12;
+    const maxWidth = 40;
+    const margin = 5;
+
+    // Add the image
+    // jsPDF addImage can handle base64 data URLs directly
+    doc.addImage(
+      logoUrl,
+      'AUTO', // Auto-detect format
+      pageWidth - maxWidth - margin, // x position (right aligned)
+      pageHeight - maxHeight - margin, // y position (bottom)
+      maxWidth,
+      maxHeight,
+      undefined, // alias
+      'FAST' // compression
+    );
+  } catch (error) {
+    console.error('Failed to add custom logo to PDF:', error);
+    // If logo fails, just skip it
+  }
+}
+
+/**
  * Generate PDF with table tent cards
  * Each card is designed to fold in half and stand up
  */
@@ -161,7 +195,7 @@ export async function generateTableCardsPDF(
   tables: Table[],
   options: TableCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme, cardSize = 'standard', showWatermark = false } = options;
+  const { fontSize = 'medium', fontFamily = 'helvetica', showGuestCount = true, showEventName = true, colorTheme, cardSize = 'standard', showWatermark = false, customLogoUrl } = options;
   const fontSizes = TABLE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
   const cardDimensions = TABLE_CARD_SIZES[cardSize];
@@ -203,11 +237,15 @@ export async function generateTableCardsPDF(
     drawTableCard(doc, table, event, x, y, { fontSizes, fontFamily, showGuestCount, showEventName, themeColors, cardDimensions });
   });
 
-  // Add watermark to all pages if enabled
-  if (showWatermark) {
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
+  // Add custom logo or watermark to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    if (customLogoUrl) {
+      // Pro users get custom logo
+      await drawCustomLogo(doc, pageWidth, pageHeight, customLogoUrl);
+    } else if (showWatermark) {
+      // Free users get watermark
       drawWatermark(doc, pageWidth, pageHeight);
     }
   }
@@ -364,6 +402,7 @@ export interface TableCardPDFOptions {
   colorTheme?: ColorTheme;
   cardSize?: CardSize;
   showWatermark?: boolean; // If true, adds "Made with Seatify" watermark
+  customLogoUrl?: string | null; // Base64 data URL for custom logo (Pro feature)
 }
 
 export interface PlaceCardPDFOptions {
@@ -374,6 +413,7 @@ export interface PlaceCardPDFOptions {
   colorTheme?: ColorTheme;
   cardSize?: CardSize;
   showWatermark?: boolean; // If true, adds "Made with Seatify" watermark
+  customLogoUrl?: string | null; // Base64 data URL for custom logo (Pro feature)
 }
 
 /**
@@ -384,7 +424,7 @@ export async function generatePlaceCardsPDF(
   guests: Guest[],
   options: PlaceCardPDFOptions = {}
 ): Promise<jsPDFInstance> {
-  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme, cardSize = 'standard', showWatermark = false } = options;
+  const { includeTableName = true, includeDietary = true, fontSize = 'medium', fontFamily = 'helvetica', colorTheme, cardSize = 'standard', showWatermark = false, customLogoUrl } = options;
 
   const fontSizes = PLACE_CARD_FONT_SIZES[fontSize];
   const themeColors = getThemeColors(colorTheme);
@@ -438,11 +478,15 @@ export async function generatePlaceCardsPDF(
     drawPlaceCard(doc, guest, table, event, x, y, { includeTableName, includeDietary, fontSizes, fontFamily, themeColors, cardDimensions });
   });
 
-  // Add watermark to all pages if enabled
-  if (showWatermark) {
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
+  // Add custom logo or watermark to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    if (customLogoUrl) {
+      // Pro users get custom logo
+      await drawCustomLogo(doc, pageWidth, pageHeight, customLogoUrl);
+    } else if (showWatermark) {
+      // Free users get watermark
       drawWatermark(doc, pageWidth, pageHeight);
     }
   }
@@ -630,5 +674,324 @@ export async function downloadPlaceCards(
 
   const doc = await generatePlaceCardsPDF(event, guests, options);
   const filename = `${event.name.replace(/\s+/g, '-').toLowerCase()}-place-cards`;
+  downloadPDF(doc, filename);
+}
+
+export interface BulkPDFOptions {
+  tableCardOptions?: TableCardPDFOptions;
+  placeCardOptions?: PlaceCardPDFOptions;
+  customLogoUrl?: string | null;
+}
+
+export interface SeatingChartPDFOptions {
+  showGuestCount?: boolean;
+  showEventInfo?: boolean;
+  showUnassignedGuests?: boolean;
+  colorTheme?: ColorTheme;
+  showWatermark?: boolean;
+  customLogoUrl?: string | null;
+}
+
+export interface BulkPDFResult {
+  tableCardsDownloaded: boolean;
+  placeCardsDownloaded: boolean;
+  tableCount: number;
+  guestCount: number;
+}
+
+/**
+ * Generate and download all PDFs at once (table cards + place cards)
+ * Downloads both files sequentially with a small delay to avoid browser blocking
+ */
+export async function downloadAllPDFs(
+  event: Event,
+  options?: BulkPDFOptions
+): Promise<BulkPDFResult> {
+  const result: BulkPDFResult = {
+    tableCardsDownloaded: false,
+    placeCardsDownloaded: false,
+    tableCount: 0,
+    guestCount: 0,
+  };
+
+  // Download table cards if tables exist
+  if (event.tables.length > 0) {
+    const tableCardOpts = {
+      ...options?.tableCardOptions,
+      customLogoUrl: options?.customLogoUrl,
+    };
+    const tableDoc = await generateTableCardsPDF(event, event.tables, tableCardOpts);
+    const tableFilename = `${event.name.replace(/\s+/g, '-').toLowerCase()}-table-cards`;
+    downloadPDF(tableDoc, tableFilename);
+    result.tableCardsDownloaded = true;
+    result.tableCount = event.tables.length;
+  }
+
+  // Small delay to ensure browser handles multiple downloads
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  // Download place cards if there are confirmed seated guests
+  const seatedConfirmedGuests = event.guests.filter(
+    g => g.tableId && g.rsvpStatus === 'confirmed'
+  );
+
+  if (seatedConfirmedGuests.length > 0) {
+    const placeCardOpts = {
+      ...options?.placeCardOptions,
+      customLogoUrl: options?.customLogoUrl,
+    };
+    const placeDoc = await generatePlaceCardsPDF(event, seatedConfirmedGuests, placeCardOpts);
+    const placeFilename = `${event.name.replace(/\s+/g, '-').toLowerCase()}-place-cards`;
+    downloadPDF(placeDoc, placeFilename);
+    result.placeCardsDownloaded = true;
+    result.guestCount = seatedConfirmedGuests.length;
+  }
+
+  return result;
+}
+
+/**
+ * Generate a full seating chart overview PDF
+ * Shows all tables with their assigned guests in a printable format
+ */
+export async function generateSeatingChartPDF(
+  event: Event,
+  options: SeatingChartPDFOptions = {}
+): Promise<jsPDFInstance> {
+  const { showGuestCount = true, showEventInfo = true, showUnassignedGuests = true, colorTheme, showWatermark = false, customLogoUrl } = options;
+  const themeColors = getThemeColors(colorTheme);
+  const { jsPDF } = await loadJsPDF();
+
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'letter',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentWidth = pageWidth - (margin * 2);
+
+  let currentY = margin;
+
+  // Helper to add a new page if needed
+  const checkPageBreak = (neededHeight: number) => {
+    if (currentY + neededHeight > pageHeight - margin) {
+      doc.addPage();
+      currentY = margin;
+      return true;
+    }
+    return false;
+  };
+
+  // === Header Section ===
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(themeColors.text);
+  doc.text(event.name, pageWidth / 2, currentY + 8, { align: 'center' });
+  currentY += 15;
+
+  // Event subtitle
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(themeColors.textLight);
+  doc.text('Seating Chart', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 10;
+
+  // Decorative line
+  doc.setDrawColor(themeColors.primary);
+  doc.setLineWidth(1);
+  doc.line(margin + 30, currentY, pageWidth - margin - 30, currentY);
+  currentY += 10;
+
+  // === Event Stats Section ===
+  if (showEventInfo) {
+    doc.setFontSize(10);
+    doc.setTextColor(themeColors.textLight);
+
+    const totalGuests = event.guests.length;
+    const confirmedGuests = event.guests.filter(g => g.rsvpStatus === 'confirmed').length;
+    const assignedGuests = event.guests.filter(g => g.tableId).length;
+    const totalCapacity = event.tables.reduce((sum, t) => sum + t.capacity, 0);
+
+    const statsText = `${event.tables.length} Tables • ${totalGuests} Guests (${confirmedGuests} Confirmed) • ${assignedGuests} Seated • ${totalCapacity} Total Capacity`;
+    doc.text(statsText, pageWidth / 2, currentY, { align: 'center' });
+    currentY += 12;
+  }
+
+  // === Tables Section ===
+  // Sort tables by name
+  const sortedTables = [...event.tables].sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const table of sortedTables) {
+    const tableGuests = event.guests
+      .filter(g => g.tableId === table.id)
+      .sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`));
+
+    // Calculate height needed for this table
+    const headerHeight = 10;
+    const guestRowHeight = 6;
+    const tableHeight = headerHeight + (Math.max(tableGuests.length, 1) * guestRowHeight) + 8;
+
+    checkPageBreak(tableHeight);
+
+    // Table header background
+    doc.setFillColor(themeColors.primary);
+    doc.roundedRect(margin, currentY, contentWidth, 8, 1, 1, 'F');
+
+    // Table name
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(table.name, margin + 4, currentY + 5.5);
+
+    // Guest count on right
+    if (showGuestCount) {
+      const countText = `${tableGuests.length} / ${table.capacity}`;
+      doc.setFontSize(10);
+      doc.text(countText, pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
+    }
+
+    currentY += 10;
+
+    // Guest list
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(themeColors.text);
+    doc.setFontSize(10);
+
+    if (tableGuests.length === 0) {
+      doc.setTextColor(themeColors.textLight);
+      doc.setFont('helvetica', 'italic');
+      doc.text('No guests assigned', margin + 8, currentY + 4);
+      currentY += guestRowHeight;
+    } else {
+      // Two-column layout for guests
+      const colWidth = contentWidth / 2;
+      const halfCount = Math.ceil(tableGuests.length / 2);
+
+      for (let i = 0; i < halfCount; i++) {
+        const guest1 = tableGuests[i];
+        const guest2 = tableGuests[i + halfCount];
+
+        // First column
+        const name1 = `${guest1.firstName} ${guest1.lastName}`;
+        const dietary1 = guest1.dietaryRestrictions?.length ? ' *' : '';
+        doc.text(`• ${name1}${dietary1}`, margin + 4, currentY + 4);
+
+        // Second column
+        if (guest2) {
+          const name2 = `${guest2.firstName} ${guest2.lastName}`;
+          const dietary2 = guest2.dietaryRestrictions?.length ? ' *' : '';
+          doc.text(`• ${name2}${dietary2}`, margin + colWidth + 4, currentY + 4);
+        }
+
+        currentY += guestRowHeight;
+      }
+    }
+
+    currentY += 6; // Space between tables
+  }
+
+  // === Unassigned Guests Section ===
+  if (showUnassignedGuests) {
+    const unassignedGuests = event.guests
+      .filter(g => !g.tableId)
+      .sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`));
+
+    if (unassignedGuests.length > 0) {
+      checkPageBreak(30);
+
+      currentY += 5;
+
+      // Section header
+      doc.setFillColor(180, 180, 180);
+      doc.roundedRect(margin, currentY, contentWidth, 8, 1, 1, 'F');
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text('Unassigned Guests', margin + 4, currentY + 5.5);
+      doc.text(String(unassignedGuests.length), pageWidth - margin - 4, currentY + 5.5, { align: 'right' });
+      currentY += 10;
+
+      // Guest list in two columns
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(themeColors.text);
+      doc.setFontSize(10);
+
+      const colWidth = contentWidth / 2;
+      const halfCount = Math.ceil(unassignedGuests.length / 2);
+
+      for (let i = 0; i < halfCount; i++) {
+        checkPageBreak(6);
+
+        const guest1 = unassignedGuests[i];
+        const guest2 = unassignedGuests[i + halfCount];
+
+        // First column
+        const name1 = `${guest1.firstName} ${guest1.lastName}`;
+        const status1 = guest1.rsvpStatus !== 'confirmed' ? ` (${guest1.rsvpStatus})` : '';
+        doc.text(`• ${name1}${status1}`, margin + 4, currentY + 4);
+
+        // Second column
+        if (guest2) {
+          const name2 = `${guest2.firstName} ${guest2.lastName}`;
+          const status2 = guest2.rsvpStatus !== 'confirmed' ? ` (${guest2.rsvpStatus})` : '';
+          doc.text(`• ${name2}${status2}`, margin + colWidth + 4, currentY + 4);
+        }
+
+        currentY += 6;
+      }
+    }
+  }
+
+  // === Footer note ===
+  currentY += 10;
+  if (event.guests.some(g => g.dietaryRestrictions?.length)) {
+    checkPageBreak(10);
+    doc.setFontSize(8);
+    doc.setTextColor(themeColors.textLight);
+    doc.text('* indicates dietary restrictions', margin, currentY);
+  }
+
+  // Add custom logo or watermark to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    if (customLogoUrl) {
+      await drawCustomLogo(doc, pageWidth, pageHeight, customLogoUrl);
+    } else if (showWatermark) {
+      drawWatermark(doc, pageWidth, pageHeight);
+    }
+  }
+
+  return doc;
+}
+
+/**
+ * Preview seating chart PDF
+ */
+export async function previewSeatingChart(
+  event: Event,
+  options?: SeatingChartPDFOptions
+): Promise<string | null> {
+  if (event.tables.length === 0) return null;
+
+  const doc = await generateSeatingChartPDF(event, options);
+  const blob = getPDFBlob(doc);
+  return URL.createObjectURL(blob);
+}
+
+/**
+ * Download seating chart PDF
+ */
+export async function downloadSeatingChart(
+  event: Event,
+  options?: SeatingChartPDFOptions
+): Promise<void> {
+  if (event.tables.length === 0) return;
+
+  const doc = await generateSeatingChartPDF(event, options);
+  const filename = `${event.name.replace(/\s+/g, '-').toLowerCase()}-seating-chart`;
   downloadPDF(doc, filename);
 }

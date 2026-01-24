@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { decodeShareableUrl } from '@/utils/shareableEventUtils';
+import { decodeShareableUrl, type ExpandedShareableData } from '@/utils/shareableEventUtils';
 import { getFullName } from '@/types';
-import type { Event, Guest, SurveyQuestion } from '@/types';
+import type { Guest, SurveyQuestion } from '@/types';
 import '@/components/GuestSurveyPage.css';
 
 interface GuestSurveyPageClientProps {
@@ -22,16 +22,18 @@ export function GuestSurveyPageClient({ encodedData }: GuestSurveyPageClientProp
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
 
   // Decode event data from URL
-  const { eventData, error } = useMemo(() => {
+  const { eventData, error, hideBranding } = useMemo(() => {
     if (!encodedData) {
-      return { eventData: null, error: false };
+      return { eventData: null, error: false, hideBranding: false };
     }
     const data = decodeShareableUrl(encodedData);
     if (data) {
-      return { eventData: data as Partial<Event>, error: false };
+      return { eventData: data as ExpandedShareableData, error: false, hideBranding: data.hideBranding || false };
     }
-    return { eventData: null, error: true };
+    return { eventData: null, error: true, hideBranding: false };
   }, [encodedData]);
+
+  const showBranding = !hideBranding;
 
   const handleNavigateToApp = () => {
     router.push('/');
@@ -295,7 +297,7 @@ export function GuestSurveyPageClient({ encodedData }: GuestSurveyPageClientProp
           <h2>Hi, {guest.firstName || getFullName(guest).split(' ')[0]}!</h2>
           <p>Please answer a few questions to help us with seating.</p>
 
-          {eventData.surveyQuestions.map((question, index) => (
+          {eventData.surveyQuestions?.map((question: SurveyQuestion, index: number) => (
             <div key={question.id} className="question-group">
               <label className={question.required ? 'required' : ''}>
                 {index + 1}. {question.question}
@@ -319,11 +321,13 @@ export function GuestSurveyPageClient({ encodedData }: GuestSurveyPageClientProp
         </div>
       )}
 
-      <footer className="survey-footer">
-        <p>
-          Powered by <strong>Seatify</strong>
-        </p>
-      </footer>
+      {showBranding && (
+        <footer className="survey-footer">
+          <p>
+            Powered by <strong>Seatify</strong>
+          </p>
+        </footer>
+      )}
     </div>
   );
 }

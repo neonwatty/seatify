@@ -8,6 +8,7 @@ import {
 } from '../utils/shareableEventUtils';
 import { copyToClipboard } from '../utils/qrCodeUtils';
 import { trackShareLinkCopied, trackShareFileDownloaded } from '../utils/analytics';
+import { useSubscription } from '../hooks/useSubscription';
 import type { Event } from '../types';
 import './ShareLinkModal.css';
 
@@ -20,17 +21,21 @@ interface ShareLinkModalProps {
 export function ShareLinkModal({ isOpen, onClose, event }: ShareLinkModalProps) {
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const { limits } = useSubscription();
 
   // Generate URL and check size
   const { shareUrl, isTooLarge, dataLength } = useMemo(() => {
-    const url = generateShareUrl(event);
+    const url = generateShareUrl(event, {
+      includeTracking: true,
+      hideBranding: limits.canRemoveBranding,
+    });
     const length = getShareUrlLength(event);
     return {
       shareUrl: url,
       isTooLarge: isShareUrlTooLarge(event),
       dataLength: length,
     };
-  }, [event]);
+  }, [event, limits.canRemoveBranding]);
 
   // Reset copied state when modal closes
   useEffect(() => {

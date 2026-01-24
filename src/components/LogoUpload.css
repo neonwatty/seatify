@@ -1,0 +1,143 @@
+.logo-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.logo-upload.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.logo-upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--border-color, #e5e5e5);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary, #f5f5f5);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary, #666);
+}
+
+.logo-upload-btn:hover:not(:disabled) {
+  border-color: var(--primary, #F97066);
+  background: var(--bg-tertiary, #eee);
+}
+
+.logo-upload-btn.locked {
+  opacity: 0.8;
+}
+
+.logo-upload-btn:disabled {
+  cursor: not-allowed;
+}
+
+.logo-upload-btn svg {
+  stroke: var(--text-secondary, #666);
+}
+
+.logo-upload-btn .pro-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  background: var(--primary, #F97066);
+  color: white;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.logo-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e5e5e5);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.logo-preview {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color, #e5e5e5);
+}
+
+.logo-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.logo-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.logo-btn.change {
+  background: var(--primary, #F97066);
+  color: white;
+}
+
+.logo-btn.change:hover:not(:disabled) {
+  background: #e65a4f;
+}
+
+.logo-btn.remove {
+  background: transparent;
+  color: var(--text-secondary, #666);
+  border: 1px solid var(--border-color, #e5e5e5);
+}
+
+.logo-btn.remove:hover:not(:disabled) {
+  background: var(--bg-tertiary, #eee);
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.logo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.logo-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #666);
+  margin: 0;
+}
+
+.upload-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color, #e5e5e5);
+  border-top-color: var(--primary, #F97066);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

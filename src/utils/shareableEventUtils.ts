@@ -19,6 +19,7 @@ export interface ShareableEventData {
   G: ShareableGuest[];    // Guests
   V?: ShareableVenueElement[]; // Venue elements (optional)
   C?: ShareableConstraint[];   // Constraints (optional)
+  b?: number;             // Show branding (0 = hide, 1 or undefined = show)
 }
 
 export interface ShareableTable {
@@ -89,10 +90,14 @@ const NUMBER_TO_PRIORITY: Record<number, Constraint['priority']> = {
   2: 'optional',
 };
 
+export interface MinifyOptions {
+  hideBranding?: boolean;
+}
+
 /**
  * Convert Event to minified shareable format
  */
-export function minifyEventData(event: Event): ShareableEventData {
+export function minifyEventData(event: Event, options?: MinifyOptions): ShareableEventData {
   const data: ShareableEventData = {
     v: SHARE_DATA_VERSION,
     n: event.name,
@@ -111,6 +116,11 @@ export function minifyEventData(event: Event): ShareableEventData {
 
   if (event.constraints.length > 0) {
     data.C = event.constraints.map(minifyConstraint);
+  }
+
+  // Add branding flag (0 = hide branding for Pro users)
+  if (options?.hideBranding) {
+    data.b = 0;
   }
 
   return data;
@@ -191,10 +201,14 @@ function minifyConstraint(constraint: Constraint): ShareableConstraint {
   };
 }
 
+export interface ExpandedShareableData extends Partial<Event> {
+  hideBranding?: boolean;
+}
+
 /**
  * Expand minified data back to full Event structure
  */
-export function expandShareableData(data: ShareableEventData): Partial<Event> {
+export function expandShareableData(data: ShareableEventData): ExpandedShareableData {
   return {
     name: data.n,
     date: data.d,
@@ -202,6 +216,7 @@ export function expandShareableData(data: ShareableEventData): Partial<Event> {
     guests: data.G.map(expandGuest),
     venueElements: data.V?.map(expandVenueElement) || [],
     constraints: data.C?.map(expandConstraint) || [],
+    hideBranding: data.b === 0,
   };
 }
 
@@ -282,8 +297,8 @@ function expandConstraint(constraint: ShareableConstraint): Constraint {
 /**
  * Encode event data to a URL-safe string with compression
  */
-export function encodeShareableUrl(event: Event): string {
-  const minified = minifyEventData(event);
+export function encodeShareableUrl(event: Event, options?: MinifyOptions): string {
+  const minified = minifyEventData(event, options);
   const json = JSON.stringify(minified);
 
   // Compress the JSON
@@ -301,7 +316,7 @@ export function encodeShareableUrl(event: Event): string {
 /**
  * Decode shareable URL data back to event data
  */
-export function decodeShareableUrl(encoded: string): Partial<Event> | null {
+export function decodeShareableUrl(encoded: string): ExpandedShareableData | null {
   try {
     // Restore standard base64
     let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
@@ -355,11 +370,23 @@ function validateShareableData(data: unknown): data is ShareableEventData {
   );
 }
 
+export interface GenerateShareUrlOptions {
+  includeTracking?: boolean;
+  hideBranding?: boolean;
+}
+
 /**
  * Generate the full shareable URL with optional tracking param
  */
-export function generateShareUrl(event: Event, includeTracking = true): string {
-  const encoded = encodeShareableUrl(event);
+export function generateShareUrl(event: Event, options?: GenerateShareUrlOptions | boolean): string {
+  // Handle backwards compatibility with old boolean signature
+  const opts: GenerateShareUrlOptions = typeof options === 'boolean'
+    ? { includeTracking: options }
+    : options || {};
+
+  const includeTracking = opts.includeTracking ?? true;
+
+  const encoded = encodeShareableUrl(event, { hideBranding: opts.hideBranding });
   const baseUrl = window.location.origin;
   const shareUrl = `${baseUrl}/share/${encoded}`;
 

@@ -1,6 +1,6 @@
 -- Seatify Demo Seed Data
 -- This file is run by Supabase CLI during `supabase db reset`
--- It creates a demo user and seeds the demo event data
+-- It creates a demo user, test user, and seeds the demo event data
 
 -- =====================================================
 -- STEP 1: Create demo user in auth.users
@@ -35,6 +35,62 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
+-- STEP 1b: Create test user for E2E tests
+-- =====================================================
+-- This user has known credentials for automated testing
+-- Email: test@example.com / Password: testpassword123
+INSERT INTO auth.users (
+  id,
+  instance_id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at,
+  aud,
+  role
+)
+VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  '00000000-0000-0000-0000-000000000000',
+  'test@example.com',
+  crypt('testpassword123', gen_salt('bf')),
+  NOW(),
+  '{"provider":"email","providers":["email"]}',
+  '{"display_name":"Test User"}',
+  NOW(),
+  NOW(),
+  'authenticated',
+  'authenticated'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Add identity for test user (required for email login)
+INSERT INTO auth.identities (
+  id,
+  user_id,
+  provider_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  '11111111-1111-1111-1111-111111111111',
+  'test@example.com',
+  '{"sub":"11111111-1111-1111-1111-111111111111","email":"test@example.com","email_verified":true}',
+  'email',
+  NOW(),
+  NOW(),
+  NOW()
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
 -- STEP 2: Create demo profile
 -- =====================================================
 INSERT INTO public.profiles (id, email, display_name, created_at, updated_at)
@@ -42,6 +98,19 @@ VALUES (
   '00000000-0000-0000-0000-000000000000',
   'demo@seatify.app',
   'Demo User',
+  NOW(),
+  NOW()
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- =====================================================
+-- STEP 2b: Create test user profile
+-- =====================================================
+INSERT INTO public.profiles (id, email, display_name, created_at, updated_at)
+VALUES (
+  '11111111-1111-1111-1111-111111111111',
+  'test@example.com',
+  'Test User',
   NOW(),
   NOW()
 )

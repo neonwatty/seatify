@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStore } from '../store/useStore';
 import { AnimatedCounter } from './AnimatedCounter';
 import { EmptyState } from './EmptyState';
@@ -8,11 +9,17 @@ import { ShareLinkModal } from './ShareLinkModal';
 import { OnboardingWizard } from './OnboardingWizard';
 import { EmailCaptureModal } from './EmailCaptureModal';
 import { DemoSignupModal } from './DemoSignupModal';
+import { LogoUpload } from './LogoUpload';
+import { RSVPSettings } from './RSVPSettings';
+import { RSVPDashboard } from './RSVPDashboard';
 import { useDemoGate } from '../hooks/useDemoGate';
+import { useSubscription } from '../hooks/useSubscription';
 import { QR_TOUR_STEPS } from '../data/onboardingSteps';
 import {
   downloadTableCards,
   downloadPlaceCards,
+  downloadAllPDFs,
+  downloadSeatingChart,
   previewTableCards,
   previewPlaceCards
 } from '../utils/pdfUtils';
@@ -22,11 +29,13 @@ import {
   markAsSubscribed,
   trackDismissal,
 } from '../utils/emailCaptureManager';
+import { loadCustomLogo, updateCustomLogo } from '../actions/profilePreferences';
 import { showToast } from './toastStore';
 import { trackPDFExported, trackFunnelStep, trackMilestone, setUserProperties } from '../utils/analytics';
 import './DashboardView.css';
 
 export function DashboardView() {
+  const router = useRouter();
   const {
     event,
     setActiveView,
@@ -35,13 +44,54 @@ export function DashboardView() {
     exportEvent
   } = useStore();
   const { checkGate, gatedFeature, closeGate, completeSignup } = useDemoGate();
+  const { limits } = useSubscription();
   const [showQRPrintView, setShowQRPrintView] = useState(false);
   const [showQRTour, setShowQRTour] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [isGeneratingTableCards, setIsGeneratingTableCards] = useState(false);
   const [isGeneratingPlaceCards, setIsGeneratingPlaceCards] = useState(false);
+  const [isGeneratingAllPDFs, setIsGeneratingAllPDFs] = useState(false);
+  const [isGeneratingSeatingChart, setIsGeneratingSeatingChart] = useState(false);
   const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [showRSVPSettings, setShowRSVPSettings] = useState(false);
+  const [rsvpModalTab, setRsvpModalTab] = useState<'responses' | 'settings'>('responses');
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  // Custom logo state
+  const [customLogoUrl, setCustomLogoUrl] = useState<string | null>(null);
+  const [isLoadingLogo, setIsLoadingLogo] = useState(true);
+
+  // Load custom logo on mount
+  useEffect(() => {
+    async function fetchLogo() {
+      try {
+        const result = await loadCustomLogo();
+        if (result.data) {
+          setCustomLogoUrl(result.data);
+        }
+      } catch (error) {
+        console.error('Failed to load custom logo:', error);
+      } finally {
+        setIsLoadingLogo(false);
+      }
+    }
+    fetchLogo();
+  }, []);
+
+  // Handle logo changes
+  const handleLogoChange = async (logoDataUrl: string | null) => {
+    setCustomLogoUrl(logoDataUrl);
+    try {
+      const result = await updateCustomLogo(logoDataUrl);
+      if (result.error) {
+        showToast('Failed to save logo. Please try again.', 'error');
+        console.error('Failed to update custom logo:', result.error);
+      }
+    } catch (error) {
+      showToast('Failed to save logo. Please try again.', 'error');
+      console.error('Failed to update custom logo:', error);
+    }
+  };
 
   // PDF Preview state
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -109,7 +159,9 @@ export function DashboardView() {
     setIsGeneratingPreview(true);
 
     try {
-      const url = await previewTableCards(event);
+      const url = await previewTableCards(event, {
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
+      });
       setPreviewUrl(url);
     } catch (error) {
       console.error('Failed to generate preview:', error);
@@ -143,7 +195,9 @@ export function DashboardView() {
     setIsGeneratingPreview(true);
 
     try {
-      const url = await previewPlaceCards(event);
+      const url = await previewPlaceCards(event, {
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
+      });
       setPreviewUrl(url);
     } catch (error) {
       console.error('Failed to generate preview:', error);
@@ -183,6 +237,8 @@ export function DashboardView() {
       URL.revokeObjectURL(previewUrl);
     }
 
+    const logoForPdf = limits.hasCustomLogo ? customLogoUrl : null;
+
     setIsGeneratingPreview(true);
     try {
       let url: string | null = null;
@@ -194,6 +250,7 @@ export function DashboardView() {
           showEventName: tableOptions.showEventName,
           colorTheme: tableOptions.colorTheme,
           cardSize: tableOptions.cardSize,
+          customLogoUrl: logoForPdf,
         });
       } else if (previewType === 'place' && placeOptions) {
         url = await previewPlaceCards(event, {
@@ -203,6 +260,7 @@ export function DashboardView() {
           fontFamily: placeOptions.fontFamily,
           colorTheme: placeOptions.colorTheme,
           cardSize: placeOptions.cardSize,
+          customLogoUrl: logoForPdf,
         });
       }
       setPreviewUrl(url);
@@ -246,6 +304,7 @@ export function DashboardView() {
         showEventName: options?.showEventName ?? true,
         colorTheme: options?.colorTheme ?? 'classic',
         cardSize: options?.cardSize ?? 'standard',
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
       });
       showToast('Table cards PDF downloaded', 'success');
     } catch (error) {
@@ -275,6 +334,7 @@ export function DashboardView() {
         fontFamily: options?.fontFamily ?? 'helvetica',
         colorTheme: options?.colorTheme ?? 'classic',
         cardSize: options?.cardSize ?? 'standard',
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
       });
       showToast('Place cards PDF downloaded', 'success');
     } catch (error) {
@@ -283,6 +343,87 @@ export function DashboardView() {
     } finally {
       setIsGeneratingPlaceCards(false);
     }
+  };
+
+  const doDownloadAllPDFs = async () => {
+    const seatedConfirmed = event.guests.filter(
+      g => g.tableId && g.rsvpStatus === 'confirmed'
+    ).length;
+
+    if (totalTables === 0 && seatedConfirmed === 0) {
+      showToast('Add tables and seat confirmed guests first', 'warning');
+      return;
+    }
+
+    setIsGeneratingAllPDFs(true);
+    try {
+      const result = await downloadAllPDFs(event, {
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
+      });
+
+      // Build success message
+      const parts: string[] = [];
+      if (result.tableCardsDownloaded) {
+        parts.push(`${result.tableCount} table cards`);
+      }
+      if (result.placeCardsDownloaded) {
+        parts.push(`${result.guestCount} place cards`);
+      }
+
+      if (parts.length > 0) {
+        showToast(`Downloaded: ${parts.join(' + ')}`, 'success');
+        trackPDFExported('all_cards');
+        trackFunnelStep('export_completed', { export_type: 'all_cards' });
+      } else {
+        showToast('No PDFs to download', 'warning');
+      }
+
+      triggerEmailCaptureOnExport();
+    } catch (error) {
+      console.error('Failed to generate PDFs:', error);
+      showToast('Failed to generate PDFs. Please try again.', 'error');
+    } finally {
+      setIsGeneratingAllPDFs(false);
+    }
+  };
+
+  const handleDownloadAllPDFs = () => {
+    if (!checkGate('pdf_table_cards', doDownloadAllPDFs)) {
+      setPendingAction(() => doDownloadAllPDFs);
+      return;
+    }
+    doDownloadAllPDFs();
+  };
+
+  const doDownloadSeatingChart = async () => {
+    if (totalTables === 0) {
+      showToast('Add tables first to generate seating chart', 'warning');
+      return;
+    }
+
+    setIsGeneratingSeatingChart(true);
+    try {
+      await downloadSeatingChart(event, {
+        customLogoUrl: limits.hasCustomLogo ? customLogoUrl : null,
+      });
+      showToast('Seating chart PDF downloaded', 'success');
+      trackPDFExported('seating_chart');
+      trackFunnelStep('export_completed', { export_type: 'seating_chart' });
+      triggerEmailCaptureOnExport();
+    } catch (error) {
+      console.error('Failed to generate seating chart:', error);
+      showToast('Failed to generate PDF. Please try again.', 'error');
+    } finally {
+      setIsGeneratingSeatingChart(false);
+    }
+  };
+
+  const handleDownloadSeatingChart = () => {
+    if (!checkGate('pdf_table_cards', doDownloadSeatingChart)) {
+      setPendingAction(() => doDownloadSeatingChart);
+      return;
+    }
+    doDownloadSeatingChart();
   };
 
   return (
@@ -393,14 +534,14 @@ export function DashboardView() {
           <div className="actions-grid">
             <button
               className="action-btn primary"
-              onClick={() => setActiveView('canvas')}
+              onClick={() => router.push(`/dashboard/events/${event.id}/canvas`)}
             >
               <span className="action-icon">+</span>
               <span>Add Tables</span>
             </button>
             <button
               className="action-btn primary"
-              onClick={() => setActiveView('guests')}
+              onClick={() => router.push(`/dashboard/events/${event.id}/guests`)}
             >
               <span className="action-icon">+</span>
               <span>Manage Guests</span>
@@ -429,12 +570,77 @@ export function DashboardView() {
           </div>
         </div>
 
+        {/* RSVP Card */}
+        <div className="dashboard-card rsvp-card">
+          <h3>Guest RSVP</h3>
+          <p className="rsvp-card-description">
+            Let guests respond to your invitation online
+          </p>
+          <div className="rsvp-card-content">
+            <div className="rsvp-stats">
+              <div className="rsvp-stat">
+                <span className="rsvp-stat-value">{confirmedGuests}</span>
+                <span className="rsvp-stat-label">Confirmed</span>
+              </div>
+              <div className="rsvp-stat">
+                <span className="rsvp-stat-value">{pendingGuests}</span>
+                <span className="rsvp-stat-label">Pending</span>
+              </div>
+              <div className="rsvp-stat">
+                <span className="rsvp-stat-value">{declinedGuests}</span>
+                <span className="rsvp-stat-label">Declined</span>
+              </div>
+            </div>
+            <div className="rsvp-card-actions">
+              <button
+                className="configure-rsvp-btn primary"
+                onClick={() => {
+                  setRsvpModalTab('responses');
+                  setShowRSVPSettings(true);
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                View Responses
+              </button>
+              <button
+                className="configure-rsvp-btn secondary"
+                onClick={() => {
+                  setRsvpModalTab('settings');
+                  setShowRSVPSettings(true);
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Settings
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Print Materials */}
         <div className="dashboard-card print-materials">
           <h3>Print Materials</h3>
           <p className="print-materials-description">
             Generate printable PDFs for your event
           </p>
+
+          {/* Custom Logo Upload */}
+          <div className="logo-section">
+            <h4 className="logo-section-title">Custom Logo</h4>
+            <LogoUpload
+              currentLogoUrl={customLogoUrl}
+              onLogoChange={handleLogoChange}
+              disabled={isLoadingLogo}
+            />
+          </div>
+
           <div className="print-materials-grid">
             <button
               className="print-material-btn"
@@ -482,6 +688,56 @@ export function DashboardView() {
               </div>
               <span className="print-material-count">
                 {event.guests.filter(g => g.tableId && g.rsvpStatus === 'confirmed').length} cards
+              </span>
+            </button>
+            <button
+              className="print-material-btn"
+              onClick={handleDownloadSeatingChart}
+              disabled={totalTables === 0 || isGeneratingSeatingChart}
+            >
+              <div className="print-material-icon">
+                {isGeneratingSeatingChart ? (
+                  <div className="btn-loading-spinner" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                  </svg>
+                )}
+              </div>
+              <div className="print-material-info">
+                <span className="print-material-title">
+                  {isGeneratingSeatingChart ? 'Generating...' : 'Seating Chart'}
+                </span>
+                <span className="print-material-desc">Full layout with guest lists</span>
+              </div>
+              <span className="print-material-count">{totalTables} tables</span>
+            </button>
+            <button
+              className="print-material-btn download-all"
+              onClick={handleDownloadAllPDFs}
+              disabled={(totalTables === 0 && confirmedGuests === 0) || isGeneratingAllPDFs}
+            >
+              <div className="print-material-icon">
+                {isGeneratingAllPDFs ? (
+                  <div className="btn-loading-spinner" />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                )}
+              </div>
+              <div className="print-material-info">
+                <span className="print-material-title">
+                  {isGeneratingAllPDFs ? 'Downloading...' : 'Download All'}
+                </span>
+                <span className="print-material-desc">Table cards + place cards</span>
+              </div>
+              <span className="print-material-count">
+                {totalTables + event.guests.filter(g => g.tableId && g.rsvpStatus === 'confirmed').length} total
               </span>
             </button>
           </div>
@@ -608,6 +864,60 @@ export function DashboardView() {
         }}
         feature={gatedFeature || 'pdf_table_cards'}
       />
+
+      {/* RSVP Modal (Responses + Settings) */}
+      {showRSVPSettings && (
+        <div className="rsvp-settings-modal-overlay" onClick={(e) => {
+          if (e.target === e.currentTarget) setShowRSVPSettings(false);
+        }}>
+          <div className="rsvp-settings-modal rsvp-modal-with-tabs">
+            <div className="rsvp-modal-header">
+              <h2>RSVP Management</h2>
+              <button
+                className="rsvp-settings-close"
+                onClick={() => setShowRSVPSettings(false)}
+                aria-label="Close"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="rsvp-modal-tabs">
+              <button
+                className={`rsvp-modal-tab ${rsvpModalTab === 'responses' ? 'active' : ''}`}
+                onClick={() => setRsvpModalTab('responses')}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Responses
+              </button>
+              <button
+                className={`rsvp-modal-tab ${rsvpModalTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setRsvpModalTab('settings')}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Settings
+              </button>
+            </div>
+            <div className="rsvp-modal-content">
+              {rsvpModalTab === 'responses' ? (
+                <RSVPDashboard eventId={event.id} />
+              ) : (
+                <RSVPSettings eventId={event.id} eventName={event.name} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

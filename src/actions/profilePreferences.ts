@@ -153,3 +153,50 @@ export async function updateUserPreferences(
 
   return { success: true };
 }
+
+// Load custom logo URL from user profile
+export async function loadCustomLogo(): Promise<{ data?: string | null; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Not authenticated' };
+  }
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('custom_logo_url')
+    .eq('id', user.id)
+    .single();
+
+  if (error) {
+    console.error('Error loading custom logo:', error);
+    return { error: error.message };
+  }
+
+  return { data: profile?.custom_logo_url || null };
+}
+
+// Update custom logo URL in user profile
+export async function updateCustomLogo(
+  logoDataUrl: string | null
+): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Not authenticated' };
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ custom_logo_url: logoDataUrl })
+    .eq('id', user.id);
+
+  if (error) {
+    console.error('Error updating custom logo:', error);
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
