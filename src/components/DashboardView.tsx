@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useStore } from '../store/useStore';
 import { AnimatedCounter } from './AnimatedCounter';
 import { EmptyState } from './EmptyState';
@@ -34,6 +35,7 @@ import { trackPDFExported, trackFunnelStep, trackMilestone, setUserProperties } 
 import './DashboardView.css';
 
 export function DashboardView() {
+  const router = useRouter();
   const {
     event,
     setActiveView,
@@ -532,14 +534,14 @@ export function DashboardView() {
           <div className="actions-grid">
             <button
               className="action-btn primary"
-              onClick={() => setActiveView('canvas')}
+              onClick={() => router.push(`/dashboard/events/${event.id}/canvas`)}
             >
               <span className="action-icon">+</span>
               <span>Add Tables</span>
             </button>
             <button
               className="action-btn primary"
-              onClick={() => setActiveView('guests')}
+              onClick={() => router.push(`/dashboard/events/${event.id}/guests`)}
             >
               <span className="action-icon">+</span>
               <span>Manage Guests</span>
