@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { trackCTAClick } from '../utils/analytics';
 import { DemoSignupModal } from './DemoSignupModal';
 import { isDemoEvent } from '../lib/constants';
+import { createClient } from '../lib/supabase/client';
 import './DemoBanner.css';
 
 interface BannerContent {
@@ -53,11 +54,33 @@ function getBannerContent(demoInteraction: {
 
 export function DemoBanner() {
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { isDemo, demoInteraction, event } = useStore();
 
-  // Only show banner if both isDemo is true AND we're viewing the actual demo event
-  // This prevents the banner from showing on migrated events due to stale store state
+  // Check authentication status
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Check current session
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsAuthenticated(!!user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Only show banner if:
+  // 1. isDemo is true AND we're viewing the actual demo event
+  // 2. User is NOT authenticated
+  // This prevents the banner from showing to logged-in users
   if (!isDemo || !event || !isDemoEvent(event.id)) return null;
+  if (isAuthenticated === null) return null; // Still loading auth state
+  if (isAuthenticated) return null; // Hide for logged-in users
 
   const { message, cta } = getBannerContent(demoInteraction);
 
