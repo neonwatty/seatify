@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { RSVPSettings, Guest } from '@/types';
 
 // Type for public event data (only what guests need)
@@ -235,11 +236,13 @@ export async function findGuestByEmailOrName(
 
 /**
  * Submit RSVP response
+ * Uses admin client to bypass RLS since guests are not authenticated
  */
 export async function submitRSVPResponse(
   submission: RSVPSubmission
 ): Promise<{ success?: boolean; error?: string }> {
-  const supabase = await createClient();
+  // Use admin client since guests submitting RSVP are not authenticated
+  const supabase = createAdminClient();
 
   // Verify event has RSVP enabled and deadline not passed
   const { data: rsvpSettings } = await supabase
