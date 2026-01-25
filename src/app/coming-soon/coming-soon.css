@@ -1,0 +1,79 @@
+.coming-soon-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, #faf9f7 0%, #f5f0e8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.coming-soon-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.coming-soon-logo h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 3.5rem;
+  font-weight: 600;
+  color: #2d2926;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.coming-soon-message {
+  margin-top: 2rem;
+}
+
+.coming-soon-message h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #2d2926;
+  margin: 0 0 1rem 0;
+}
+
+.coming-soon-message p {
+  font-size: 1.1rem;
+  color: #5c5652;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.coming-soon-illustration {
+  margin-top: 3rem;
+}
+
+.table-illustration {
+  width: 180px;
+  height: 180px;
+  color: #8b7355;
+  opacity: 0.6;
+}
+
+.coming-soon-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(139, 115, 85, 0.2);
+}
+
+.coming-soon-footer p {
+  font-size: 0.9rem;
+  color: #8b7355;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .coming-soon-logo h1 {
+    font-size: 2.5rem;
+  }
+
+  .coming-soon-message h2 {
+    font-size: 1.5rem;
+  }
+
+  .coming-soon-message p {
+    font-size: 1rem;
+  }
+}
