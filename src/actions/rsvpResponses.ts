@@ -51,7 +51,13 @@ export async function loadPublicEventForRSVP(
   eventId: string
 ): Promise<{ data?: PublicEventData; error?: string }> {
   // Use admin client for public RSVP access (bypasses RLS)
-  const supabase = createAdminClient();
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.error('Failed to create admin client:', error);
+    return { error: 'Service temporarily unavailable' };
+  }
 
   // Load event basic info
   const { data: event, error: eventError } = await supabase
@@ -145,7 +151,13 @@ export async function findGuestByToken(
   token: string
 ): Promise<{ data?: Guest; error?: string }> {
   // Use admin client for public RSVP access (bypasses RLS)
-  const supabase = createAdminClient();
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.error('Failed to create admin client:', error);
+    return { error: 'Service temporarily unavailable' };
+  }
 
   const { data: guest, error } = await supabase
     .from('guests')
@@ -245,7 +257,13 @@ export async function submitRSVPResponse(
   submission: RSVPSubmission
 ): Promise<{ success?: boolean; error?: string }> {
   // Use admin client since guests submitting RSVP are not authenticated
-  const supabase = createAdminClient();
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.error('Failed to create admin client:', error);
+    return { error: 'Service temporarily unavailable' };
+  }
 
   // Verify event has RSVP enabled and deadline not passed
   const { data: rsvpSettings } = await supabase
