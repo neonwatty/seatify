@@ -428,7 +428,7 @@ INSERT INTO public.rsvp_settings (
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   true,
-  '2025-12-31 23:59:59+00',
+  '2099-12-31 23:59:59+00',
   true,
   2,
   ARRAY['Chicken', 'Fish', 'Vegetarian', 'Vegan'],
@@ -440,7 +440,7 @@ VALUES (
 )
 ON CONFLICT (event_id) DO UPDATE SET
   enabled = true,
-  deadline = '2025-12-31 23:59:59+00',
+  deadline = '2099-12-31 23:59:59+00',
   allow_plus_ones = true,
   max_plus_ones = 2,
   meal_options = ARRAY['Chicken', 'Fish', 'Vegetarian', 'Vegan'],
