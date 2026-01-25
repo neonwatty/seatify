@@ -8,6 +8,7 @@ const PUBLIC_ROUTES = [
   '/api/cron',
   '/api/health',
   '/rsvp', // Guest RSVP pages (accessed via email links)
+  '/auth', // OAuth callback routes
 ];
 
 // Check if a path matches any public route
