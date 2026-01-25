@@ -50,7 +50,8 @@ export interface RSVPSubmission {
 export async function loadPublicEventForRSVP(
   eventId: string
 ): Promise<{ data?: PublicEventData; error?: string }> {
-  const supabase = await createClient();
+  // Use admin client for public RSVP access (bypasses RLS)
+  const supabase = createAdminClient();
 
   // Load event basic info
   const { data: event, error: eventError } = await supabase
@@ -143,7 +144,8 @@ export async function findGuestByToken(
   eventId: string,
   token: string
 ): Promise<{ data?: Guest; error?: string }> {
-  const supabase = await createClient();
+  // Use admin client for public RSVP access (bypasses RLS)
+  const supabase = createAdminClient();
 
   const { data: guest, error } = await supabase
     .from('guests')
