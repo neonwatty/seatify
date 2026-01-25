@@ -2,34 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getServerSubscription } from '@/lib/subscription/server';
-import { ensureGuestToken, sendBatchInvitations, sendInvitationEmail, sendReminderEmail, buildRSVPUrl } from '@/lib/email/send';
+import { ensureGuestToken, sendBatchInvitations, sendInvitationEmail, sendReminderEmail } from '@/lib/email/send';
+import { buildRSVPUrl } from '@/lib/email/utils';
 import type { BatchEmailResult } from '@/lib/email/resend';
-
-export interface EmailStatusSummary {
-  total: number;
-  pending: number;
-  sent: number;
-  delivered: number;
-  opened: number;
-  bounced: number;
-  failed: number;
-  guestStatuses: Array<{
-    guestId: string;
-    guestName: string;
-    email: string;
-    lastEmailType: 'invitation' | 'reminder' | null;
-    lastStatus: string | null;
-    lastSentAt: string | null;
-    invitationsSent: number;
-    remindersSent: number;
-  }>;
-}
-
-export interface SendInvitationsResult {
-  success: boolean;
-  error?: string;
-  result?: BatchEmailResult;
-}
+import type { EmailStatusSummary, SendInvitationsResult } from '@/types';
 
 // Check if user has Pro subscription
 async function requirePro(userId: string): Promise<{ allowed: boolean; error?: string }> {
@@ -159,8 +135,7 @@ export async function sendInvitations(
       date,
       user_id,
       profiles!events_user_id_fkey (
-        first_name,
-        last_name
+        display_name
       )
     `)
     .eq('id', eventId)
@@ -233,10 +208,8 @@ export async function sendInvitations(
   );
 
   // Build host name from profile
-  const profile = event.profiles as { first_name?: string; last_name?: string } | null;
-  const hostName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || undefined
-    : undefined;
+  const profile = event.profiles as { display_name?: string } | null;
+  const hostName = profile?.display_name || undefined;
 
   // Send batch invitations
   const result = await sendBatchInvitations(
@@ -282,8 +255,7 @@ export async function sendSingleInvitation(
       date,
       user_id,
       profiles!events_user_id_fkey (
-        first_name,
-        last_name
+        display_name
       )
     `)
     .eq('id', eventId)
@@ -315,10 +287,8 @@ export async function sendSingleInvitation(
   // Ensure token exists
   const token = guest.rsvp_token || await ensureGuestToken(guest.id);
 
-  const profile = event.profiles as { first_name?: string; last_name?: string } | null;
-  const hostName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || undefined
-    : undefined;
+  const profile = event.profiles as { display_name?: string } | null;
+  const hostName = profile?.display_name || undefined;
 
   const result = await sendInvitationEmail({
     guestId: guest.id,
@@ -364,8 +334,7 @@ export async function sendSingleReminder(
       date,
       user_id,
       profiles!events_user_id_fkey (
-        first_name,
-        last_name
+        display_name
       )
     `)
     .eq('id', eventId)
@@ -411,10 +380,8 @@ export async function sendSingleReminder(
   // Ensure token exists
   const token = guest.rsvp_token || await ensureGuestToken(guest.id);
 
-  const profile = event.profiles as { first_name?: string; last_name?: string } | null;
-  const hostName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || undefined
-    : undefined;
+  const profile = event.profiles as { display_name?: string } | null;
+  const hostName = profile?.display_name || undefined;
 
   const result = await sendReminderEmail({
     guestId: guest.id,
@@ -459,8 +426,7 @@ export async function sendBulkReminders(
       date,
       user_id,
       profiles!events_user_id_fkey (
-        first_name,
-        last_name
+        display_name
       )
     `)
     .eq('id', eventId)
@@ -513,10 +479,8 @@ export async function sendBulkReminders(
     if (daysUntilDeadline < 0) daysUntilDeadline = 0;
   }
 
-  const profile = event.profiles as { first_name?: string; last_name?: string } | null;
-  const hostName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || undefined
-    : undefined;
+  const profile = event.profiles as { display_name?: string } | null;
+  const hostName = profile?.display_name || undefined;
 
   // Send reminders
   const results: BatchEmailResult = {

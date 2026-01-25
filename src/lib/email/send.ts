@@ -7,9 +7,6 @@ import { ReminderEmail } from './templates/reminder';
 import { createClient } from '@/lib/supabase/server';
 import { generateRSVPToken, buildRSVPUrl } from './utils';
 
-// Re-export utility functions for convenience
-export { generateRSVPToken, buildRSVPUrl };
-
 interface SendInvitationParams {
   guestId: string;
   guestName: string;

@@ -34,8 +34,7 @@ export async function GET(request: NextRequest) {
           date,
           user_id,
           profiles!events_user_id_fkey (
-            first_name,
-            last_name
+            display_name
           )
         )
       `)
@@ -118,12 +117,10 @@ export async function GET(request: NextRequest) {
         name: string;
         date?: string;
         user_id: string;
-        profiles?: { first_name?: string; last_name?: string };
+        profiles?: { display_name?: string };
       };
 
-      const hostName = event.profiles
-        ? `${event.profiles.first_name || ''} ${event.profiles.last_name || ''}`.trim() || undefined
-        : undefined;
+      const hostName = event.profiles?.display_name || undefined;
 
       let sentCount = 0;
 

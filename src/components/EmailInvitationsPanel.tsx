@@ -7,8 +7,8 @@ import {
   sendSingleInvitation,
   sendSingleReminder,
   sendBulkReminders,
-  type EmailStatusSummary,
 } from '@/actions/emailInvitations';
+import type { EmailStatusSummary } from '@/types';
 import { useSubscription } from '@/hooks/useSubscription';
 import { showToast } from './toastStore';
 import './EmailInvitationsPanel.css';

@@ -240,6 +240,45 @@ export interface ConstraintViolation {
   tableIds: string[];
 }
 
+// Email status summary for RSVP invitations
+export interface EmailStatusSummary {
+  total: number;
+  pending: number;
+  sent: number;
+  delivered: number;
+  opened: number;
+  bounced: number;
+  failed: number;
+  guestStatuses: Array<{
+    guestId: string;
+    guestName: string;
+    email: string;
+    lastEmailType: 'invitation' | 'reminder' | null;
+    lastStatus: string | null;
+    lastSentAt: string | null;
+    invitationsSent: number;
+    remindersSent: number;
+  }>;
+}
+
+// Result from sending invitations
+export interface SendInvitationsResult {
+  success: boolean;
+  error?: string;
+  result?: {
+    total: number;
+    sent: number;
+    failed: number;
+    results: Array<{
+      guestId: string;
+      email: string;
+      success: boolean;
+      resendId?: string;
+      error?: string;
+    }>;
+  };
+}
+
 // Helper function to get full name from firstName + lastName
 export function getFullName(guest: Pick<Guest, 'firstName' | 'lastName'>): string {
   return `${guest.firstName} ${guest.lastName}`.trim();
