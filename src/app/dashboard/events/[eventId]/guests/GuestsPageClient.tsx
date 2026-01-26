@@ -8,15 +8,17 @@ import type { Event } from '@/types';
 
 interface GuestsPageClientProps {
   event: Event;
+  isDemo?: boolean;
 }
 
-export function GuestsPageClient({ event: serverEvent }: GuestsPageClientProps) {
-  const { loadEvent, event } = useStore();
+export function GuestsPageClient({ event: serverEvent, isDemo = false }: GuestsPageClientProps) {
+  const { loadEvent, setDemoMode, event } = useStore();
 
   // Load event into store on mount
   useEffect(() => {
+    setDemoMode(isDemo);
     loadEvent(serverEvent);
-  }, [serverEvent, loadEvent]);
+  }, [serverEvent, loadEvent, isDemo, setDemoMode]);
 
   // Don't render until event is loaded
   if (!event || event.id !== serverEvent.id) {

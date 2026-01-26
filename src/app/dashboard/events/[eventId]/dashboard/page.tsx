@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { loadEvent } from '@/actions/loadEvent';
+import { loadDemoEvent } from '@/actions/loadDemoEvent';
+import { isDemoEvent } from '@/lib/constants';
 import { DashboardPageClient } from './DashboardPageClient';
 
 interface DashboardPageProps {
@@ -25,7 +27,19 @@ export async function generateMetadata({ params }: DashboardPageProps) {
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { eventId } = await params;
 
-  // Use loadEvent action which properly handles all data including guest profiles
+  // Check if this is the demo event - load without auth requirement
+  if (isDemoEvent(eventId)) {
+    const result = await loadDemoEvent();
+
+    if (result.error || !result.data) {
+      // Demo event not found - redirect to home page
+      redirect('/');
+    }
+
+    return <DashboardPageClient event={result.data} isDemo={true} />;
+  }
+
+  // Regular event - use loadEvent action which requires auth
   const result = await loadEvent(eventId);
 
   if (result.error || !result.data) {
