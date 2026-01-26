@@ -14,6 +14,7 @@ import { RSVPSettings } from './RSVPSettings';
 import { RSVPDashboard } from './RSVPDashboard';
 import { useDemoGate } from '../hooks/useDemoGate';
 import { useSubscription } from '../hooks/useSubscription';
+import { MainToolbar } from './MainToolbar';
 import { QR_TOUR_STEPS } from '../data/onboardingSteps';
 import {
   downloadTableCards,
@@ -436,6 +437,7 @@ export function DashboardView() {
 
   return (
     <div className="dashboard-view">
+      <MainToolbar />
       <div className="dashboard-grid">
         {/* Event Summary Card */}
         <div className="dashboard-card event-summary">
