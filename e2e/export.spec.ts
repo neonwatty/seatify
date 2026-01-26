@@ -261,8 +261,8 @@ test.describe('Import Functionality', () => {
 
     await importBtn.click();
 
-    // Import wizard/modal should appear
-    const importWizard = page.locator('.import-wizard, .import-modal, [class*="import"]');
+    // Import wizard/modal should appear - use specific modal class to avoid matching overlay
+    const importWizard = page.locator('.import-wizard-modal');
     await expect(importWizard).toBeVisible({ timeout: 3000 });
   });
 
@@ -277,9 +277,18 @@ test.describe('Import Functionality', () => {
 
     await importBtn.click();
 
-    // Look for file input or upload button
-    const fileInput = page.locator('input[type="file"], .file-upload, .upload-btn');
-    await expect(fileInput).toBeVisible({ timeout: 3000 });
+    // Wait for modal to appear first
+    await expect(page.locator('.import-wizard-modal')).toBeVisible({ timeout: 3000 });
+
+    // Look for file input (may be hidden for styling) or upload button
+    const fileInput = page.locator('input[type="file"]');
+    const uploadBtn = page.locator('.file-upload, .upload-btn, [class*="upload"]').first();
+
+    // Either the file input should be attached or an upload button should be visible
+    const hasFileInput = await fileInput.count() > 0;
+    const hasUploadBtn = await uploadBtn.isVisible().catch(() => false);
+
+    expect(hasFileInput || hasUploadBtn).toBeTruthy();
   });
 
   test('should show paste option in import wizard', async ({ page }) => {
