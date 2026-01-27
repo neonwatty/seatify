@@ -47,6 +47,7 @@ export function EventListClient({ initialEvents, initialProjects = [] }: EventLi
   const [eventName, setEventName] = useState('');
   const [eventType, setEventType] = useState('wedding');
   const [eventDate, setEventDate] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
   // Project form state
   const [projectName, setProjectName] = useState('');
@@ -69,7 +70,7 @@ export function EventListClient({ initialEvents, initialProjects = [] }: EventLi
     if (!eventName.trim()) return;
 
     startTransition(async () => {
-      const result = await createEvent(eventName, eventType);
+      const result = await createEvent(eventName, eventType, selectedProjectId || undefined);
 
       if (result.error) {
         // Check if limit was reached
@@ -164,6 +165,7 @@ export function EventListClient({ initialEvents, initialProjects = [] }: EventLi
     setEventName('');
     setEventType('wedding');
     setEventDate('');
+    setSelectedProjectId(null);
     // Project modals
     setShowProjectCreateModal(false);
     setShowProjectEditModal(false);
@@ -583,6 +585,30 @@ export function EventListClient({ initialEvents, initialProjects = [] }: EventLi
                   <option value="other">Other</option>
                 </select>
               </div>
+
+              {projects.length > 0 && (
+                <div className="form-group">
+                  <label htmlFor="projectSelect">
+                    Project
+                    <span style={{ fontWeight: 400, color: '#737373', marginLeft: '4px' }}>(optional)</span>
+                  </label>
+                  <select
+                    id="projectSelect"
+                    value={selectedProjectId || ''}
+                    onChange={(e) => setSelectedProjectId(e.target.value || null)}
+                  >
+                    <option value="">Standalone Event</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p style={{ fontSize: '0.75rem', color: '#737373', margin: '4px 0 0' }}>
+                    Events in projects share a master guest list
+                  </p>
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button
