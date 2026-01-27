@@ -257,6 +257,9 @@ export function RSVPPageClient({ eventId, initialData, initialError }: RSVPPageC
   return (
     <div className="rsvp-page">
       <header className="rsvp-header">
+        {eventData.isProjectEvent && eventData.projectName && (
+          <p className="rsvp-project-name">{eventData.projectName}</p>
+        )}
         <h1 className="rsvp-event-name">{eventData.name}</h1>
         {formattedDate && <p className="rsvp-event-date">{formattedDate}</p>}
       </header>

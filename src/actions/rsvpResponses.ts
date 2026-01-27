@@ -24,6 +24,10 @@ export interface PublicEventData {
     firstName: string;
     lastName: string;
   }>;
+  // Project info (if event is part of a project)
+  projectId?: string;
+  projectName?: string;
+  isProjectEvent?: boolean;
 }
 
 // Type for RSVP submission
@@ -59,15 +63,28 @@ export async function loadPublicEventForRSVP(
     return { error: 'Service temporarily unavailable' };
   }
 
-  // Load event basic info
+  // Load event basic info including project_id
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, name, date')
+    .select('id, name, date, project_id')
     .eq('id', eventId)
     .single();
 
   if (eventError || !event) {
     return { error: 'Event not found' };
+  }
+
+  const isProjectEvent = !!event.project_id;
+  let projectName: string | undefined;
+
+  // If project event, load project name
+  if (isProjectEvent) {
+    const { data: project } = await supabase
+      .from('projects')
+      .select('name')
+      .eq('id', event.project_id)
+      .single();
+    projectName = project?.name;
   }
 
   // Load RSVP settings
@@ -87,17 +104,6 @@ export async function loadPublicEventForRSVP(
     return { error: 'The RSVP deadline has passed' };
   }
 
-  // Load guests (limited fields for privacy)
-  const { data: guests, error: guestsError } = await supabase
-    .from('guests')
-    .select('id, first_name, last_name, email, rsvp_status')
-    .eq('event_id', eventId)
-    .is('plus_one_of', null); // Only primary guests, not plus-ones
-
-  if (guestsError) {
-    return { error: 'Failed to load guest data' };
-  }
-
   // Transform RSVP settings
   const rsvpSettings: RSVPSettings = {
     eventId: rsvpData.event_id,
@@ -114,32 +120,105 @@ export async function loadPublicEventForRSVP(
     hideSeatifyBranding: rsvpData.hide_seatify_branding || false,
   };
 
-  // Transform guests
-  const transformedGuests = guests?.map((g) => ({
-    id: g.id,
-    firstName: g.first_name,
-    lastName: g.last_name,
-    email: g.email,
-    rsvpStatus: g.rsvp_status as 'pending' | 'confirmed' | 'declined',
-  })) || [];
+  let transformedGuests: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    rsvpStatus: 'pending' | 'confirmed' | 'declined';
+  }> = [];
 
-  // For seating preferences, return all guests who might attend (pending or confirmed)
-  const otherGuests = transformedGuests
-    .filter((g) => g.rsvpStatus !== 'declined')
-    .map((g) => ({
+  let otherGuests: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+  }> = [];
+
+  if (isProjectEvent) {
+    // Load guests from event_guest_attendance joined with project_guests
+    const { data: attendance, error: attendanceError } = await supabase
+      .from('event_guest_attendance')
+      .select(`
+        id,
+        rsvp_status,
+        project_guest:project_guests(
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `)
+      .eq('event_id', eventId);
+
+    if (attendanceError) {
+      return { error: 'Failed to load guest data' };
+    }
+
+    transformedGuests = (attendance || [])
+      .filter((a) => a.project_guest)
+      .map((a) => {
+        const pg = a.project_guest as unknown as { id: string; first_name: string; last_name: string; email: string | null };
+        return {
+          id: a.id, // Use attendance ID as the guest ID for RSVP submission
+          firstName: pg.first_name,
+          lastName: pg.last_name,
+          email: pg.email ?? undefined,
+          rsvpStatus: a.rsvp_status as 'pending' | 'confirmed' | 'declined',
+        };
+      });
+
+    // For seating preferences in project events, include all project guests (not just this event's attendees)
+    const { data: projectGuests } = await supabase
+      .from('project_guests')
+      .select('id, first_name, last_name')
+      .eq('project_id', event.project_id);
+
+    otherGuests = (projectGuests || []).map((g) => ({
       id: g.id,
-      firstName: g.firstName,
-      lastName: g.lastName,
+      firstName: g.first_name,
+      lastName: g.last_name,
     }));
+  } else {
+    // Load guests from regular guests table (standalone event)
+    const { data: guests, error: guestsError } = await supabase
+      .from('guests')
+      .select('id, first_name, last_name, email, rsvp_status')
+      .eq('event_id', eventId)
+      .is('plus_one_of', null); // Only primary guests, not plus-ones
+
+    if (guestsError) {
+      return { error: 'Failed to load guest data' };
+    }
+
+    transformedGuests = (guests || []).map((g) => ({
+      id: g.id,
+      firstName: g.first_name,
+      lastName: g.last_name,
+      email: g.email ?? undefined,
+      rsvpStatus: g.rsvp_status as 'pending' | 'confirmed' | 'declined',
+    }));
+
+    // For seating preferences, return all guests who might attend (pending or confirmed)
+    otherGuests = transformedGuests
+      .filter((g) => g.rsvpStatus !== 'declined')
+      .map((g) => ({
+        id: g.id,
+        firstName: g.firstName,
+        lastName: g.lastName,
+      }));
+  }
 
   return {
     data: {
       id: event.id,
       name: event.name,
-      date: event.date,
+      date: event.date ?? undefined,
       rsvpSettings,
       guests: transformedGuests,
       otherGuests,
+      projectId: event.project_id ?? undefined,
+      projectName,
+      isProjectEvent,
     },
   };
 }
@@ -160,34 +239,90 @@ export async function findGuestByToken(
     return { error: 'Service temporarily unavailable' };
   }
 
-  const { data: guest, error } = await supabase
-    .from('guests')
-    .select('*')
-    .eq('event_id', eventId)
-    .eq('rsvp_token', token)
-    .is('plus_one_of', null)
+  // Check if this is a project event
+  const { data: event } = await supabase
+    .from('events')
+    .select('project_id')
+    .eq('id', eventId)
     .single();
 
-  if (error || !guest) {
-    return { error: 'Invalid or expired invitation link' };
+  const isProjectEvent = !!event?.project_id;
+
+  if (isProjectEvent) {
+    // Search in event_guest_attendance by token
+    const { data: attendance, error } = await supabase
+      .from('event_guest_attendance')
+      .select(`
+        id,
+        rsvp_status,
+        rsvp_token,
+        meal_preference,
+        dietary_restrictions,
+        accessibility_needs,
+        seating_preferences,
+        project_guest:project_guests(
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `)
+      .eq('event_id', eventId)
+      .eq('rsvp_token', token)
+      .single();
+
+    if (error || !attendance || !attendance.project_guest) {
+      return { error: 'Invalid or expired invitation link' };
+    }
+
+    const pg = attendance.project_guest as unknown as { id: string; first_name: string; last_name: string; email: string | null };
+
+    const transformedGuest: Guest = {
+      id: attendance.id, // Use attendance ID for RSVP submission
+      firstName: pg.first_name,
+      lastName: pg.last_name,
+      email: pg.email ?? undefined,
+      rsvpStatus: attendance.rsvp_status as 'pending' | 'confirmed' | 'declined',
+      mealPreference: (attendance.meal_preference as string) ?? undefined,
+      dietaryRestrictions: (attendance.dietary_restrictions as string[]) || [],
+      accessibilityNeeds: (attendance.accessibility_needs as string[]) || [],
+      seatingPreferences: (attendance.seating_preferences as string[]) || [],
+      rsvpToken: attendance.rsvp_token ?? undefined,
+      relationships: [],
+    };
+
+    return { data: transformedGuest };
+  } else {
+    // Search in regular guests table
+    const { data: guest, error } = await supabase
+      .from('guests')
+      .select('*')
+      .eq('event_id', eventId)
+      .eq('rsvp_token', token)
+      .is('plus_one_of', null)
+      .single();
+
+    if (error || !guest) {
+      return { error: 'Invalid or expired invitation link' };
+    }
+
+    // Transform to camelCase
+    const transformedGuest: Guest = {
+      id: guest.id,
+      firstName: guest.first_name,
+      lastName: guest.last_name,
+      email: guest.email ?? undefined,
+      rsvpStatus: guest.rsvp_status,
+      mealPreference: guest.meal_preference ?? undefined,
+      dietaryRestrictions: guest.dietary_restrictions || [],
+      accessibilityNeeds: guest.accessibility_needs || [],
+      seatingPreferences: guest.seating_preferences || [],
+      rsvpToken: guest.rsvp_token ?? undefined,
+      relationships: [],
+    };
+
+    return { data: transformedGuest };
   }
-
-  // Transform to camelCase
-  const transformedGuest: Guest = {
-    id: guest.id,
-    firstName: guest.first_name,
-    lastName: guest.last_name,
-    email: guest.email,
-    rsvpStatus: guest.rsvp_status,
-    mealPreference: guest.meal_preference,
-    dietaryRestrictions: guest.dietary_restrictions || [],
-    accessibilityNeeds: guest.accessibility_needs || [],
-    seatingPreferences: guest.seating_preferences || [],
-    rsvpToken: guest.rsvp_token,
-    relationships: [],
-  };
-
-  return { data: transformedGuest };
 }
 
 /**
@@ -197,57 +332,135 @@ export async function findGuestByEmailOrName(
   eventId: string,
   searchTerm: string
 ): Promise<{ data?: Guest; error?: string }> {
-  const supabase = await createClient();
+  // Use admin client for public RSVP access
+  let supabase;
+  try {
+    supabase = createAdminClient();
+  } catch (error) {
+    console.error('Failed to create admin client:', error);
+    return { error: 'Service temporarily unavailable' };
+  }
 
   const searchLower = searchTerm.toLowerCase().trim();
 
-  // Try to find by email first
-  const { data: guestByEmail } = await supabase
-    .from('guests')
-    .select('*')
-    .eq('event_id', eventId)
-    .ilike('email', searchLower)
-    .is('plus_one_of', null)
+  // First check if this is a project event
+  const { data: event } = await supabase
+    .from('events')
+    .select('project_id')
+    .eq('id', eventId)
     .single();
 
-  let guest = guestByEmail;
+  const isProjectEvent = !!event?.project_id;
 
-  // If not found by email, try by full name
-  if (!guest) {
-    const { data: guests } = await supabase
+  if (isProjectEvent) {
+    // Search in event_guest_attendance joined with project_guests
+    const { data: attendance } = await supabase
+      .from('event_guest_attendance')
+      .select(`
+        id,
+        rsvp_status,
+        meal_preference,
+        dietary_restrictions,
+        accessibility_needs,
+        seating_preferences,
+        project_guest:project_guests(
+          id,
+          first_name,
+          last_name,
+          email
+        )
+      `)
+      .eq('event_id', eventId);
+
+    // Find by email first
+    let found = attendance?.find((a) => {
+      const pg = a.project_guest as unknown as { email: string | null };
+      return pg?.email?.toLowerCase() === searchLower;
+    });
+
+    // If not found by email, search by name
+    if (!found) {
+      found = attendance?.find((a) => {
+        const pg = a.project_guest as unknown as { first_name: string; last_name: string };
+        if (!pg) return false;
+        const fullName = `${pg.first_name} ${pg.last_name}`.toLowerCase();
+        return fullName.includes(searchLower) ||
+               pg.first_name?.toLowerCase() === searchLower ||
+               pg.last_name?.toLowerCase() === searchLower;
+      });
+    }
+
+    if (!found || !found.project_guest) {
+      return { error: 'Guest not found. Please check your name or email.' };
+    }
+
+    const pg = found.project_guest as unknown as { id: string; first_name: string; last_name: string; email: string | null };
+
+    // Transform to Guest type (using attendance ID as guest ID for RSVP submission)
+    const transformedGuest: Guest = {
+      id: found.id,
+      firstName: pg.first_name,
+      lastName: pg.last_name,
+      email: pg.email ?? undefined,
+      rsvpStatus: found.rsvp_status as 'pending' | 'confirmed' | 'declined',
+      mealPreference: (found.meal_preference as string) ?? undefined,
+      dietaryRestrictions: (found.dietary_restrictions as string[]) || [],
+      accessibilityNeeds: (found.accessibility_needs as string[]) || [],
+      seatingPreferences: (found.seating_preferences as string[]) || [],
+      relationships: [],
+    };
+
+    return { data: transformedGuest };
+  } else {
+    // Search in regular guests table (standalone event)
+    // Try to find by email first
+    const { data: guestByEmail } = await supabase
       .from('guests')
       .select('*')
       .eq('event_id', eventId)
-      .is('plus_one_of', null);
+      .ilike('email', searchLower)
+      .is('plus_one_of', null)
+      .single();
 
-    // Search by name (first + last)
-    guest = guests?.find((g) => {
-      const fullName = `${g.first_name} ${g.last_name}`.toLowerCase();
-      return fullName.includes(searchLower) ||
-             g.first_name?.toLowerCase() === searchLower ||
-             g.last_name?.toLowerCase() === searchLower;
-    }) || null;
+    let guest = guestByEmail;
+
+    // If not found by email, try by full name
+    if (!guest) {
+      const { data: guests } = await supabase
+        .from('guests')
+        .select('*')
+        .eq('event_id', eventId)
+        .is('plus_one_of', null);
+
+      // Search by name (first + last)
+      guest = guests?.find((g) => {
+        const fullName = `${g.first_name} ${g.last_name}`.toLowerCase();
+        return fullName.includes(searchLower) ||
+               g.first_name?.toLowerCase() === searchLower ||
+               g.last_name?.toLowerCase() === searchLower;
+      }) || null;
+    }
+
+    if (!guest) {
+      return { error: 'Guest not found. Please check your name or email.' };
+    }
+
+    // Transform to camelCase
+    const transformedGuest: Guest = {
+      id: guest.id,
+      firstName: guest.first_name,
+      lastName: guest.last_name,
+      email: guest.email ?? undefined,
+      rsvpStatus: guest.rsvp_status,
+      mealPreference: guest.meal_preference ?? undefined,
+      dietaryRestrictions: guest.dietary_restrictions || [],
+      accessibilityNeeds: guest.accessibility_needs || [],
+      seatingPreferences: guest.seating_preferences || [],
+      relationships: [],
+    };
+
+    return { data: transformedGuest };
   }
-
-  if (!guest) {
-    return { error: 'Guest not found. Please check your name or email.' };
-  }
-
-  // Transform to camelCase
-  const transformedGuest: Guest = {
-    id: guest.id,
-    firstName: guest.first_name,
-    lastName: guest.last_name,
-    email: guest.email,
-    rsvpStatus: guest.rsvp_status,
-    mealPreference: guest.meal_preference,
-    dietaryRestrictions: guest.dietary_restrictions || [],
-    accessibilityNeeds: guest.accessibility_needs || [],
-    seatingPreferences: guest.seating_preferences || [],
-    relationships: [],
-  };
-
-  return { data: transformedGuest };
 }
 
 /**
@@ -266,6 +479,15 @@ export async function submitRSVPResponse(
     return { error: 'Service temporarily unavailable' };
   }
 
+  // Check if this is a project event
+  const { data: event } = await supabase
+    .from('events')
+    .select('project_id')
+    .eq('id', submission.eventId)
+    .single();
+
+  const isProjectEvent = !!event?.project_id;
+
   // Verify event has RSVP enabled and deadline not passed
   const { data: rsvpSettings } = await supabase
     .from('rsvp_settings')
@@ -281,71 +503,147 @@ export async function submitRSVPResponse(
     return { error: 'The RSVP deadline has passed' };
   }
 
-  // Update the guest record
-  const { error: updateError } = await supabase
-    .from('guests')
-    .update({
-      rsvp_status: submission.status,
-      meal_preference: submission.mealPreference || null,
-      dietary_restrictions: submission.dietaryRestrictions || [],
-      accessibility_needs: submission.accessibilityNeeds || [],
-      seating_preferences: submission.seatingPreferences || [],
-      rsvp_responded_at: new Date().toISOString(),
-    })
-    .eq('id', submission.guestId)
-    .eq('event_id', submission.eventId);
+  if (isProjectEvent) {
+    // Update event_guest_attendance for project events
+    const { error: updateError } = await supabase
+      .from('event_guest_attendance')
+      .update({
+        rsvp_status: submission.status,
+        meal_preference: submission.mealPreference || null,
+        dietary_restrictions: submission.dietaryRestrictions || [],
+        accessibility_needs: submission.accessibilityNeeds || [],
+        seating_preferences: submission.seatingPreferences || [],
+        rsvp_responded_at: new Date().toISOString(),
+      })
+      .eq('id', submission.guestId); // guestId is actually attendance ID for project events
 
-  if (updateError) {
-    console.error('Error updating guest:', updateError);
-    return { error: 'Failed to save your response' };
-  }
-
-  // Handle plus-ones if attending and allowed
-  if (submission.status === 'confirmed' && submission.plusOnes && submission.plusOnes.length > 0) {
-    // Verify plus-ones are allowed
-    if (!rsvpSettings.allow_plus_ones) {
-      return { error: 'Plus-ones are not allowed for this event' };
+    if (updateError) {
+      console.error('Error updating attendance:', updateError);
+      return { error: 'Failed to save your response' };
     }
 
-    // Check max plus-ones
-    if (submission.plusOnes.length > rsvpSettings.max_plus_ones) {
-      return { error: `Maximum ${rsvpSettings.max_plus_ones} plus-one(s) allowed` };
-    }
+    // Handle plus-ones for project events
+    if (submission.status === 'confirmed' && submission.plusOnes && submission.plusOnes.length > 0) {
+      if (!rsvpSettings.allow_plus_ones) {
+        return { error: 'Plus-ones are not allowed for this event' };
+      }
+      if (submission.plusOnes.length > rsvpSettings.max_plus_ones) {
+        return { error: `Maximum ${rsvpSettings.max_plus_ones} plus-one(s) allowed` };
+      }
 
-    // First, remove any existing plus-ones for this guest
-    await supabase
-      .from('guests')
-      .delete()
-      .eq('event_id', submission.eventId)
-      .eq('plus_one_of', submission.guestId);
+      // Get the attendance record to find the primary guest
+      const { data: attendance } = await supabase
+        .from('event_guest_attendance')
+        .select('project_guest_id')
+        .eq('id', submission.guestId)
+        .single();
 
-    // Add new plus-ones
-    for (const plusOne of submission.plusOnes) {
-      const { error: plusOneError } = await supabase
-        .from('guests')
-        .insert({
-          event_id: submission.eventId,
-          first_name: plusOne.firstName,
-          last_name: plusOne.lastName,
-          email: plusOne.email || null,
-          rsvp_status: 'confirmed',
-          meal_preference: plusOne.mealPreference || null,
-          dietary_restrictions: plusOne.dietaryRestrictions || [],
-          plus_one_of: submission.guestId,
-          rsvp_responded_at: new Date().toISOString(),
-        });
+      if (attendance) {
+        // Add plus-ones to both project_guests and event_guest_attendance
+        for (const plusOne of submission.plusOnes) {
+          // First add to project_guests
+          const { data: newProjectGuest, error: projectGuestError } = await supabase
+            .from('project_guests')
+            .insert({
+              project_id: event.project_id,
+              first_name: plusOne.firstName,
+              last_name: plusOne.lastName,
+              email: plusOne.email || null,
+              notes: `Plus-one of attendance ${submission.guestId}`,
+            })
+            .select()
+            .single();
 
-      if (plusOneError) {
-        console.error('Error adding plus-one:', plusOneError);
+          if (projectGuestError) {
+            console.error('Error adding plus-one to project:', projectGuestError);
+            continue;
+          }
+
+          // Then add to event_guest_attendance
+          const { error: attendanceError } = await supabase
+            .from('event_guest_attendance')
+            .insert({
+              event_id: submission.eventId,
+              project_guest_id: newProjectGuest.id,
+              rsvp_status: 'confirmed',
+              meal_preference: plusOne.mealPreference || null,
+              dietary_restrictions: plusOne.dietaryRestrictions || [],
+              rsvp_responded_at: new Date().toISOString(),
+            });
+
+          if (attendanceError) {
+            console.error('Error adding plus-one attendance:', attendanceError);
+          }
+        }
       }
     }
-  } else if (submission.status === 'declined') {
-    // If declining, remove any existing plus-ones
-    await supabase
+  } else {
+    // Update the guest record for standalone events
+    const { error: updateError } = await supabase
       .from('guests')
-      .delete()
-      .eq('event_id', submission.eventId)
-      .eq('plus_one_of', submission.guestId);
+      .update({
+        rsvp_status: submission.status,
+        meal_preference: submission.mealPreference || null,
+        dietary_restrictions: submission.dietaryRestrictions || [],
+        accessibility_needs: submission.accessibilityNeeds || [],
+        seating_preferences: submission.seatingPreferences || [],
+        rsvp_responded_at: new Date().toISOString(),
+      })
+      .eq('id', submission.guestId)
+      .eq('event_id', submission.eventId);
+
+    if (updateError) {
+      console.error('Error updating guest:', updateError);
+      return { error: 'Failed to save your response' };
+    }
+
+    // Handle plus-ones if attending and allowed
+    if (submission.status === 'confirmed' && submission.plusOnes && submission.plusOnes.length > 0) {
+      // Verify plus-ones are allowed
+      if (!rsvpSettings.allow_plus_ones) {
+        return { error: 'Plus-ones are not allowed for this event' };
+      }
+
+      // Check max plus-ones
+      if (submission.plusOnes.length > rsvpSettings.max_plus_ones) {
+        return { error: `Maximum ${rsvpSettings.max_plus_ones} plus-one(s) allowed` };
+      }
+
+      // First, remove any existing plus-ones for this guest
+      await supabase
+        .from('guests')
+        .delete()
+        .eq('event_id', submission.eventId)
+        .eq('plus_one_of', submission.guestId);
+
+      // Add new plus-ones
+      for (const plusOne of submission.plusOnes) {
+        const { error: plusOneError } = await supabase
+          .from('guests')
+          .insert({
+            event_id: submission.eventId,
+            first_name: plusOne.firstName,
+            last_name: plusOne.lastName,
+            email: plusOne.email || null,
+            rsvp_status: 'confirmed',
+            meal_preference: plusOne.mealPreference || null,
+            dietary_restrictions: plusOne.dietaryRestrictions || [],
+            plus_one_of: submission.guestId,
+            rsvp_responded_at: new Date().toISOString(),
+          });
+
+        if (plusOneError) {
+          console.error('Error adding plus-one:', plusOneError);
+        }
+      }
+    } else if (submission.status === 'declined') {
+      // If declining, remove any existing plus-ones
+      await supabase
+        .from('guests')
+        .delete()
+        .eq('event_id', submission.eventId)
+        .eq('plus_one_of', submission.guestId);
+    }
   }
 
   // Record the response in the audit table
