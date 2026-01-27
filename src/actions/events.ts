@@ -62,7 +62,7 @@ export async function deleteEvent(eventId: string) {
   return { success: true };
 }
 
-export async function createEvent(name: string, eventType: string) {
+export async function createEvent(name: string, eventType: string, projectId?: string) {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -101,6 +101,7 @@ export async function createEvent(name: string, eventType: string) {
       name: name.trim(),
       event_type: eventType,
       user_id: user.id,
+      project_id: projectId || null,
     })
     .select()
     .single();

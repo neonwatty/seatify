@@ -179,6 +179,108 @@ export interface RSVPResponseRecord {
 
 export type EventType = 'wedding' | 'corporate' | 'gala' | 'party' | 'other';
 
+// =====================================================
+// PROJECT TYPES (Hierarchical Event Organization)
+// =====================================================
+
+export interface Project {
+  id: string;
+  userId?: string;
+  name: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProjectGuest {
+  id: string;
+  projectId: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  jobTitle?: string;
+  industry?: string;
+  profileSummary?: string;
+  groupName?: string;
+  notes?: string;
+  dietaryRestrictions?: string;
+  accessibilityNeeds?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type ProjectRelationshipType = 'family' | 'friend' | 'colleague' | 'acquaintance' | 'partner' | 'prefer' | 'avoid';
+
+export interface ProjectGuestRelationship {
+  id: string;
+  projectId: string;
+  guestId: string;
+  relatedGuestId: string;
+  relationshipType: ProjectRelationshipType;
+  strength: number; // 1-5
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type EventAttendanceStatus = 'pending' | 'confirmed' | 'declined' | 'maybe';
+
+export interface EventGuestAttendance {
+  id: string;
+  eventId: string;
+  projectGuestId: string;
+  rsvpStatus: EventAttendanceStatus;
+  rsvpToken?: string;
+  rsvpRespondedAt?: string;
+  // Per-event seating
+  tableId?: string;
+  seatIndex?: number;
+  canvasX?: number;
+  canvasY?: number;
+  // Per-event preferences
+  mealPreference?: string;
+  plusOneOf?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Combined view of project guest with their attendance for a specific event
+export interface ProjectGuestWithAttendance extends ProjectGuest {
+  attendance?: EventGuestAttendance;
+  // Relationships loaded from project level
+  relationships?: ProjectGuestRelationship[];
+}
+
+// Project with summary counts (for dashboard display)
+export interface ProjectWithSummary extends Project {
+  eventCount?: number;
+  guestCount?: number;
+  events?: Array<{
+    id: string;
+    name: string;
+    date?: string;
+    confirmedCount?: number;
+    pendingCount?: number;
+  }>;
+}
+
+// Duplicate detection result for merging events into projects
+export interface DuplicateGuestMatch {
+  existingGuest: ProjectGuest;
+  newGuest: Guest | ProjectGuest;
+  matchType: 'exact_email' | 'fuzzy_name';
+  confidence: number; // 0-1, higher = more confident it's a match
+}
+
+export interface DuplicateDetectionResult {
+  exactMatches: DuplicateGuestMatch[];
+  fuzzyMatches: DuplicateGuestMatch[];
+  newGuests: Array<Guest | ProjectGuest>;
+}
+
 // QR Code data structure for table lookup
 export interface QRTableData {
   v: number; // Version for future compatibility
@@ -201,6 +303,9 @@ export interface Event {
   surveyQuestions: SurveyQuestion[];
   surveyResponses: SurveyResponse[];
   venueElements: VenueElement[];
+
+  // Project association (null for standalone events)
+  projectId?: string;
 
   // RSVP settings (optional, loaded separately)
   rsvpSettings?: RSVPSettings;

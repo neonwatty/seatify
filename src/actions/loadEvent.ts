@@ -13,8 +13,23 @@ interface DbEvent {
   venue_name: string | null;
   venue_address: string | null;
   guest_capacity_limit: number | null;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+interface DbProject {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+interface DbProjectEvent {
+  id: string;
+  name: string;
+  date: string | null;
 }
 
 interface DbTable {
@@ -214,6 +229,7 @@ function transformEvent(
     name: dbEvent.name,
     date: dbEvent.date || undefined,
     eventType: dbEvent.event_type as Event['eventType'],
+    projectId: dbEvent.project_id || undefined,
     tables,
     guests,
     constraints,
@@ -228,8 +244,16 @@ function transformEvent(
   };
 }
 
+// Project info returned with event
+interface ProjectInfo {
+  id: string;
+  name: string;
+  description?: string;
+  events: Array<{ id: string; name: string; date?: string }>;
+}
+
 // Load full event with all related data
-export async function loadEvent(eventId: string): Promise<{ data?: Event; error?: string }> {
+export async function loadEvent(eventId: string): Promise<{ data?: Event; project?: ProjectInfo; error?: string }> {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -248,6 +272,36 @@ export async function loadEvent(eventId: string): Promise<{ data?: Event; error?
   if (eventError || !event) {
     console.error('Error loading event:', eventError);
     return { error: eventError?.message || 'Event not found' };
+  }
+
+  // Fetch project info if event is part of a project
+  let projectInfo: ProjectInfo | undefined;
+  if (event.project_id) {
+    const { data: project } = await supabase
+      .from('projects')
+      .select('id, name, description')
+      .eq('id', event.project_id)
+      .single();
+
+    if (project) {
+      // Fetch other events in this project
+      const { data: projectEvents } = await supabase
+        .from('events')
+        .select('id, name, date')
+        .eq('project_id', event.project_id)
+        .order('date', { ascending: true });
+
+      projectInfo = {
+        id: project.id,
+        name: project.name,
+        description: project.description || undefined,
+        events: (projectEvents || []).map((e: DbProjectEvent) => ({
+          id: e.id,
+          name: e.name,
+          date: e.date || undefined,
+        })),
+      };
+    }
   }
 
   // Fetch all related data in parallel
@@ -299,7 +353,7 @@ export async function loadEvent(eventId: string): Promise<{ data?: Event; error?
     constraintGuests
   );
 
-  return { data: transformedEvent };
+  return { data: transformedEvent, project: projectInfo };
 }
 
 // Load events list for dashboard

@@ -1,0 +1,271 @@
+/* Project Card Styles */
+
+.project-card {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.project-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: default;
+}
+
+/* Expand/Collapse Button */
+.project-expand-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #737373;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.project-expand-btn:hover {
+  background: #f5f5f5;
+  color: #171717;
+}
+
+.project-expand-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.project-expand-btn.expanded svg {
+  transform: rotate(90deg);
+}
+
+/* Folder Icon */
+.project-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #b45309;
+}
+
+/* Project Info */
+.project-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.project-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #171717;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-meta {
+  font-size: 0.8125rem;
+  color: #737373;
+}
+
+/* Actions Menu */
+.project-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.project-menu-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #a3a3a3;
+  transition: all 0.15s ease;
+}
+
+.project-menu-btn:hover {
+  background: #f5f5f5;
+  color: #737373;
+}
+
+.project-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 160px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.project-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  color: #525252;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.project-menu button:hover {
+  background: #f5f5f5;
+}
+
+.project-menu button.danger {
+  color: #dc2626;
+}
+
+.project-menu button.danger:hover {
+  background: #fef2f2;
+}
+
+/* Events List */
+.project-events {
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.project-event-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 56px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.1s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.project-event-item:last-of-type {
+  border-bottom: none;
+}
+
+.project-event-item:hover {
+  background: #f0f0f0;
+}
+
+/* Event Date Icon */
+.project-event-date {
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.project-event-date .month {
+  font-size: 0.5rem;
+  font-weight: 600;
+  color: #f97352;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.project-event-date .day {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #171717;
+  line-height: 1;
+}
+
+/* Event Info */
+.project-event-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-event-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #171717;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-event-stats {
+  font-size: 0.75rem;
+  color: #737373;
+}
+
+.project-event-arrow {
+  color: #a3a3a3;
+  flex-shrink: 0;
+}
+
+/* Add Event Button */
+.project-add-event-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f97352;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.project-add-event-btn:hover {
+  background: #fff5f4;
+}
+
+/* Empty State */
+.project-events-empty {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.project-events-empty p {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: #737373;
+}
+
+.project-events-empty .project-add-event-btn {
+  display: inline-flex;
+  width: auto;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.project-events-empty .project-add-event-btn:hover {
+  background: #fff5f4;
+}

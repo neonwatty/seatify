@@ -46,5 +46,5 @@ export default async function CanvasPage({ params }: CanvasPageProps) {
     redirect('/dashboard');
   }
 
-  return <CanvasPageClient event={result.data} />;
+  return <CanvasPageClient event={result.data} project={result.project} />;
 }
