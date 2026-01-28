@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { FeedbackModal } from '@/components/FeedbackModal';
 import type { User } from '@supabase/supabase-js';
 
 interface DashboardHeaderProps {
@@ -12,6 +13,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,6 +68,15 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 Profile Settings
               </Link>
               <hr className="menu-divider" />
+              <button
+                className="menu-item feedback-item"
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowFeedback(true);
+                }}
+              >
+                Send Feedback
+              </button>
               <button className="menu-item sign-out" onClick={handleSignOut}>
                 Sign Out
               </button>
@@ -73,6 +84,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           )}
         </div>
       </div>
+
+      <FeedbackModal isOpen={showFeedback} onClose={() => setShowFeedback(false)} />
     </header>
   );
 }
