@@ -53,12 +53,6 @@ export function ProjectRelationshipPanel({
   const [filterType, setFilterType] = useState<RelationshipType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (isOpen) {
-      loadData();
-    }
-  }, [isOpen, projectId]);
-
   const loadData = async () => {
     setLoading(true);
     setError(null);
@@ -82,6 +76,13 @@ export function ProjectRelationshipPanel({
 
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, projectId]);
 
   const handleAddRelationship = () => {
     if (!guest1Id || !guest2Id || guest1Id === guest2Id) return;

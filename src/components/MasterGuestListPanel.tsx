@@ -50,12 +50,6 @@ export function MasterGuestListPanel({
   const [dietaryRestrictions, setDietaryRestrictions] = useState('');
   const [accessibilityNeeds, setAccessibilityNeeds] = useState('');
 
-  useEffect(() => {
-    if (isOpen) {
-      loadGuests();
-    }
-  }, [isOpen, projectId]);
-
   const loadGuests = async () => {
     setLoading(true);
     setError(null);
@@ -67,6 +61,13 @@ export function MasterGuestListPanel({
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadGuests();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, projectId]);
 
   const clearForm = () => {
     setFirstName('');

@@ -28,12 +28,6 @@ export function MoveEventToProjectModal({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadProjects();
-    }
-  }, [isOpen]);
-
   const loadProjects = async () => {
     setLoading(true);
     setError(null);
@@ -48,6 +42,13 @@ export function MoveEventToProjectModal({
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadProjects();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const handleMove = () => {
     if (!selectedProjectId) return;

@@ -159,12 +159,14 @@ export function DuplicateReviewModal({
   const [fuzzyDecisions, setFuzzyDecisions] = useState<MergeAction[]>([]);
 
   // Reset decisions when modal opens/matches change
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (isOpen) {
       setExactDecisions(exactMatches.map(() => 'merge'));
       setFuzzyDecisions(fuzzyMatches.map(() => 'merge'));
     }
   }, [isOpen, exactMatches, fuzzyMatches]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Close on escape key
   useEffect(() => {
