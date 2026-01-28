@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 // Local Supabase config for E2E testing (same as CI)
 const localSupabaseEnv = {
@@ -8,11 +9,16 @@ const localSupabaseEnv = {
   NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
 };
 
+// Path to store authenticated browser state
+const authStorageState = path.join(__dirname, 'e2e', '.auth', 'user.json');
+
 // For local E2E testing, use npm run dev with local Supabase env from .env.local
 // Note: Run `npm run test:e2e:setup` to configure .env.local for local Supabase before running tests
 
 export default defineConfig({
   testDir: './e2e',
+  // Verify Supabase is running before tests start
+  globalSetup: './e2e/global-setup.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -24,9 +30,28 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    // Setup project - runs auth.setup.ts to authenticate and save state
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+
+    // Unauthenticated tests - don't need auth state
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: /.*\.auth\.spec\.ts/, // Ignore auth-requiring tests
+    },
+
+    // Authenticated tests - use saved auth state, depend on setup
+    {
+      name: 'chromium-authenticated',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: authStorageState,
+      },
+      testMatch: /.*\.auth\.spec\.ts/, // Only run auth-requiring tests
+      dependencies: ['setup'],
     },
   ],
   webServer: {

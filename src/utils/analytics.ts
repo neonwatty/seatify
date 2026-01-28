@@ -58,13 +58,98 @@ export function trackPageView(pagePath: string, pageTitle?: string): void {
  * Track when a user creates a new event
  * Conversion value: $100 (highest value - user committed to planning)
  */
-export function trackEventCreated(eventType: string): void {
+export function trackEventCreated(eventType: string, isProjectEvent: boolean = false): void {
   trackEvent('event_created', {
     event_category: 'conversion',
     event_type: eventType,
+    is_project_event: isProjectEvent,
     value: 100,
     currency: 'USD',
     ...getUtmAttributionParams(),
+  });
+}
+
+// ============================================
+// Projects-specific tracking
+// ============================================
+
+/**
+ * Track when a project is created
+ * Conversion value: $120 (high value - user organizing multi-day event series)
+ */
+export function trackProjectCreated(): void {
+  trackEvent('project_created', {
+    event_category: 'conversion',
+    value: 120,
+    currency: 'USD',
+    ...getUtmAttributionParams(),
+  });
+}
+
+/**
+ * Track when an event is added to a project
+ */
+export function trackEventAddedToProject(isNewEvent: boolean): void {
+  trackEvent('event_added_to_project', {
+    event_category: 'engagement',
+    is_new_event: isNewEvent,
+  });
+}
+
+/**
+ * Track when an existing event is moved to a project
+ */
+export function trackEventMovedToProject(guestCount: number): void {
+  trackEvent('event_moved_to_project', {
+    event_category: 'engagement',
+    guest_count: guestCount,
+  });
+}
+
+/**
+ * Track when a project is deleted
+ */
+export function trackProjectDeleted(eventCount: number, guestCount: number): void {
+  trackEvent('project_deleted', {
+    event_category: 'engagement',
+    event_count: eventCount,
+    guest_count: guestCount,
+  });
+}
+
+/**
+ * Track when a guest is added to a project's master guest list
+ */
+export function trackProjectGuestAdded(totalProjectGuests: number): void {
+  trackEvent('project_guest_added', {
+    event_category: 'engagement',
+    total_project_guests: totalProjectGuests,
+  });
+}
+
+/**
+ * Track when a relationship is added at project level
+ */
+export function trackProjectRelationshipAdded(relationshipType: string): void {
+  trackEvent('project_relationship_added', {
+    event_category: 'engagement',
+    relationship_type: relationshipType,
+  });
+}
+
+/**
+ * Track project vs standalone event ratio
+ * Call periodically or on dashboard load
+ */
+export function trackProjectEventRatio(projectEventCount: number, standaloneEventCount: number): void {
+  const total = projectEventCount + standaloneEventCount;
+  const projectRatio = total > 0 ? projectEventCount / total : 0;
+
+  trackEvent('project_event_ratio', {
+    event_category: 'metrics',
+    project_event_count: projectEventCount,
+    standalone_event_count: standaloneEventCount,
+    project_ratio: Math.round(projectRatio * 100), // Percentage
   });
 }
 

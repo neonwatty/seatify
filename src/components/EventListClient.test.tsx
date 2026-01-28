@@ -56,7 +56,7 @@ describe('EventListClient', () => {
       render(<EventListClient initialEvents={mockEvents} />);
 
       expect(screen.getByRole('heading', { name: /events/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /new/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /new event/i })).toBeInTheDocument();
     });
 
     it('should render all event cards', () => {
@@ -128,7 +128,7 @@ describe('EventListClient', () => {
       const user = userEvent.setup();
       render(<EventListClient initialEvents={mockEvents} />);
 
-      await user.click(screen.getByRole('button', { name: /new/i }));
+      await user.click(screen.getByRole('button', { name: /new event/i }));
 
       expect(screen.getByRole('heading', { name: /new event/i })).toBeInTheDocument();
       expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
@@ -148,7 +148,7 @@ describe('EventListClient', () => {
       const user = userEvent.setup();
       render(<EventListClient initialEvents={mockEvents} />);
 
-      await user.click(screen.getByRole('button', { name: /new/i }));
+      await user.click(screen.getByRole('button', { name: /new event/i }));
       expect(screen.getByRole('heading', { name: /new event/i })).toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: /cancel/i }));
@@ -161,12 +161,12 @@ describe('EventListClient', () => {
 
       render(<EventListClient initialEvents={mockEvents} />);
 
-      await user.click(screen.getByRole('button', { name: /new/i }));
+      await user.click(screen.getByRole('button', { name: /new event/i }));
       await user.type(screen.getByLabelText(/name/i), 'New Test Event');
       await user.click(screen.getByRole('button', { name: /create$/i }));
 
       await waitFor(() => {
-        expect(mockedCreateEvent).toHaveBeenCalledWith('New Test Event', 'wedding');
+        expect(mockedCreateEvent).toHaveBeenCalledWith('New Test Event', 'wedding', undefined);
       });
     });
   });

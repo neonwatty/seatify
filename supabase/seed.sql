@@ -6,6 +6,8 @@
 -- STEP 1: Create demo user in auth.users
 -- =====================================================
 -- In local Supabase, we can insert directly into auth.users
+-- Note: Token/email_change fields must be empty strings (not NULL) for GoTrue compatibility
+-- Phone fields use their column defaults (NULL or '')
 INSERT INTO auth.users (
   id,
   instance_id,
@@ -17,7 +19,13 @@ INSERT INTO auth.users (
   created_at,
   updated_at,
   aud,
-  role
+  role,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change_token_current,
+  email_change,
+  reauthentication_token
 )
 VALUES (
   '00000000-0000-0000-0000-000000000000',
@@ -30,7 +38,13 @@ VALUES (
   NOW(),
   NOW(),
   'authenticated',
-  'authenticated'
+  'authenticated',
+  '',
+  '',
+  '',
+  '',
+  '',
+  ''
 )
 ON CONFLICT (id) DO NOTHING;
 
@@ -39,6 +53,8 @@ ON CONFLICT (id) DO NOTHING;
 -- =====================================================
 -- This user has known credentials for automated testing
 -- Email: test@example.com / Password: testpassword123
+-- Note: Token/email_change fields must be empty strings (not NULL) for GoTrue compatibility
+-- Phone fields use their column defaults (NULL or '')
 INSERT INTO auth.users (
   id,
   instance_id,
@@ -50,7 +66,13 @@ INSERT INTO auth.users (
   created_at,
   updated_at,
   aud,
-  role
+  role,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change_token_current,
+  email_change,
+  reauthentication_token
 )
 VALUES (
   '11111111-1111-1111-1111-111111111111',
@@ -63,7 +85,13 @@ VALUES (
   NOW(),
   NOW(),
   'authenticated',
-  'authenticated'
+  'authenticated',
+  '',
+  '',
+  '',
+  '',
+  '',
+  ''
 )
 ON CONFLICT (id) DO NOTHING;
 

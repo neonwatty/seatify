@@ -205,29 +205,6 @@
   cursor: not-allowed;
 }
 
-/* Enterprise Link */
-.enterprise-link-section {
-  text-align: center;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  max-width: 600px;
-}
-
-.enterprise-link-section p {
-  color: var(--color-text-secondary, #666);
-  font-size: 1rem;
-}
-
-.enterprise-link {
-  color: var(--primary-color);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.enterprise-link:hover {
-  text-decoration: underline;
-}
-
 /* FAQ Section */
 .pricing-page .faq-section {
   max-width: 1000px;

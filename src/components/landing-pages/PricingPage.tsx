@@ -132,15 +132,16 @@ export function PricingPage() {
     document.title = 'Pricing | Seatify';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Choose the Seatify plan that fits your needs. Free for small events, Pro for individuals at $19/mo, Team for agencies at $49/mo.');
+      metaDescription.setAttribute('content', 'Choose the Seatify plan that fits your needs. Free for small events, Pro for unlimited events and custom branding, Enterprise for teams.');
     }
   }, []);
 
   const handleUpgrade = async (plan: SubscriptionPlan, isAnnual: boolean) => {
     setIsLoading(true);
     try {
-      const planPrices = STRIPE_PRICES[plan as keyof typeof STRIPE_PRICES];
-      const priceId = isAnnual ? planPrices?.yearly : planPrices?.monthly;
+      const priceId = isAnnual
+        ? STRIPE_PRICES[plan as 'pro']?.yearly
+        : STRIPE_PRICES[plan as 'pro']?.monthly;
 
       if (!priceId) {
         console.error('Price ID not found for plan:', plan);
@@ -191,13 +192,6 @@ export function PricingPage() {
               isLoading={isLoading}
             />
           ))}
-        </section>
-
-        {/* Enterprise Link */}
-        <section className="enterprise-link-section">
-          <p>
-            Need more? <a href="mailto:support@seatify.app?subject=Enterprise%20Inquiry" className="enterprise-link">Contact us for Enterprise pricing</a> — unlimited team members, SSO, and custom integrations.
-          </p>
         </section>
 
         {/* FAQ Section */}

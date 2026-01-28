@@ -47,8 +47,12 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  console.log('[Middleware] Supabase URL:', supabaseUrl ? 'SET' : 'NOT SET');
+  console.log('[Middleware] Supabase Anon Key:', supabaseAnonKey ? 'SET' : 'NOT SET');
+
   if (!supabaseUrl || !supabaseAnonKey) {
     // Allow requests to proceed without auth checks when Supabase is not configured
+    console.log('[Middleware] Skipping auth - env vars not configured');
     return supabaseResponse
   }
 
@@ -115,6 +119,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/dashboard') &&
     !isDemoRoute
   ) {
+    console.log('[Middleware] Redirecting unauthenticated user to /login');
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
