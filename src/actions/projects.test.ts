@@ -239,6 +239,9 @@ describe('Project Actions', () => {
             single: vi.fn().mockResolvedValue({ data: null, error: null }),
           }),
         }),
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }),
       }));
       mockedCreateClient.mockResolvedValue(mockClient as never);
 
